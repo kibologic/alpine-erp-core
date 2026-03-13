@@ -1,0 +1,35 @@
+import { SwissComponent } from '@swissjs/core';
+
+component Button {
+  props = {
+    variant: String,
+    size: String,
+    disabled: Boolean,
+    loading: Boolean,
+    fullWidth: Boolean,
+    type: String,
+    label: String,
+    onClick: Function as () => void,
+  };
+
+  render() {
+    const variant = this.props.variant || 'primary';
+    const size = this.props.size || 'md';
+    const isDisabled = !!(this.props.disabled || this.props.loading);
+    const fullWidth = !!this.props.fullWidth;
+
+    return (
+      <button
+        type={this.props.type || 'button'}
+        class={`alp-btn alp-btn--${variant} alp-btn--${size}${fullWidth ? ' alp-btn--full' : ''}${isDisabled ? ' alp-btn--disabled' : ''}`}
+        disabled={isDisabled}
+        onclick={() => !isDisabled && this.props.onClick && this.props.onClick()}
+      >
+        {this.props.loading ? (
+          <span class="alp-btn-spinner" aria-hidden="true"></span>
+        ) : null}
+        {this.props.label || ''}
+      </button>
+    );
+  }
+}

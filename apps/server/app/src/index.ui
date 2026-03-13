@@ -1,0 +1,25 @@
+import { SwissApp } from '@swissjs/core';
+import { App } from './App.uix';
+
+function main() {
+  const container = document.querySelector('#app');
+  if (!container) {
+    console.error('[Alpine] #app container not found');
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    try {
+      SwissApp.mount(App, container as HTMLElement);
+    } catch (err) {
+      console.error('[Alpine] Mount error:', err);
+      (container as HTMLElement).innerHTML = '<div style="padding:2rem;font-family:system-ui;color:#c00;">Failed to load Alpine ERP. Check console.</div>';
+    }
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', main);
+} else {
+  main();
+}

@@ -1,0 +1,13 @@
+import { api } from './api.ui';
+
+export const PosService = {
+  getCurrentSession: (registerId: string) => api.get(`/pos/sessions/current/${registerId}`),
+  openSession: (registerId: string, openingFloat: number) => 
+    api.post('/pos/sessions/open', { register_id: registerId, opening_float: openingFloat }),
+  closeSession: (sessionId: string, closingAmount: number) => 
+    api.post(`/pos/sessions/close/${sessionId}`, { closing_amount: closingAmount }),
+  createSale: (saleData: any) => api.post('/pos/sales', saleData),
+  getSale: (saleId: string) => api.get(`/pos/sales/${saleId}`),
+  refundSale: (saleId: string) => api.post(`/pos/sales/${saleId}/refund`, {}),
+};
+

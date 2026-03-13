@@ -1,0 +1,265 @@
+import { SwissComponent } from '@swissjs/core';
+import { PosService, InventoryService } from '@alpine/core';
+
+const TAX_RATE = 0.16;
+const REGISTER_ID = 'REG-001'; // Hardcoded for now
+
+function fmt(n: number): string {
+  return `MWK ${(n || 0).toFixed(2)}`;
+}
+
+component PosTerminalPage {
+  props = {};
+
+  state { let cartItems: any[] = []; }
+  state { let products: any[] = []; }
+  state { let search: string = ''; }
+  state { let session: any = null; }
+  state { let loading: boolean = true; }
+  state { let openingFloat: number = 0; }
+  state { let processing: boolean = false; }
+
+  async mount() {
+    await this.refreshData();
+  }
+
+  async refreshData() {
+    this.loading = true;
+    try {
+      const [sess, prods] = await Promise.all([
+        PosService.getCurrentSession(REGISTER_ID),
+        InventoryService.getProducts()
+      ]);
+      this.session = sess;
+      this.products = prods;
+    } catch (err) {
+      console.error('[POS] Refresh failed:', err);
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async openSession() {
+    this.processing = true;
+    try {
+      this.session = await PosService.openSession(REGISTER_ID, this.openingFloat);
+    } catch (err) {
+      alert(`Failed to open session: ${err.message}`);
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  addToCart(product: any) {
+    if (Number(product.stock_quantity) <= 0) {
+      if (!confirm(`${product.name} is out of stock. Add anyway?`)) return;
+    }
+
+    const idx = this.cartItems.findIndex((i) => i.product.id === product.id);
+    if (idx >= 0) {
+      this.cartItems = this.cartItems.map((item, i) =>
+        i === idx
+          ? { ...item, qty: item.qty + 1, lineTotal: (item.qty + 1) * item.product.price }
+          : item
+      );
+    } else {
+      this.cartItems = [...this.cartItems, { product, qty: 1, lineTotal: product.price }];
+    }
+  }
+
+  changeQty(productId: string, delta: number) {
+    const item = this.cartItems.find((i) => i.product.id === productId);
+    if (!item) return;
+    const newQty = item.qty + delta;
+    if (newQty <= 0) {
+      this.cartItems = this.cartItems.filter((i) => i.product.id !== productId);
+    } else {
+      this.cartItems = this.cartItems.map((i) =>
+        i.product.id === productId
+          ? { ...i, qty: newQty, lineTotal: newQty * i.product.price }
+          : i
+      );
+    }
+  }
+
+  removeFromCart(productId: string) {
+    this.cartItems = this.cartItems.filter((i) => i.product.id !== productId);
+  }
+
+  async checkout() {
+    if (this.cartItems.length === 0) return;
+    this.processing = true;
+    
+    const subtotal = this.cartItems.reduce((s, i) => s + Number(i.lineTotal), 0);
+    const tax = subtotal * TAX_RATE;
+    const total = subtotal + tax;
+
+    const saleData = {
+      session_id: this.session.id,
+      subtotal,
+      tax,
+      discount: 0,
+      total,
+      lines: this.cartItems.map(i => ({
+        product_id: i.product.id,
+        quantity: i.qty,
+        unit_price: i.product.price,
+        discount: 0,
+        tax: Number(i.product.price) * TAX_RATE,
+        line_total: i.lineTotal
+      })),
+      payments: [
+        { method: 'cash', amount: total }
+      ]
+    };
+
+    try {
+      await PosService.createSale(saleData);
+      this.cartItems = [];
+      await this.refreshData(); // Refresh product stock levels
+      alert('Sale completed successfully!');
+    } catch (err) {
+      alert(`Checkout failed: ${err.message}`);
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  render() {
+    if (this.loading) {
+      return <div class="erp-loading-full">Loading POS...</div>;
+    }
+
+    if (!this.session) {
+      return (
+        <div class="pos-session-gate">
+          <div class="pos-session-card">
+            <h2>Open Cash Session</h2>
+            <p>Register: {REGISTER_ID}</p>
+            <div class="erp-form-row">
+              <label>Opening Float (MWK)</label>
+              <input 
+                type="number" 
+                value={this.openingFloat} 
+                oninput={(e: any) => this.openingFloat = Number(e.target.value)}
+              />
+            </div>
+            <button 
+              class="erp-btn erp-btn--primary" 
+              onclick={() => this.openSession()}
+              disabled={this.processing}
+            >
+              {this.processing ? 'Opening...' : 'Start Session'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const q = (this.search || '').toLowerCase();
+    const filtered = q
+      ? this.products.filter((p) => p.name.toLowerCase().includes(q) || (p.category && p.category.name.toLowerCase().includes(q)))
+      : this.products;
+
+    const subtotal = this.cartItems.reduce((s, i) => s + Number(i.lineTotal), 0);
+    const tax = subtotal * TAX_RATE;
+    const total = subtotal + tax;
+    const itemCount = this.cartItems.reduce((s, i) => s + i.qty, 0);
+
+    return (
+      <div class="pos-terminal">
+        {/* Left — product grid */}
+        <div class="pos-product-grid">
+          <input
+            type="text"
+            class="pos-search"
+            placeholder="Search products..."
+            value={this.search}
+            oninput={(e: any) => this.search = e.target.value}
+          />
+          
+          {filtered.length === 0 ? (
+            <div class="pos-no-products">No products found. Add some in Inventory.</div>
+          ) : (
+            <div class="pos-product-cards">
+              {filtered.map((product) => (
+                <button
+                  type="button"
+                  class={`pos-product-card erp-hover-lift ${Number(product.stock_quantity) <= 0 ? 'pos-product-card--out' : ''}`}
+                  onclick={() => this.addToCart(product)}
+                >
+                  <div class="pos-product-name">{product.name}</div>
+                  <div class="pos-product-category">{product.sku}</div>
+                  <div class="pos-product-price">{fmt(Number(product.price))}</div>
+                  <div class="pos-product-stock">
+                    {Number(product.stock_quantity) > 0 
+                      ? `${Number(product.stock_quantity)} in stock` 
+                      : 'Out of stock'}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right — cart */}
+        <div class="pos-cart">
+          <div class="pos-cart-header">
+            <span>Current Sale</span>
+            {itemCount > 0 ? (
+              <span class="pos-cart-badge">{itemCount}</span>
+            ) : null}
+          </div>
+
+          <div class="pos-cart-body">
+            {this.cartItems.length === 0 ? (
+              <div class="pos-cart-empty">No items — tap a product to add</div>
+            ) : (
+              this.cartItems.map((item) => (
+                <div class="pos-cart-item">
+                  <span class="pos-cart-item-name">{item.product.name}</span>
+                  <div class="pos-cart-item-qty">
+                    <button type="button" class="erp-btn-press" onclick={() => this.changeQty(item.product.id, -1)}>−</button>
+                    <span>{item.qty}</span>
+                    <button type="button" class="erp-btn-press" onclick={() => this.changeQty(item.product.id, 1)}>+</button>
+                  </div>
+                  <span class="pos-cart-item-total">{fmt(item.lineTotal)}</span>
+                  <button
+                    type="button"
+                    class="pos-cart-item-remove erp-btn-press"
+                    onclick={() => this.removeFromCart(item.product.id)}
+                    aria-label="Remove"
+                  >×</button>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div class="pos-cart-total">
+            <div class="pos-cart-total-row">
+              <span>Subtotal</span>
+              <span>{fmt(subtotal)}</span>
+            </div>
+            <div class="pos-cart-total-row">
+              <span>Tax (16%)</span>
+              <span>{fmt(tax)}</span>
+            </div>
+            <div class="pos-cart-total-row pos-cart-total-row--bold">
+              <span>Total</span>
+              <span>{fmt(total)}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="pos-pay-btn erp-btn-press"
+            disabled={this.cartItems.length === 0 || this.processing}
+            onclick={() => this.checkout()}
+          >
+            {this.processing ? 'Processing...' : `Pay ${total > 0 ? fmt(total) : ''}`}
+          </button>
+        </div>
+      </div>
+    );
+  }
+}

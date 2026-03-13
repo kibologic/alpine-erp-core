@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.turbo/
+*.env
+*.env.local
+__pycache__/
+*.pyc
+.venv/
+services/core/keys/dev_private.pem
+
+# Explicit exclusion — Windows NTFS junction, not a real git path
+apps/server/app/node_modules

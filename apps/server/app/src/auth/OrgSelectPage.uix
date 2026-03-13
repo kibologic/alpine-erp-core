@@ -1,0 +1,67 @@
+import { SwissComponent } from '@swissjs/core';
+
+const MOCK_ORGS = [
+  { name: 'Alpine Corp', initial: 'A', role: 'Admin' },
+  { name: 'Kibologic', initial: 'K', role: 'Owner' },
+];
+
+component OrgSelectPage {
+  props = {
+    onNavigate: Function,
+  };
+
+  selectOrg(orgName: string) {
+    localStorage.setItem('alpine-active-org', orgName);
+    this.props.onNavigate('app');
+  }
+
+  signOut() {
+    localStorage.removeItem('alpine-auth-token');
+    localStorage.removeItem('alpine-active-org');
+    this.props.onNavigate('login');
+  }
+
+  render() {
+    return (
+      <div class="auth-page">
+        <div class="auth-card auth-card--wide">
+          <div class="auth-logo">
+            <span class="auth-logo-icon">⛰</span>
+            <span class="auth-logo-text">Alpine ERP</span>
+          </div>
+          <h1 class="auth-title">Select organisation</h1>
+          <p class="auth-subtitle">Choose which org to open</p>
+
+          <div class="org-list">
+            {MOCK_ORGS.map((org) => (
+              <button class="org-item" type="button" onClick={() => this.selectOrg(org.name)}>
+                <div class="org-item-avatar">{org.initial}</div>
+                <div class="org-item-info">
+                  <div class="org-item-name">{org.name}</div>
+                  <div class="org-item-role">{org.role}</div>
+                </div>
+                <span class="org-item-arrow">→</span>
+              </button>
+            ))}
+          </div>
+
+          <div class="org-create">
+            <button
+              type="button"
+              class="auth-btn auth-btn--secondary"
+              onClick={() => this.props.onNavigate('create-org')}
+            >
+              + Create new organisation
+            </button>
+          </div>
+
+          <p class="auth-switch">
+            <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.signOut(); }}>
+              Sign out
+            </a>
+          </p>
+        </div>
+      </div>
+    );
+  }
+}

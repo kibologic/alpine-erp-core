@@ -1,0 +1,120 @@
+import { SwissComponent } from '@swissjs/core';
+
+const SIDEBAR_MODULES = [
+  { id: 'dashboard',   label: 'Dashboard',   icon: '📊' },
+  { id: 'pos',         label: 'POS',          icon: '🛒' },
+  { id: 'inventory',   label: 'Inventory',    icon: '📦' },
+  { id: 'finance',     label: 'Finance',      icon: '💰' },
+  { id: 'hr',          label: 'HR',           icon: '👥' },
+  { id: 'payroll',     label: 'Payroll',      icon: '💸' },
+  { id: 'sales',       label: 'Sales',        icon: '📈' },
+  { id: 'procurement', label: 'Procurement',  icon: '🤝' },
+  { id: 'settings',    label: 'Settings',     icon: '⚙️' },
+];
+
+component PageShell {
+  props = {
+    module: String,
+    pageTitle: String,
+    breadcrumbs: Array as () => Array<{ label: string; href?: string }>,
+    renderContent: Function as () => any,
+  };
+
+  state { let sidebarCollapsed: boolean = false; }
+  state { let activeModule: string = ''; }
+
+  mount {
+    this.activeModule = this.props.module || 'dashboard';
+  }
+
+  toggleSidebar() {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+    this.scheduleUpdate?.();
+  }
+
+  renderBreadcrumbs() {
+    const crumbs = Array.isArray(this.props.breadcrumbs) ? this.props.breadcrumbs : [];
+    if (crumbs.length === 0) return null;
+
+    return (
+      <nav class="alp-shell-breadcrumbs" aria-label="Breadcrumb">
+        {crumbs.map((crumb, i) => (
+          <span class="alp-breadcrumb-item">
+            {crumb.href && i < crumbs.length - 1 ? (
+              <a class="alp-breadcrumb-link" href={crumb.href}>{crumb.label}</a>
+            ) : (
+              <span class={`alp-breadcrumb-segment${i === crumbs.length - 1 ? ' alp-breadcrumb-current' : ''}`}>
+                {crumb.label}
+              </span>
+            )}
+            {i < crumbs.length - 1 ? (
+              <span class="alp-breadcrumb-sep" aria-hidden="true">/</span>
+            ) : null}
+          </span>
+        ))}
+      </nav>
+    );
+  }
+
+  render() {
+    const activeModule = this.activeModule || this.props.module || 'dashboard';
+    const collapsed = this.sidebarCollapsed;
+
+    return (
+      <div class={`alp-shell${collapsed ? ' alp-shell--collapsed' : ''}`}>
+
+        {/* Topbar */}
+        <header class="alp-topbar">
+          <div class="alp-topbar-left">
+            <button
+              type="button"
+              class="alp-topbar-toggle"
+              onclick={() => this.toggleSidebar()}
+              aria-label="Toggle sidebar"
+            >☰</button>
+            <span class="alp-topbar-logo">Alpine ERP</span>
+          </div>
+          <div class="alp-topbar-center">
+            <div class="alp-topbar-search">
+              <input type="search" class="alp-topbar-search-input" placeholder="Search…" />
+            </div>
+          </div>
+          <div class="alp-topbar-right">
+            <button type="button" class="alp-topbar-icon-btn" aria-label="Notifications">🔔</button>
+            <button type="button" class="alp-topbar-icon-btn alp-topbar-user" aria-label="User menu">👤</button>
+          </div>
+        </header>
+
+        <div class="alp-shell-body">
+          {/* Sidebar */}
+          <nav class="alp-sidebar" aria-label="Module navigation">
+            {SIDEBAR_MODULES.map((mod) => (
+              <a
+                href={`#/${mod.id}`}
+                class={`alp-sidebar-item${activeModule === mod.id ? ' alp-sidebar-item--active' : ''}`}
+                aria-current={activeModule === mod.id ? 'page' : undefined}
+              >
+                <span class="alp-sidebar-icon" aria-hidden="true">{mod.icon}</span>
+                {!collapsed ? (
+                  <span class="alp-sidebar-label">{mod.label}</span>
+                ) : null}
+              </a>
+            ))}
+          </nav>
+
+          {/* Main content */}
+          <main class="alp-main">
+            <div class="alp-content-header">
+              <h1 class="alp-page-title">{this.props.pageTitle || ''}</h1>
+              {this.renderBreadcrumbs()}
+            </div>
+            <div class="alp-content">
+              {this.props.renderContent ? this.props.renderContent() : null}
+            </div>
+          </main>
+        </div>
+
+      </div>
+    );
+  }
+}

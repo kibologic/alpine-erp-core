@@ -1,0 +1,38 @@
+import { SwissComponent } from '@swissjs/core';
+
+component SettingsBillingPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="erp-global-settings">
+        <div class="erp-global-settings-header">
+          <h2 class="erp-global-settings-title">Billing</h2>
+        </div>
+        <div class="erp-global-settings-body">
+          <section class="erp-global-settings-section">
+            <h3>Plan & billing</h3>
+            <div class="erp-billing-card">
+              <div class="erp-billing-card-row">
+                <span class="erp-billing-label">Current plan</span>
+                <span class="erp-billing-value">Free</span>
+              </div>
+              <p class="erp-global-settings-muted">5 users • 3 modules • Community support. Upgrade anytime for more users, modules, and enterprise features.</p>
+              <button type="button" class="erp-global-settings-toggle" disabled>Upgrade to Enterprise (coming soon)</button>
+            </div>
+          </section>
+          <section class="erp-global-settings-section">
+            <h3>Usage & quotas</h3>
+            <p class="erp-global-settings-muted">View usage and quota meters for your plan. Resets monthly.</p>
+            <button type="button" class="erp-global-settings-toggle" disabled>Usage dashboard (coming soon)</button>
+          </section>
+          <section class="erp-global-settings-section">
+            <h3>Invoices</h3>
+            <p class="erp-global-settings-muted">Download past invoices and see payment history.</p>
+            <button type="button" class="erp-global-settings-toggle" disabled>View invoices (coming soon)</button>
+          </section>
+        </div>
+      </div>
+    );
+  }
+}

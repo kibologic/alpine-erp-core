@@ -1,0 +1,79 @@
+import { SwissComponent } from '@swissjs/core';
+import { Spinner } from '../components/Spinner.uix';
+
+component LoginPage {
+  props = {
+    onNavigate: Function,
+  };
+
+  state { let loading: boolean = false; }
+  state { let error: string = ''; }
+
+  handleSignIn(e: Event) {
+    const form = (e.currentTarget as HTMLElement).closest('form');
+    const email = (form?.querySelector('input[type="email"]') as HTMLInputElement)?.value || '';
+    const password = (form?.querySelector('input[type="password"]') as HTMLInputElement)?.value || '';
+
+    this.loading = true;
+    this.error = '';
+    this.scheduleUpdate?.();
+
+    setTimeout(() => {
+      if (email && password) {
+        localStorage.setItem('alpine-auth-token', 'mock-token');
+        this.loading = false;
+        this.scheduleUpdate?.();
+        this.props.onNavigate('org-select');
+      } else {
+        this.loading = false;
+        this.error = 'Please enter your email and password';
+        this.scheduleUpdate?.();
+      }
+    }, 800);
+  }
+
+  render() {
+    return (
+      <div class="auth-page">
+        <div class="auth-card">
+          <div class="auth-logo">
+            <span class="auth-logo-icon">⛰</span>
+            <span class="auth-logo-text">Alpine ERP</span>
+          </div>
+          <h1 class="auth-title">Welcome back</h1>
+          <p class="auth-subtitle">Sign in to your account</p>
+
+          <form class="auth-form">
+            <div class="auth-field">
+              <label>Email</label>
+              <input type="email" placeholder="you@company.com" />
+            </div>
+            <div class="auth-field">
+              <label>Password</label>
+              <input type="password" placeholder="••••••••" />
+            </div>
+            <div class="auth-form-footer">
+              <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('forgot-password'); }}>Forgot password?</a>
+            </div>
+            <button
+              type="button"
+              class="auth-btn auth-btn--primary"
+              onClick={(e) => this.handleSignIn(e)}
+            >
+              {this.loading ? <Spinner /> : 'Sign in'}
+            </button>
+          </form>
+
+          {this.error && <p class="auth-error">{this.error}</p>}
+
+          <p class="auth-switch">
+            No account?{' '}
+            <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('signup'); }}>
+              Create one
+            </a>
+          </p>
+        </div>
+      </div>
+    );
+  }
+}

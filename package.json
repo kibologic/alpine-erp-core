@@ -1,0 +1,44 @@
+{
+  "name": "alpine-erp-core",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "tsx": "^4.21.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@swissjs/core": "link:../swiss-lib/packages/core",
+      "@swissjs/compiler": "link:../swiss-lib/packages/compiler",
+      "@swissjs/plugin-file-router": "link:../swiss-lib/packages/plugins/file-router",
+      "@swissjs/swite": "link:../swite",
+      "@swissjs/components": "link:../swiss-lib/packages/components",
+      "@swissjs/plugin-web-storage": "link:../swiss-lib/packages/plugins/web-storage",
+      "@swissjs/security": "link:../swiss-lib/packages/security",
+      "@swissjs/router": "link:../swiss-lib/packages/router",
+      "@swissjs/utils": "link:../swiss-lib/packages/utils",
+      "@sws/identity": "link:../sws-infra/packages/identity",
+      "@sws/web-storage": "link:../sws-infra/packages/web-storage",
+      "@sws/shared-types": "link:../sws-infra/lib/ts/shared-types",
+      "@sws/shared-utils": "link:../sws-infra/lib/ts/shared-utils",
+      "@swiss-package/theme": "link:../swiss-packages/lib/swiss/theme",
+      "@swiss-package/identity": "link:../swiss-packages/lib/swiss/identity",
+      "@swiss-package/event-bus": "link:../swiss-packages/lib/swiss/event-bus",
+      "@swiss-package/contracts": "link:../swiss-packages/lib/swiss/contracts",
+      "@swiss-package/connectivity": "link:../swiss-packages/lib/swiss/connectivity",
+      "@swiss-package/payments": "link:../swiss-packages/lib/swiss/payments",
+      "@swiss-package/telemetry": "link:../swiss-packages/lib/swiss/telemetry",
+      "@swiss-package/i18n": "link:../swiss-packages/lib/swiss/i18n",
+      "@swiss-package/security": "link:../swiss-packages/lib/ts/security",
+      "@swiss-package/action-catalog": "link:../swiss-packages/lib/swiss/action-catalog",
+      "@swiss-package/ai-agents": "link:../swiss-packages/lib/swiss/ai-agents",
+      "@swiss-package/ai-orchestrator": "link:../swiss-packages/lib/swiss/ai-orchestrator"
+    }
+  }
+}

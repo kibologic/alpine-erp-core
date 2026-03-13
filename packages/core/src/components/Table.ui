@@ -1,0 +1,166 @@
+import { SwissComponent } from '@swissjs/core';
+
+component Table {
+  props = {
+    columns: Array as () => Array<{ key: string; label: string; sortable?: boolean; width?: string; align?: string }>,
+    rows: Array as () => Array<Record<string, any>>,
+    loading: Boolean,
+    empty: String,
+    selectable: Boolean,
+    selected: Array as () => string[],
+    rowKey: String,
+    onSort: Function as (key: string, direction: string) => void,
+    onSelect: Function as (selected: string[]) => void,
+    onRowClick: Function as (row: Record<string, any>) => void,
+  };
+
+  state { let sortKey: string = ''; }
+  state { let sortDir: string = 'asc'; }
+
+  handleSort(key: string) {
+    if (this.sortKey === key) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortKey = key;
+      this.sortDir = 'asc';
+    }
+    this.scheduleUpdate?.();
+    if (this.props.onSort) this.props.onSort(this.sortKey, this.sortDir);
+  }
+
+  handleSelectAll(checked: boolean) {
+    if (!this.props.onSelect) return;
+    const rowKey = this.props.rowKey || 'id';
+    const rows = Array.isArray(this.props.rows) ? this.props.rows : [];
+    if (checked) {
+      this.props.onSelect(rows.map((r) => String(r[rowKey])));
+    } else {
+      this.props.onSelect([]);
+    }
+  }
+
+  handleSelectRow(key: string, checked: boolean) {
+    if (!this.props.onSelect) return;
+    const selected = Array.isArray(this.props.selected) ? this.props.selected : [];
+    if (checked) {
+      this.props.onSelect([...selected, key]);
+    } else {
+      this.props.onSelect(selected.filter((k) => k !== key));
+    }
+  }
+
+  render() {
+    const columns = Array.isArray(this.props.columns) ? this.props.columns : [];
+    const rows = Array.isArray(this.props.rows) ? this.props.rows : [];
+    const selectable = !!this.props.selectable;
+    const selected = Array.isArray(this.props.selected) ? this.props.selected : [];
+    const rowKey = this.props.rowKey || 'id';
+    const isLoading = !!this.props.loading;
+    const isEmpty = !isLoading && rows.length === 0;
+    const hasData = !isLoading && rows.length > 0;
+    const emptyMessage = this.props.empty || 'No results found';
+    const colSpan = selectable ? columns.length + 1 : columns.length;
+    const allSelected = rows.length > 0 && rows.every((r) => selected.includes(String(r[rowKey])));
+
+    return (
+      <div class="alp-table-wrap">
+        <table class="alp-table">
+          <thead class="alp-table-head">
+            <tr>
+              {selectable ? (
+                <th class="alp-table-th alp-table-th--check">
+                  <input
+                    type="checkbox"
+                    class="alp-checkbox"
+                    checked={allSelected}
+                    onchange={(e: Event) => this.handleSelectAll((e.target as HTMLInputElement).checked)}
+                  />
+                </th>
+              ) : null}
+              {columns.map((col) => (
+                <th
+                  class={`alp-table-th${col.align === 'right' ? ' alp-table-th--right' : ''}${col.align === 'center' ? ' alp-table-th--center' : ''}${col.sortable ? ' alp-table-th--sortable' : ''}`}
+                  style={col.width ? `width: ${col.width}` : ''}
+                  onclick={() => col.sortable && this.handleSort(col.key)}
+                >
+                  {col.label}
+                  {col.sortable ? (
+                    <span class={`alp-sort-icon${this.sortKey === col.key ? ` alp-sort-icon--${this.sortDir}` : ''}`} aria-hidden="true">
+                      {this.sortKey === col.key ? (this.sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕'}
+                    </span>
+                  ) : null}
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          {isLoading ? (
+            <tbody>
+              {[0, 1, 2, 3, 4].map((_i) => (
+                <tr class="alp-table-row alp-table-row--skeleton">
+                  {selectable ? (
+                    <td class="alp-table-td alp-table-td--check">
+                      <span class="alp-skeleton alp-skeleton--sm"></span>
+                    </td>
+                  ) : null}
+                  {columns.map((_col) => (
+                    <td class="alp-table-td">
+                      <span class="alp-skeleton"></span>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          ) : null}
+
+          {isEmpty ? (
+            <tbody>
+              <tr>
+                <td class="alp-table-td alp-table-empty" colspan={colSpan}>
+                  <div class="alp-empty-state">
+                    <span class="alp-empty-icon" aria-hidden="true">📋</span>
+                    <span>{emptyMessage}</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          ) : null}
+
+          {hasData ? (
+            <tbody>
+              {rows.map((row) => {
+                const key = String(row[rowKey]);
+                const isSelected = selected.includes(key);
+                return (
+                  <tr
+                    class={`alp-table-row${isSelected ? ' alp-table-row--selected' : ''}${this.props.onRowClick ? ' alp-table-row--clickable' : ''}`}
+                    onclick={() => this.props.onRowClick && this.props.onRowClick(row)}
+                  >
+                    {selectable ? (
+                      <td class="alp-table-td alp-table-td--check" onclick={(e: Event) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          class="alp-checkbox"
+                          checked={isSelected}
+                          onchange={(e: Event) => this.handleSelectRow(key, (e.target as HTMLInputElement).checked)}
+                        />
+                      </td>
+                    ) : null}
+                    {columns.map((col) => (
+                      <td
+                        class={`alp-table-td${col.align === 'right' ? ' alp-table-td--right' : ''}${col.align === 'center' ? ' alp-table-td--center' : ''}`}
+                      >
+                        {row[col.key] !== undefined && row[col.key] !== null ? String(row[col.key]) : '—'}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          ) : null}
+
+        </table>
+      </div>
+    );
+  }
+}

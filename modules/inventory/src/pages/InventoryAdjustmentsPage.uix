@@ -1,0 +1,52 @@
+import { SwissComponent } from '@swissjs/core';
+
+const ADJUSTMENTS = [
+  { id: 'ADJ-001', date: '2026-02-20', item: 'Whiteboard Marker', reason: 'Damaged',   qty: -5,  warehouse: 'Main Warehouse' },
+  { id: 'ADJ-002', date: '2026-02-18', item: 'A4 Paper (Ream)',   reason: 'Stocktake', qty: +3,  warehouse: 'Main Warehouse' },
+  { id: 'ADJ-003', date: '2026-02-15', item: 'USB-C Hub',         reason: 'Lost',      qty: -2,  warehouse: 'Blantyre Depot' },
+  { id: 'ADJ-004', date: '2026-02-10', item: 'Office Chair',      reason: 'Stocktake', qty: -1,  warehouse: 'Main Warehouse' },
+];
+
+component InventoryAdjustmentsPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="inv-page">
+        <div class="inv-page-header">
+          <h2 class="inv-page-title">Stock Adjustments</h2>
+          <button type="button" class="inv-btn inv-btn--primary">+ New Adjustment</button>
+        </div>
+
+        <div class="inv-table-wrap">
+          <table class="inv-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Item</th>
+                <th>Reason</th>
+                <th class="inv-table-center">Adjustment</th>
+                <th>Warehouse</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ADJUSTMENTS.map((a) => (
+                <tr>
+                  <td class="inv-mono">{a.id}</td>
+                  <td>{a.date}</td>
+                  <td class="inv-name">{a.item}</td>
+                  <td>{a.reason}</td>
+                  <td class={`inv-table-center inv-mono ${a.qty > 0 ? 'inv-positive' : 'inv-negative'}`}>
+                    {a.qty > 0 ? `+${a.qty}` : `${a.qty}`}
+                  </td>
+                  <td>{a.warehouse}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+}

@@ -1,0 +1,133 @@
+import { SwissComponent } from '@swissjs/core';
+
+const DEV_BYPASS_AUTH = true;
+const DEV_ENTERPRISE = true;
+import { bootstrap, getModules, setLicense, getLicense } from '@alpine/core';
+import type { AlpineModule } from '@alpine/core';
+import { Shell } from './shell/Shell.uix';
+import { LoginPage } from './auth/LoginPage.uix';
+import { SignupPage } from './auth/SignupPage.uix';
+import { OrgSelectPage } from './auth/OrgSelectPage.uix';
+import { CreateOrgPage } from './auth/CreateOrgPage.uix';
+import { ForgotPasswordPage } from './auth/ForgotPasswordPage.uix';
+import { EmailVerificationPage } from './auth/EmailVerificationPage.uix';
+
+// Import modules to trigger registration
+import '@alpine/module-dashboard';
+import '@alpine/module-users';
+import '@alpine/module-settings';
+import '@alpine/module-pos';
+import '@alpine/module-finance';
+import '@alpine/module-hr';
+import '@alpine/module-inventory';
+import '@alpine/module-sales';
+import '@alpine/module-procurement';
+
+component App {
+  props = {};
+
+  state { let view: string = 'checking'; }
+  state { let modules: AlpineModule[] = []; }
+
+  async mount() {
+    if (DEV_BYPASS_AUTH) {
+      localStorage.setItem('alpine-auth-token', 'dev-token');
+      localStorage.setItem('alpine-active-org', 'Alpine Corp');
+      await this.bootstrapApp();
+      return;
+    }
+    const token = localStorage.getItem('alpine-auth-token');
+    if (!token) {
+      this.view = 'login';
+      this.scheduleUpdate?.();
+      return;
+    }
+    const org = localStorage.getItem('alpine-active-org');
+    if (!org) {
+      this.view = 'org-select';
+      this.scheduleUpdate?.();
+      return;
+    }
+    await this.bootstrapApp();
+  }
+
+  async bootstrapApp() {
+    try {
+      if (DEV_ENTERPRISE) {
+        setLicense({ tier: 'enterprise', features: [], expiresAt: null, org: 'Alpine Corp' });
+      }
+      const lic = getLicense();
+      const licenseFeatures = lic.tier === 'enterprise'
+        ? getModules().map(m => m.id)
+        : lic.features;
+      await bootstrap(licenseFeatures);
+      this.modules = getModules();
+      this.view = 'app';
+      this.scheduleUpdate?.();
+    } catch (err) {
+      console.error('[Alpine] Bootstrap failed:', err);
+      this.view = 'login';
+      this.scheduleUpdate?.();
+    }
+  }
+
+  onNavigate(view: string) {
+    if (view === 'app') {
+      this.bootstrapApp();
+    } else {
+      this.view = view;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  render() {
+    if (this.view === 'checking') {
+      return (
+        <div class="alpine-loading">
+          <p>Loading Alpine ERP...</p>
+        </div>
+      );
+    }
+
+    if (this.view === 'login') {
+      return <LoginPage onNavigate={(v) => this.onNavigate(v)} />;
+    }
+
+    if (this.view === 'signup') {
+      return <SignupPage onNavigate={(v) => this.onNavigate(v)} />;
+    }
+
+    if (this.view === 'org-select') {
+      return <OrgSelectPage onNavigate={(v) => this.onNavigate(v)} />;
+    }
+
+    if (this.view === 'create-org') {
+      return <CreateOrgPage onNavigate={(v) => this.onNavigate(v)} />;
+    }
+
+    if (this.view === 'forgot-password') {
+      return <ForgotPasswordPage onNavigate={(v) => this.onNavigate(v)} />;
+    }
+
+    if (this.view === 'email-verification') {
+      return <EmailVerificationPage onNavigate={(v) => this.onNavigate(v)} />;
+    }
+
+    if (this.view === 'app') {
+      if (!this.modules || this.modules.length === 0) {
+        return (
+          <div class="alpine-loading">
+            <p>Loading modules...</p>
+          </div>
+        );
+      }
+      return <Shell modules={this.modules} />;
+    }
+
+    return (
+      <div class="alpine-loading">
+        <p>Loading Alpine ERP...</p>
+      </div>
+    );
+  }
+}

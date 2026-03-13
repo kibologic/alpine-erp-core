@@ -1,0 +1,83 @@
+import { SwissComponent } from '@swissjs/core';
+import { Spinner } from '../components/Spinner.uix';
+
+component CreateOrgPage {
+  props = {
+    onNavigate: Function,
+  };
+
+  state { let loading: boolean = false; }
+
+  handleCreate(e: Event) {
+    const form = (e.currentTarget as HTMLElement).closest('form');
+    const orgName = (form?.querySelector('input[type="text"]') as HTMLInputElement)?.value || 'My Organisation';
+
+    this.loading = true;
+    this.scheduleUpdate?.();
+
+    setTimeout(() => {
+      localStorage.setItem('alpine-active-org', orgName);
+      this.loading = false;
+      this.scheduleUpdate?.();
+      this.props.onNavigate('app');
+    }, 800);
+  }
+
+  render() {
+    return (
+      <div class="auth-page">
+        <div class="auth-card">
+          <div class="auth-logo">
+            <span class="auth-logo-icon">⛰</span>
+            <span class="auth-logo-text">Alpine ERP</span>
+          </div>
+          <h1 class="auth-title">Create organisation</h1>
+          <p class="auth-subtitle">Set up your workspace</p>
+
+          <form class="auth-form">
+            <div class="auth-field">
+              <label>Organisation name</label>
+              <input type="text" placeholder="Acme Corp" />
+            </div>
+            <div class="auth-field">
+              <label>Industry</label>
+              <select>
+                <option>Retail</option>
+                <option>Healthcare</option>
+                <option>Manufacturing</option>
+                <option>Services</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="auth-field">
+              <label>Country</label>
+              <select>
+                <option>Malawi</option>
+                <option>Zimbabwe</option>
+                <option>Kenya</option>
+                <option>South Africa</option>
+                <option>Ghana</option>
+                <option>Nigeria</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <button
+              type="button"
+              class="auth-btn auth-btn--primary"
+              onClick={(e) => this.handleCreate(e)}
+            >
+              {this.loading ? <Spinner /> : 'Create organisation'}
+            </button>
+            <button
+              type="button"
+              class="auth-btn auth-btn--ghost"
+              onClick={() => this.props.onNavigate('org-select')}
+            >
+              Back
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+}

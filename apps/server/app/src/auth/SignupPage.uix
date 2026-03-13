@@ -1,0 +1,85 @@
+import { SwissComponent } from '@swissjs/core';
+import { Spinner } from '../components/Spinner.uix';
+
+component SignupPage {
+  props = {
+    onNavigate: Function,
+  };
+
+  state { let loading: boolean = false; }
+  state { let error: string = ''; }
+
+  handleCreate(e: Event) {
+    const form = (e.currentTarget as HTMLElement).closest('form');
+    const inputs = form?.querySelectorAll('input[type="password"]') as NodeListOf<HTMLInputElement>;
+    const password = inputs?.[0]?.value || '';
+    const confirm = inputs?.[1]?.value || '';
+
+    if (password !== confirm) {
+      this.error = 'Passwords do not match';
+      this.scheduleUpdate?.();
+      return;
+    }
+
+    this.loading = true;
+    this.error = '';
+    this.scheduleUpdate?.();
+
+    setTimeout(() => {
+      localStorage.setItem('alpine-auth-token', 'mock-token');
+      this.loading = false;
+      this.scheduleUpdate?.();
+      this.props.onNavigate('email-verification');
+    }, 800);
+  }
+
+  render() {
+    return (
+      <div class="auth-page">
+        <div class="auth-card">
+          <div class="auth-logo">
+            <span class="auth-logo-icon">⛰</span>
+            <span class="auth-logo-text">Alpine ERP</span>
+          </div>
+          <h1 class="auth-title">Create your account</h1>
+          <p class="auth-subtitle">Get started with Alpine ERP</p>
+
+          <form class="auth-form">
+            <div class="auth-field">
+              <label>Full name</label>
+              <input type="text" placeholder="Themba Mzumara" />
+            </div>
+            <div class="auth-field">
+              <label>Work email</label>
+              <input type="email" placeholder="you@company.com" />
+            </div>
+            <div class="auth-field">
+              <label>Password</label>
+              <input type="password" placeholder="Min. 8 characters" />
+            </div>
+            <div class="auth-field">
+              <label>Confirm password</label>
+              <input type="password" placeholder="••••••••" />
+            </div>
+            <button
+              type="button"
+              class="auth-btn auth-btn--primary"
+              onClick={(e) => this.handleCreate(e)}
+            >
+              {this.loading ? <Spinner /> : 'Create account'}
+            </button>
+          </form>
+
+          {this.error && <p class="auth-error">{this.error}</p>}
+
+          <p class="auth-switch">
+            Already have an account?{' '}
+            <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('login'); }}>
+              Sign in
+            </a>
+          </p>
+        </div>
+      </div>
+    );
+  }
+}

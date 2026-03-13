@@ -1,0 +1,29 @@
+{
+  "name": "@alpine/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx dev.mjs",
+    "build": "echo 'Build not implemented'",
+    "start": "tsx dev.mjs"
+  },
+  "dependencies": {
+    "@alpine/core": "workspace:*",
+    "@alpine/module-dashboard": "workspace:*",
+    "@alpine/module-users": "workspace:*",
+    "@alpine/module-settings": "workspace:*",
+    "@alpine/module-pos": "workspace:*",
+    "@alpine/module-finance": "workspace:*",
+    "@alpine/module-hr": "workspace:*",
+    "@alpine/module-inventory": "workspace:*",
+    "@alpine/module-sales": "workspace:*",
+    "@alpine/module-procurement": "workspace:*",
+    "@swissjs/core": "*",
+    "@swissjs/swite": "*",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

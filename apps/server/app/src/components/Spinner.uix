@@ -1,0 +1,13 @@
+import { SwissComponent } from '@swissjs/core';
+
+component Spinner {
+  props = {};
+
+  render() {
+    return (
+      <div class="erp-spinner erp-spinner--inline erp-spinner--sm" aria-label="Loading...">
+        <div class="erp-spinner-ring"></div>
+      </div>
+    );
+  }
+}

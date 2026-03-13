@@ -1,0 +1,185 @@
+import { SwissComponent } from '@swissjs/core';
+
+function timeAgo(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diff = Math.floor((now - then) / 1000);
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
+function severityIcon(severity: string): string {
+  if (severity === 'error') return '✕';
+  if (severity === 'critical') return '🚨';
+  if (severity === 'warning') return '⚠';
+  return 'ℹ';
+}
+
+component NotificationPanel {
+  props = {
+    open: Boolean,
+    onClose: Function as () => void,
+    notifications: Array as () => Array<{
+      id: string;
+      title: string;
+      body: string;
+      severity: string;
+      source: string;
+      channel: string;
+      read: boolean;
+      occurred_at: string;
+      action?: { label: string; href: string };
+    }>,
+    onMarkAllRead: Function as () => void,
+    onDismiss: Function as (id: string) => void,
+  };
+
+  state { let filterSeverity: string = ''; }
+  state { let filterSource: string = ''; }
+  state { let filterChannel: string = ''; }
+
+  setFilterSeverity(val: string) {
+    this.filterSeverity = val;
+    this.scheduleUpdate?.();
+  }
+
+  setFilterChannel(val: string) {
+    this.filterChannel = val;
+    this.scheduleUpdate?.();
+  }
+
+  handleMarkAllRead() {
+    if (this.props.onMarkAllRead) this.props.onMarkAllRead();
+  }
+
+  handleDismiss(id: string) {
+    if (this.props.onDismiss) this.props.onDismiss(id);
+  }
+
+  render() {
+    const notifications = Array.isArray(this.props.notifications) ? this.props.notifications : [];
+    const unreadCount = notifications.filter((n) => !n.read).length;
+
+    const filtered = notifications.filter((n) => {
+      if (this.filterSeverity && n.severity !== this.filterSeverity) return false;
+      if (this.filterChannel && n.channel !== this.filterChannel) return false;
+      return true;
+    });
+
+    return (
+      <div class={`alp-notif-overlay${this.props.open ? ' alp-notif-overlay--open' : ''}`}>
+        <div
+          class="alp-notif-backdrop"
+          onclick={() => this.props.onClose && this.props.onClose()}
+          aria-hidden="true"
+        ></div>
+        <aside class={`alp-notif-panel${this.props.open ? ' alp-notif-panel--open' : ''}`} aria-label="Notifications">
+          <div class="alp-notif-header">
+            <div class="alp-notif-header-left">
+              <span class="alp-notif-title">Notifications</span>
+              {unreadCount > 0 ? (
+                <span class="alp-notif-badge">{unreadCount}</span>
+              ) : null}
+            </div>
+            <div class="alp-notif-header-right">
+              {unreadCount > 0 ? (
+                <button
+                  type="button"
+                  class="alp-notif-mark-read"
+                  onclick={() => this.handleMarkAllRead()}
+                >Mark all read</button>
+              ) : null}
+              <button
+                type="button"
+                class="alp-notif-close"
+                onclick={() => this.props.onClose && this.props.onClose()}
+                aria-label="Close notifications"
+              >✕</button>
+            </div>
+          </div>
+
+          <div class="alp-notif-filters">
+            <button
+              type="button"
+              class={`alp-notif-filter${this.filterSeverity === '' ? ' alp-notif-filter--active' : ''}`}
+              onclick={() => this.setFilterSeverity('')}
+            >All</button>
+            <button
+              type="button"
+              class={`alp-notif-filter${this.filterSeverity === 'info' ? ' alp-notif-filter--active' : ''}`}
+              onclick={() => this.setFilterSeverity('info')}
+            >Info</button>
+            <button
+              type="button"
+              class={`alp-notif-filter${this.filterSeverity === 'warning' ? ' alp-notif-filter--active' : ''}`}
+              onclick={() => this.setFilterSeverity('warning')}
+            >Warning</button>
+            <button
+              type="button"
+              class={`alp-notif-filter${this.filterSeverity === 'error' || this.filterSeverity === 'critical' ? ' alp-notif-filter--active' : ''}`}
+              onclick={() => this.setFilterSeverity('error')}
+            >Critical</button>
+            <span class="alp-notif-filter-sep" aria-hidden="true">|</span>
+            <button
+              type="button"
+              class={`alp-notif-filter${this.filterChannel === '' ? ' alp-notif-filter--active' : ''}`}
+              onclick={() => this.setFilterChannel('')}
+            >All channels</button>
+            <button
+              type="button"
+              class={`alp-notif-filter${this.filterChannel === 'operational' ? ' alp-notif-filter--active' : ''}`}
+              onclick={() => this.setFilterChannel('operational')}
+            >Operational</button>
+            <button
+              type="button"
+              class={`alp-notif-filter${this.filterChannel === 'admin' ? ' alp-notif-filter--active' : ''}`}
+              onclick={() => this.setFilterChannel('admin')}
+            >Admin</button>
+          </div>
+
+          <div class="alp-notif-list">
+            {filtered.length === 0 ? (
+              <div class="alp-notif-empty">
+                <span class="alp-notif-empty-icon" aria-hidden="true">🔔</span>
+                <span class="alp-notif-empty-text">No notifications</span>
+              </div>
+            ) : (
+              filtered.map((n) => (
+                <div
+                  class={`alp-notif-item alp-notif-item--${n.severity}${n.read ? ' alp-notif-item--read' : ''}`}
+                  key={n.id}
+                >
+                  <span class="alp-notif-item-icon" aria-hidden="true">{severityIcon(n.severity)}</span>
+                  <div class="alp-notif-item-body">
+                    <div class="alp-notif-item-header">
+                      <span class="alp-notif-item-title">{n.title}</span>
+                      <span class="alp-notif-item-time">{timeAgo(n.occurred_at)}</span>
+                    </div>
+                    <p class="alp-notif-item-text">{n.body}</p>
+                    <div class="alp-notif-item-meta">
+                      <span class="alp-notif-item-source">{n.source}</span>
+                    </div>
+                    {n.action ? (
+                      <a
+                        href={n.action.href}
+                        class="alp-notif-item-action"
+                      >{n.action.label}</a>
+                    ) : null}
+                  </div>
+                  <button
+                    type="button"
+                    class="alp-notif-item-dismiss"
+                    onclick={() => this.handleDismiss(n.id)}
+                    aria-label="Dismiss notification"
+                  >✕</button>
+                </div>
+              ))
+            )}
+          </div>
+        </aside>
+      </div>
+    );
+  }
+}

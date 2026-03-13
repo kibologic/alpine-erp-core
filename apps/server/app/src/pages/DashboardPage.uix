@@ -1,0 +1,28 @@
+import { SwissComponent } from '@swissjs/core';
+
+component DashboardPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="erp-module-page">
+        <h2>Dashboard</h2>
+        <p>Welcome to Alpine ERP — your free, open-core ERP system.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg);">
+          <div class="erp-billing-card">
+            <div class="erp-billing-card-row">
+              <span class="erp-billing-label">📊 Quick Stats</span>
+            </div>
+            <p class="erp-global-settings-muted">5 users • 3 modules active</p>
+          </div>
+          <div class="erp-billing-card">
+            <div class="erp-billing-card-row">
+              <span class="erp-billing-label">🎯 Getting Started</span>
+            </div>
+            <p class="erp-global-settings-muted">Configure your organization in Settings.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}

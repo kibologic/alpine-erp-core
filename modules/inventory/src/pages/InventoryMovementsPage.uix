@@ -1,0 +1,61 @@
+import { SwissComponent } from '@swissjs/core';
+
+const MOVEMENTS = [
+  { id: 'MV-001', date: '2026-02-28', item: 'A4 Paper (Ream)',   type: 'IN',       qty: 100, warehouse: 'Main Warehouse',  ref: 'PO-0042' },
+  { id: 'MV-002', date: '2026-02-27', item: 'Office Chair',      type: 'OUT',      qty: 4,   warehouse: 'Main Warehouse',  ref: 'SO-0108' },
+  { id: 'MV-003', date: '2026-02-26', item: 'USB-C Hub',         type: 'IN',       qty: 10,  warehouse: 'Blantyre Depot',  ref: 'PO-0041' },
+  { id: 'MV-004', date: '2026-02-25', item: 'Printer Ink Black', type: 'OUT',      qty: 3,   warehouse: 'Main Warehouse',  ref: 'SO-0107' },
+  { id: 'MV-005', date: '2026-02-24', item: 'Laptop Stand',      type: 'TRANSFER', qty: 5,   warehouse: 'Mzuzu Transit Hub',ref: 'TR-0012' },
+];
+
+component InventoryMovementsPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="inv-page">
+        <div class="inv-page-header">
+          <h2 class="inv-page-title">Stock Movements</h2>
+          <button type="button" class="inv-btn inv-btn--primary">+ Record Movement</button>
+        </div>
+
+        <div class="inv-table-wrap">
+          <table class="inv-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Item</th>
+                <th>Type</th>
+                <th class="inv-table-center">Qty</th>
+                <th>Warehouse</th>
+                <th>Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MOVEMENTS.map((m) => (
+                <tr>
+                  <td class="inv-mono">{m.id}</td>
+                  <td>{m.date}</td>
+                  <td class="inv-name">{m.item}</td>
+                  <td>
+                    <span class={`inv-badge ${
+                      m.type === 'IN' ? 'inv-badge--ok' :
+                      m.type === 'OUT' ? 'inv-badge--low' :
+                      'inv-badge--transfer'
+                    }`}>
+                      {m.type}
+                    </span>
+                  </td>
+                  <td class="inv-table-center inv-mono">{m.qty}</td>
+                  <td>{m.warehouse}</td>
+                  <td class="inv-mono">{m.ref}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+}

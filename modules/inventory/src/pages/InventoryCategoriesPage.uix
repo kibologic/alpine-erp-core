@@ -1,0 +1,39 @@
+import { SwissComponent } from '@swissjs/core';
+
+const CATEGORIES = [
+  { name: 'Furniture',   itemCount: 2, totalValue: 888000 },
+  { name: 'Stationery',  itemCount: 3, totalValue: 446500 },
+  { name: 'Electronics', itemCount: 2, totalValue: 432000 },
+  { name: 'Appliances',  itemCount: 1, totalValue: 255000 },
+];
+
+function fmt(n: number): string {
+  return `MWK ${n.toLocaleString()}`;
+}
+
+component InventoryCategoriesPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="inv-page">
+        <div class="inv-page-header">
+          <h2 class="inv-page-title">Categories</h2>
+          <button type="button" class="inv-btn inv-btn--primary">+ Add Category</button>
+        </div>
+
+        <div class="inv-category-grid">
+          {CATEGORIES.map((c) => (
+            <div class="inv-category-card">
+              <div class="inv-category-name">{c.name}</div>
+              <div class="inv-category-meta">
+                <span>{c.itemCount} items</span>
+                <span class="inv-mono">{fmt(c.totalValue)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+}

@@ -1,0 +1,212 @@
+/* Sales module styles */
+
+.sales-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 900px) {
+  .sales-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.sales-stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-md) var(--space-lg);
+}
+
+.sales-stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+}
+
+.sales-stat-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text);
+  margin-top: var(--space-xs);
+}
+
+.sales-stat-sub {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+.sales-section {
+  margin-bottom: var(--space-xl);
+}
+
+.sales-section-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-md);
+}
+
+.sales-quick-actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.sales-action-btn {
+  padding: var(--space-sm) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Tabs */
+.sales-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0;
+}
+
+.sales-tab {
+  padding: var(--space-xs) var(--space-md);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: -1px;
+}
+
+.sales-tab--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.sales-tab:hover:not(.sales-tab--active) {
+  color: var(--color-text);
+}
+
+/* Status badges */
+.sales-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--border-radius-full, 9999px);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sales-status--draft     { background: #e5e7eb; color: #374151; }
+.sales-status--confirmed { background: #dbeafe; color: #1d4ed8; }
+.sales-status--delivered { background: #d1fae5; color: #065f46; }
+.sales-status--paid      { background: #d1fae5; color: #065f46; }
+.sales-status--sent      { background: #ede9fe; color: #5b21b6; }
+.sales-status--accepted  { background: #d1fae5; color: #065f46; }
+.sales-status--cancelled { background: #fee2e2; color: #991b1b; }
+.sales-status--overdue   { background: #fee2e2; color: #991b1b; }
+.sales-status--expired   { background: #fef3c7; color: #92400e; }
+
+/* Buttons */
+.sales-btn {
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: opacity var(--transition-fast);
+  font-family: var(--font-sans);
+}
+
+.sales-btn--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.sales-btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sales-btn--ghost {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.sales-btn--ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sales-btn:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+.sales-row-action {
+  padding: 2px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-family: var(--font-sans);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Reports grid */
+.sales-reports-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.sales-report-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  background: var(--color-surface);
+  transition: border-color var(--transition-fast);
+}
+
+.sales-report-card:hover {
+  border-color: var(--color-primary);
+}
+
+.sales-report-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.sales-report-info {
+  flex: 1;
+}
+
+.sales-report-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sales-report-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}

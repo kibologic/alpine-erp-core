@@ -1,0 +1,80 @@
+import { SwissComponent } from '@swissjs/core';
+
+component Header {
+  props = {
+    sidebarOpen: Boolean,
+    onToggleSidebar: (() => {}) as () => void,
+    billingStatus: ('active' | 'trial' | 'overdue') as 'active' | 'trial' | 'overdue',
+  };
+
+  mount {
+    try {
+      const saved = localStorage.getItem('alpine-theme');
+      if (saved === 'dark' || saved === 'light') {
+        document.documentElement.setAttribute('data-theme', saved);
+        this.scheduleUpdate?.();
+      }
+    } catch (_) {}
+  }
+
+  toggleTheme() {
+    const root = document.documentElement;
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('alpine-theme', next); } catch (_) {}
+    this.scheduleUpdate?.();
+  }
+
+  state { let searchQuery: string = ''; }
+
+  render() {
+    const status = (typeof this.props.billingStatus === 'string' && ['active', 'trial', 'overdue'].includes(this.props.billingStatus))
+      ? this.props.billingStatus
+      : 'active';
+    const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+    return (
+      <header class="erp-header">
+        <div class="erp-header-left">
+          <button
+            type="button"
+            class="erp-sidebar-toggle"
+            onClick={() => { if (typeof this.props.onToggleSidebar === 'function') this.props.onToggleSidebar(); }}
+            aria-label={this.props.sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          >
+            ☰
+          </button>
+          <a href="#" class="erp-logo" onclick={(e: Event) => e.preventDefault()}>
+            <span class="erp-logo-icon">⛰</span>
+            <span>Alpine ERP</span>
+          </a>
+        </div>
+        <div class="erp-header-center">
+          <div class="erp-search-wrapper">
+            <span class="erp-search-icon" aria-hidden="true">🔍</span>
+            <input
+              type="text"
+              class="erp-search-input"
+              placeholder="Search modules, users, settings…"
+              value={this.searchQuery}
+              oninput={(e: Event) => { this.searchQuery = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+              aria-label="Search"
+            />
+          </div>
+        </div>
+        <div class="erp-header-right">
+          <span class={`erp-billing-status erp-billing-status-${status}`} title={`Billing: ${statusLabel}`}>
+            {statusLabel}
+          </span>
+          <button
+            type="button"
+            class="erp-theme-toggle"
+            onclick={() => this.toggleTheme()}
+            aria-label="Toggle theme"
+          >
+            {document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙'}
+          </button>
+        </div>
+      </header>
+    );
+  }
+}

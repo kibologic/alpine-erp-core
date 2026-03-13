@@ -1,0 +1,68 @@
+import { SwissComponent } from '@swissjs/core';
+import type { AlpineModule } from '@alpine/core';
+import { isEnterprise } from '@alpine/core';
+
+component AppStrip {
+  props = {
+    modules: Array as () => AlpineModule[],
+    currentModuleId: String,
+    onSelectModule: Function as (id: string) => void,
+    onUpgradeClick: Function as (module: AlpineModule) => void,
+  };
+
+  handleModuleClick(mod: AlpineModule) {
+    const locked = mod.tier === 'enterprise' && !isEnterprise();
+    if (locked) {
+      this.props.onUpgradeClick && this.props.onUpgradeClick(mod);
+    } else {
+      this.props.onSelectModule && this.props.onSelectModule(mod.id);
+    }
+  }
+
+  render() {
+    const modules = Array.isArray(this.props.modules) ? this.props.modules : [];
+    const main = modules.filter((m) => m.id !== 'settings');
+    const settings = modules.find((m) => m.id === 'settings');
+    const enterprise = isEnterprise();
+
+    return (
+      <aside class="erp-app-strip" aria-label="Module selector">
+        <nav class="erp-app-strip-nav">
+          {main.map((mod) => {
+            const isEnt = mod.tier === 'enterprise';
+            const locked = isEnt && !enterprise;
+            return (
+              <button
+                type="button"
+                class={`erp-app-strip-item ${this.props.currentModuleId === mod.id ? 'active' : ''} ${isEnt ? 'erp-app-strip-item--enterprise' : ''} ${locked ? 'erp-app-strip-item--locked' : ''}`}
+                onclick={() => this.handleModuleClick(mod)}
+                title={locked ? `Enterprise feature — upgrade to access ${mod.name}` : mod.name}
+                aria-label={mod.name}
+                aria-current={this.props.currentModuleId === mod.id ? 'true' : undefined}
+              >
+                <span class="erp-app-strip-icon">
+                  {(mod.icon && mod.icon.trim().startsWith('<svg'))
+                    ? <img src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(mod.icon)}`} width="20" height="20" alt={mod.name} />
+                    : (mod.icon || '📦')}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+        <div class="erp-app-strip-footer">
+          {settings ? (
+            <button
+              type="button"
+              class={`erp-app-strip-item erp-app-strip-settings ${this.props.currentModuleId === 'settings' ? 'active' : ''}`}
+              onclick={() => this.props.onSelectModule && this.props.onSelectModule('settings')}
+              title="Settings"
+              aria-label="Open settings"
+            >
+              <span class="erp-app-strip-icon">⚙️</span>
+            </button>
+          ) : null}
+        </div>
+      </aside>
+    );
+  }
+}

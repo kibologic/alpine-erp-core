@@ -1,0 +1,17 @@
+import { SwissComponent } from '@swissjs/core';
+
+component UsersListPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="erp-module-page">
+        <h2>Users</h2>
+        <p>Manage your organization users (max 5 on free tier).</p>
+        <div class="erp-billing-card" style="margin-top: var(--space-lg); text-align: center; padding: var(--space-xl);">
+          <p class="erp-global-settings-muted">No users yet. User management coming in A-06.</p>
+        </div>
+      </div>
+    );
+  }
+}

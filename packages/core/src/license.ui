@@ -1,0 +1,43 @@
+export interface LicenseState {
+  tier: 'free' | 'enterprise'
+  features: string[]
+  expiresAt: string | null
+  org: string | null
+}
+
+const STORAGE_KEY = 'alpine-license'
+
+const FREE_LICENSE: LicenseState = {
+  tier: 'free',
+  features: [],
+  expiresAt: null,
+  org: null,
+}
+
+export function getLicense(): LicenseState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return FREE_LICENSE
+    return JSON.parse(raw) as LicenseState
+  } catch {
+    return FREE_LICENSE
+  }
+}
+
+export function setLicense(state: LicenseState): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+}
+
+export function clearLicense(): void {
+  localStorage.removeItem(STORAGE_KEY)
+}
+
+export function hasFeature(feature: string): boolean {
+  const license = getLicense()
+  if (license.tier === 'enterprise') return true
+  return license.features.includes(feature)
+}
+
+export function isEnterprise(): boolean {
+  return getLicense().tier === 'enterprise'
+}

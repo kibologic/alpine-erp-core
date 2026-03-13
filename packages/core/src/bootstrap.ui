@@ -1,0 +1,11 @@
+import { bootModules } from './module-registry.ui'
+import type { AlpineApp } from './module-registry.ui'
+
+export async function bootstrap(licenseFeatures: string[] = []): Promise<AlpineApp> {
+  const app: AlpineApp = {
+    modules: new Map(),
+  }
+  await bootModules(app, licenseFeatures)
+  console.log(`[Alpine] Bootstrap complete — ${app.modules.size} modules loaded`)
+  return app
+}

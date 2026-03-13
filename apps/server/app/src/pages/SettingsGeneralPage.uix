@@ -1,0 +1,39 @@
+import { SwissComponent } from '@swissjs/core';
+
+component SettingsGeneralPage {
+  props = {};
+
+  toggleTheme() {
+    const root = document.documentElement;
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('alpine-theme', next); } catch (_) {}
+    this.scheduleUpdate?.();
+  }
+
+  render() {
+    const isDark = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark';
+    return (
+      <div class="erp-global-settings">
+        <div class="erp-global-settings-header">
+          <h2 class="erp-global-settings-title">General Settings</h2>
+        </div>
+        <div class="erp-global-settings-body">
+          <section class="erp-global-settings-section">
+            <h3>Appearance</h3>
+            <div class="erp-global-settings-row">
+              <span>Theme</span>
+              <button type="button" class="erp-global-settings-toggle" onclick={() => this.toggleTheme()} aria-label="Toggle theme">
+                {isDark ? '☀️ Light' : '🌙 Dark'}
+              </button>
+            </div>
+          </section>
+          <section class="erp-global-settings-section">
+            <h3>Organization</h3>
+            <p class="erp-global-settings-muted">Organization settings coming soon.</p>
+          </section>
+        </div>
+      </div>
+    );
+  }
+}

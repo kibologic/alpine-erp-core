@@ -1,0 +1,78 @@
+import { SwissComponent } from '@swissjs/core';
+
+component EmailVerificationPage {
+  props = {
+    onNavigate: Function,
+  };
+
+  state { let resending: boolean = false; }
+  state { let resent: boolean = false; }
+
+  handleResend() {
+    this.resending = true;
+    this.resent = false;
+    this.scheduleUpdate?.();
+
+    setTimeout(() => {
+      this.resending = false;
+      this.resent = true;
+      this.scheduleUpdate?.();
+    }, 800);
+  }
+
+  render() {
+    return (
+      <div class="auth-page">
+        <div class="auth-card">
+          <div class="auth-logo">
+            <span class="auth-logo-icon">⛰</span>
+            <span class="auth-logo-text">Alpine ERP</span>
+          </div>
+
+          <div class="auth-success">
+            <div class="auth-success-icon">✉</div>
+            <h1 class="auth-title">Verify your email</h1>
+            <p class="auth-subtitle">
+              We sent a verification link to your email address. Click the link to activate your account.
+            </p>
+          </div>
+
+          {this.resent ? (
+            <p class="auth-success-msg">Verification email resent.</p>
+          ) : null}
+
+          <div class="auth-form">
+            <button
+              type="button"
+              class="auth-btn auth-btn--secondary"
+              onClick={() => this.handleResend()}
+            >
+              {this.resending ? 'Resending...' : 'Resend verification email'}
+            </button>
+          </div>
+
+          <p class="auth-switch">
+            Wrong email?{' '}
+            <a
+              href="#"
+              class="auth-link"
+              onClick={(e) => { e.preventDefault(); this.props.onNavigate('signup'); }}
+            >
+              Sign up again
+            </a>
+          </p>
+          <p class="auth-switch">
+            Already verified?{' '}
+            <a
+              href="#"
+              class="auth-link"
+              onClick={(e) => { e.preventDefault(); this.props.onNavigate('login'); }}
+            >
+              Sign in
+            </a>
+          </p>
+        </div>
+      </div>
+    );
+  }
+}

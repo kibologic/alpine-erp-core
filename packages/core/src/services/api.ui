@@ -1,0 +1,44 @@
+const API_BASE = '/api/v1';
+const REQUEST_TIMEOUT_MS = 10_000;
+
+export async function request(url: string, options: RequestInit = {}) {
+  const tenantId = localStorage.getItem('alpine-active-org') || 'default-tenant';
+  const token = localStorage.getItem('alpine-auth-token');
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Tenant-ID': tenantId,
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
+  // Abort after REQUEST_TIMEOUT_MS to prevent indefinite hang when backend
+  // is unreachable (connection refused / no proxy). Without this, fetch()
+  // never settles, finally blocks never run, and loading states freeze.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`${API_BASE}${url}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
+      throw new Error(error.detail || response.statusText);
+    }
+
+    return response.json();
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+export const api = {
+  get: (url: string) => request(url, { method: 'GET' }),
+  post: (url: string, body: any) => request(url, { method: 'POST', body: JSON.stringify(body) }),
+  put: (url: string, body: any) => request(url, { method: 'PUT', body: JSON.stringify(body) }),
+  delete: (url: string) => request(url, { method: 'DELETE' }),
+};

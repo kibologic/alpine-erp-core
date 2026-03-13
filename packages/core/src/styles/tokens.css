@@ -1,0 +1,149 @@
+:root {
+  /* ── Base Palette ── */
+  --color-snow-50:   #FAFCFF;
+  --color-snow-100:  #F4F7FB;
+  --color-snow-200:  #E8EFF7;
+  --color-snow-300:  #D6E2EF;
+  --color-snow-400:  #B8CEDE;
+
+  --color-sky-50:    #F0F6FF;
+  --color-sky-100:   #DAEAFA;
+  --color-sky-200:   #A8CCF0;
+  --color-sky-300:   #6FAEE3;
+  --color-sky-400:   #4A90D9;
+  --color-sky-500:   #2E72C2;
+
+  --color-alpine-50:  #F2F8F4;
+  --color-alpine-100: #D6EDD9;
+  --color-alpine-200: #A3D4AA;
+  --color-alpine-300: #6AB578;
+  --color-alpine-400: #4A9E58;
+  --color-alpine-500: #2D7A3A;
+
+  --color-slate-50:  #F7F8FA;
+  --color-slate-100: #ECEEF2;
+  --color-slate-200: #D4D8E0;
+  --color-slate-500: #7A8499;
+  --color-slate-700: #3D4559;
+  --color-slate-900: #1A2035;
+
+  --color-amber-100: #FEF3DC;
+  --color-amber-400: #F0A429;
+  --color-amber-600: #C47D0E;
+
+  --color-red-100:   #FEE8E8;
+  --color-red-400:   #E05252;
+  --color-red-600:   #C03030;
+
+  /* ── Semantic Tokens ── */
+  --color-bg-page:        var(--color-snow-50);
+  --color-bg-surface:     var(--color-snow-200);
+  --color-bg-subtle:      var(--color-snow-100);
+  --color-bg-sidebar:     #EEF1F6;
+
+  --color-border:         var(--color-snow-300);
+  --color-border-strong:  var(--color-snow-400);
+  --color-border-focus:   var(--color-sky-400);
+
+  --color-text-primary:   var(--color-slate-900);
+  --color-text-body:      var(--color-slate-700);
+  --color-text-muted:     var(--color-slate-500);
+  --color-text-disabled:  var(--color-snow-400);
+  --color-text-inverse:   #FFFFFF;
+  --color-text-on-primary: #FFFFFF;
+  --color-text-on-accent:  #FFFFFF;
+
+  --color-action-primary:         var(--color-sky-500);
+  --color-action-primary-hover:   var(--color-sky-400);
+  --color-action-primary-active:  var(--color-sky-500);
+  --color-action-secondary:       var(--color-snow-200);
+  --color-action-secondary-hover: var(--color-sky-50);
+
+  --color-accent:         var(--color-alpine-500);
+  --color-accent-subtle:  var(--color-alpine-50);
+
+  --color-status-success: var(--color-alpine-400);
+  --color-status-warning: var(--color-amber-400);
+  --color-status-error:   var(--color-red-400);
+  --color-status-info:    var(--color-sky-400);
+
+  /* ── Typography ── */
+  --font-sans: 'Inter', 'system-ui', '-apple-system', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 14px;
+  --text-md:   15px;
+  --text-lg:   18px;
+  --text-xl:   22px;
+  --text-2xl:  28px;
+
+  --leading-xs:   16px;
+  --leading-sm:   20px;
+  --leading-base: 22px;
+  --leading-md:   24px;
+  --leading-lg:   28px;
+  --leading-xl:   32px;
+  --leading-2xl:  36px;
+
+  --font-normal:   400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+
+  /* ── Spacing ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Layout ── */
+  --sidebar-width:       220px;
+  --sidebar-collapsed:   56px;
+  --topbar-height:       52px;
+  --content-max-width:   1280px;
+  --page-padding-x:      var(--space-6);
+  --page-padding-y:      var(--space-5);
+
+  /* ── Border Radius ── */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-xs: 0 1px 2px rgba(26, 32, 53, 0.04);
+  --shadow-sm: 0 1px 4px rgba(26, 32, 53, 0.06), 0 1px 2px rgba(26, 32, 53, 0.04);
+  --shadow-md: 0 4px 12px rgba(26, 32, 53, 0.08), 0 2px 4px rgba(26, 32, 53, 0.04);
+  --shadow-lg: 0 8px 24px rgba(26, 32, 53, 0.10), 0 4px 8px rgba(26, 32, 53, 0.06);
+  --shadow-xl: 0 16px 48px rgba(26, 32, 53, 0.12), 0 8px 16px rgba(26, 32, 53, 0.06);
+
+  /* ── Component Sizes ── */
+  --input-height-sm:  28px;
+  --input-height-md:  34px;
+  --input-height-lg:  40px;
+
+  --btn-height-sm:    28px;
+  --btn-height-md:    34px;
+  --btn-height-lg:    40px;
+
+  --table-row-height:    40px;
+  --table-header-height: 36px;
+  --sidebar-item-height: 36px;
+
+  /* ── Motion ── */
+  --duration-fast:  100ms;
+  --duration-base:  150ms;
+  --duration-slow:  250ms;
+  --ease-default:   cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:        cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:       cubic-bezier(0, 0, 0.2, 1);
+}

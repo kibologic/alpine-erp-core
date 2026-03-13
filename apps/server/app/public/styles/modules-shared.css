@@ -1,0 +1,259 @@
+/* Shared module patterns — used across all enterprise modules */
+
+/* ============================================================
+   Page layout
+   ============================================================ */
+
+.erp-mod-page {
+  padding: var(--space-xl);
+  max-width: 1200px;
+}
+
+/* Page header — standard structure for all module pages */
+.erp-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.erp-page-header-left {
+  flex: 1;
+}
+
+.erp-page-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.erp-page-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.erp-page-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: var(--space-xs) 0 0;
+}
+
+/* ============================================================
+   Enterprise banner
+   ============================================================ */
+
+.erp-enterprise-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: var(--border-radius-lg);
+  margin-bottom: var(--space-lg);
+  font-size: var(--font-size-sm);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.erp-enterprise-banner:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .erp-enterprise-banner {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.erp-enterprise-banner-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.erp-enterprise-banner strong {
+  display: block;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.erp-enterprise-banner p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+/* ============================================================
+   Table system — standard erp-table-* classes
+   ============================================================ */
+
+.erp-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.erp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.erp-table-head {
+  background: var(--color-bg-secondary);
+}
+
+.erp-table-th {
+  padding: var(--space-sm) var(--space-md);
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.erp-table-th--right {
+  text-align: right;
+}
+
+.erp-table-th--center {
+  text-align: center;
+}
+
+.erp-table-td {
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border-light);
+  vertical-align: middle;
+}
+
+.erp-table-td--right {
+  text-align: right;
+}
+
+.erp-table-td--center {
+  text-align: center;
+}
+
+.erp-table-row:last-child .erp-table-td {
+  border-bottom: none;
+}
+
+.erp-table-row:hover {
+  background: var(--color-surface-hover, var(--color-surface));
+}
+
+/* Locked / blurred row — enterprise gating */
+.erp-table-row--locked {
+  filter: blur(3px);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Shared utilities used inside tables */
+.erp-mono {
+  font-family: var(--font-mono);
+}
+
+.erp-td-name {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* ============================================================
+   Empty state
+   ============================================================ */
+
+.erp-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) var(--space-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.erp-empty-state-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-md);
+  opacity: 0.6;
+}
+
+.erp-empty-state-title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-xs);
+}
+
+.erp-empty-state-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-lg);
+  max-width: 320px;
+}
+
+.erp-empty-state-action {
+  padding: var(--space-xs) var(--space-lg);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform 0.15s ease, box-shadow var(--transition-fast);
+}
+
+.erp-empty-state-action:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.erp-empty-state-action:active {
+  transform: scale(0.97);
+}
+
+/* ============================================================
+   Spinner
+   ============================================================ */
+
+.erp-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+}
+
+.erp-spinner--inline {
+  display: inline-flex;
+  padding: 0;
+  vertical-align: middle;
+}
+
+.erp-spinner-ring {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: erp-spin 0.7s linear infinite;
+}
+
+.erp-spinner--sm .erp-spinner-ring {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+@keyframes erp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

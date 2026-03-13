@@ -1,0 +1,11 @@
+import { api } from './api.ui';
+
+export const InventoryService = {
+  getCategories: () => api.get('/inventory/categories'),
+  getProducts: (categoryId?: string) =>
+    api.get(`/inventory/products${categoryId ? `?category_id=${categoryId}` : ''}`),
+  adjustStock: (productId: string, quantity: number, reason: string) =>
+    api.post('/inventory/adjust', { product_id: productId, quantity, reason }),
+  getValuation: () => api.get('/inventory/valuation'),
+  getCustomers: () => api.get('/inventory/customers'),
+};

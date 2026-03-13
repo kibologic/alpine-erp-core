@@ -1,0 +1,23 @@
+import { SwissComponent } from '@swissjs/core';
+
+component Spinner {
+  props = {
+    size: String,
+    color: String,
+  };
+
+  render() {
+    const size = this.props.size || 'md';
+    const color = this.props.color || 'primary';
+
+    return (
+      <span
+        class={`alp-spinner alp-spinner--${size} alp-spinner--${color}`}
+        role="status"
+        aria-label="Loading"
+      >
+        <span class="alp-spinner-ring" aria-hidden="true"></span>
+      </span>
+    );
+  }
+}

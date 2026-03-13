@@ -1,0 +1,17 @@
+import { SwissComponent } from '@swissjs/core';
+
+component UsersRolesPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="erp-module-page">
+        <h2>Roles</h2>
+        <p>Define user roles and permissions.</p>
+        <div class="erp-billing-card" style="margin-top: var(--space-lg); text-align: center; padding: var(--space-xl);">
+          <p class="erp-global-settings-muted">Role management coming soon.</p>
+        </div>
+      </div>
+    );
+  }
+}

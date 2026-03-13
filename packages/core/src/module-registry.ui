@@ -1,0 +1,51 @@
+/**
+ * Alpine Module Registry — plugin system for free + enterprise modules
+ */
+
+export interface AlpineModuleSection {
+  id: string
+  label: string
+  icon?: string
+}
+
+export interface AlpineModule {
+  id: string
+  name: string
+  icon?: string
+  tier: 'free' | 'enterprise'
+  sections: AlpineModuleSection[]
+  constraints?: Record<string, number>
+  register: (app: AlpineApp) => Promise<void>
+}
+
+export interface AlpineApp {
+  modules: Map<string, AlpineModule>
+}
+
+const registry = new Map<string, AlpineModule>()
+
+export function registerModule(mod: AlpineModule): void {
+  registry.set(mod.id, mod)
+}
+
+export function getModules(): AlpineModule[] {
+  return Array.from(registry.values())
+}
+
+export function getModule(id: string): AlpineModule | undefined {
+  return registry.get(id)
+}
+
+export async function bootModules(
+  app: AlpineApp,
+  licenseFeatures: string[],
+): Promise<void> {
+  for (const mod of registry.values()) {
+    if (mod.tier === 'enterprise' && !licenseFeatures.includes(mod.id)) {
+      console.warn(`[Alpine] Module '${mod.id}' skipped — not in license`)
+      continue
+    }
+    app.modules.set(mod.id, mod)
+    await mod.register(app)
+  }
+}
