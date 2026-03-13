@@ -1,10 +1,11 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from core.auth import verify_internal_token
 from core.exceptions import register_handlers
 from core.db import engine
+from core.module_registry import register_module, load_all_modules, get_registered_modules
 import core.models  # noqa: F401
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Alpine ERP Service",
+    title="Alpine ERP Core",
     docs_url=None,
     redoc_url=None,
     lifespan=lifespan,
@@ -31,9 +32,25 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-# Open-core module routers
+@app.get("/api/v1/modules")
+async def list_modules() -> list[dict]:
+    """Returns all registered modules — used by frontend to sync module availability."""
+    return get_registered_modules()
+
+
+# --- Open-core module self-registration ---
 from modules.inventory.router import router as inventory_router
 from modules.pos.router import router as pos_router
 
-app.include_router(inventory_router, prefix="/api/v1")
-app.include_router(pos_router, prefix="/api/v1")
+register_module(
+    name="inventory",
+    router_factory=lambda app: app.include_router(inventory_router, prefix="/api/v1"),
+    tier="core",
+)
+register_module(
+    name="pos",
+    router_factory=lambda app: app.include_router(pos_router, prefix="/api/v1"),
+    tier="core",
+)
+
+load_all_modules(app)

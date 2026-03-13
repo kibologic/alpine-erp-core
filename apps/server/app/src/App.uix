@@ -64,10 +64,27 @@ component App {
       this.modules = getModules();
       this.view = 'app';
       this.scheduleUpdate?.();
+      this.syncWithBackend();
     } catch (err) {
       console.error('[Alpine] Bootstrap failed:', err);
       this.view = 'login';
       this.scheduleUpdate?.();
+    }
+  }
+
+  async syncWithBackend() {
+    try {
+      const res = await fetch('/api/v1/modules');
+      if (!res.ok) return;
+      const backendModules: { name: string; tier: string }[] = await res.json();
+      const frontendIds = new Set(this.modules.map((m: AlpineModule) => m.id));
+      for (const bm of backendModules) {
+        if (!frontendIds.has(bm.name)) {
+          console.warn(`[Alpine] Backend module '${bm.name}' (${bm.tier}) has no frontend registration`);
+        }
+      }
+    } catch {
+      // Backend unavailable — non-fatal, frontend continues without sync
     }
   }
 
