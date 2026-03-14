@@ -1,7 +1,7 @@
 import { SwissComponent } from '@swissjs/core';
 
 const DEV_BYPASS_AUTH = true;
-const DEV_ENTERPRISE = true;
+const DEV_ENTERPRISE = false;
 import { bootstrap, getModules, setLicense, getLicense } from '@alpine/core';
 import type { AlpineModule } from '@alpine/core';
 import { Shell } from './shell/Shell.uix';
@@ -12,16 +12,12 @@ import { CreateOrgPage } from './auth/CreateOrgPage.uix';
 import { ForgotPasswordPage } from './auth/ForgotPasswordPage.uix';
 import { EmailVerificationPage } from './auth/EmailVerificationPage.uix';
 
-// Import modules to trigger registration
+// Import modules to trigger registration — open-core only
 import '@alpine/module-dashboard';
 import '@alpine/module-users';
 import '@alpine/module-settings';
 import '@alpine/module-pos';
-import '@alpine/module-finance';
-import '@alpine/module-hr';
 import '@alpine/module-inventory';
-import '@alpine/module-sales';
-import '@alpine/module-procurement';
 
 component App {
   props = {};

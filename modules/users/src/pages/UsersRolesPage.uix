@@ -1,0 +1,70 @@
+import { SwissComponent } from '@swissjs/core';
+
+const ROLES = [
+  {
+    id: 'admin',
+    title: 'Admin',
+    description: 'Full access to all modules and settings',
+    permissions: [
+      'Manage users',
+      'Configure settings',
+      'Access all modules',
+      'Billing management',
+    ],
+    users: 1,
+  },
+  {
+    id: 'staff',
+    title: 'Staff',
+    description: 'Access to operational modules',
+    permissions: [
+      'Access assigned modules',
+      'Create and edit records',
+      'View reports',
+    ],
+    users: 1,
+  },
+  {
+    id: 'viewer',
+    title: 'Viewer',
+    description: 'Read-only access',
+    permissions: [
+      'View all records',
+      'Export reports',
+    ],
+    users: 1,
+  },
+];
+
+component UsersRolesPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="erp-module-page">
+
+        <div class="erp-page-header">
+          <h2>Roles &amp; Permissions</h2>
+        </div>
+
+        <div class="erp-role-cards">
+          {ROLES.map((role) => (
+            <div class={`erp-role-card erp-role-card--${role.id}`}>
+              <div class="erp-role-card-header">
+                <span class="erp-role-title">{role.title}</span>
+                <span class="erp-role-badge">{role.users} user{role.users !== 1 ? 's' : ''}</span>
+              </div>
+              <p class="erp-role-description">{role.description}</p>
+              <ul class="erp-permissions-list">
+                {role.permissions.map((p) => (
+                  <li>✓ {p}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    );
+  }
+}

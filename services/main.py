@@ -38,7 +38,9 @@ async def list_modules() -> list[dict]:
     return get_registered_modules()
 
 
-# --- Open-core module self-registration ---
+# --- Module self-registration ---
+# Open-core modules only. Enterprise modules live in kibologic/alpine-erp.
+
 from modules.inventory.router import router as inventory_router
 from modules.pos.router import router as pos_router
 

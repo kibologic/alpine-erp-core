@@ -1,0 +1,371 @@
+import { SwissComponent } from '@swissjs/core';
+import { PosService, InventoryService } from '@alpine/core';
+
+const TAX_RATE = 0;
+const REGISTER_ID = 'REG-001';
+
+function fmt(n: number): string {
+  return `MWK ${Number(n || 0).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+component PosTerminalPage {
+  props = {};
+
+  state { let cartItems: any[] = []; }
+  state { let products: any[] = []; }
+  state { let searchQuery: string = ''; }
+  state { let selectedCategory: string = 'all'; }
+  state { let session: any = null; }
+  state { let loading: boolean = true; }
+  state { let offline: boolean = false; }
+  state { let openingFloat: number = 0; }
+  state { let closingFloat: number = 0; }
+  state { let processing: boolean = false; }
+  state { let showCloseModal: boolean = false; }
+  state { let paymentMethod: string = 'cash'; }
+
+  async mount() {
+    await this.refreshData();
+  }
+
+  async refreshData() {
+    this.offline = false;
+    try {
+      this.loading = true;
+      const sess = await PosService.getCurrentSession(REGISTER_ID);
+      if (!sess || sess.detail || sess.error) {
+        this.offline = true;
+        this.loading = false;
+        return;
+      }
+      const prods = await InventoryService.getProducts();
+      if (!prods || (prods as any).detail || (prods as any).error) {
+        this.offline = true;
+        this.loading = false;
+        return;
+      }
+      this.session = sess;
+      this.products = Array.isArray(prods) ? prods : [];
+    } catch (err) {
+      console.error('[POS] Refresh failed:', err);
+      this.offline = true;
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async openSession() {
+    this.processing = true;
+    try {
+      this.session = await PosService.openSession(REGISTER_ID, this.openingFloat);
+    } catch (err) {
+      alert(`Failed to open session: ${err.message}`);
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  addToCart(product: any) {
+    if (Number(product.stock_quantity) <= 0) return;
+    const idx = this.cartItems.findIndex((i) => i.product.id === product.id);
+    if (idx >= 0) {
+      this.cartItems = this.cartItems.map((item, i) =>
+        i === idx
+          ? { ...item, qty: item.qty + 1, lineTotal: (item.qty + 1) * Number(item.product.price) }
+          : item
+      );
+    } else {
+      this.cartItems = [...this.cartItems, { product, qty: 1, lineTotal: Number(product.price) }];
+    }
+  }
+
+  changeQty(productId: string, delta: number) {
+    const item = this.cartItems.find((i) => i.product.id === productId);
+    if (!item) return;
+    const newQty = item.qty + delta;
+    if (newQty <= 0) {
+      this.cartItems = this.cartItems.filter((i) => i.product.id !== productId);
+    } else {
+      this.cartItems = this.cartItems.map((i) =>
+        i.product.id === productId
+          ? { ...i, qty: newQty, lineTotal: newQty * Number(i.product.price) }
+          : i
+      );
+    }
+  }
+
+  removeFromCart(productId: string) {
+    this.cartItems = this.cartItems.filter((i) => i.product.id !== productId);
+  }
+
+  async closeSession() {
+    this.processing = true;
+    try {
+      await PosService.closeSession(this.session.id, this.closingFloat);
+      this.session = null;
+      this.cartItems = [];
+      this.showCloseModal = false;
+      this.closingFloat = 0;
+    } catch (err) {
+      alert(`Failed to close session: ${err.message}`);
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  async checkout() {
+    if (this.cartItems.length === 0) return;
+    this.processing = true;
+    const subtotal = this.cartItems.reduce((s, i) => s + Number(i.lineTotal), 0);
+    const tax = subtotal * TAX_RATE;
+    const total = subtotal + tax;
+    const saleData = {
+      session_id: this.session.id,
+      subtotal, tax, discount: 0, total,
+      lines: this.cartItems.map((i) => ({
+        product_id: i.product.id,
+        quantity: i.qty,
+        unit_price: i.product.price,
+        discount: 0,
+        tax: 0,
+        line_total: i.lineTotal
+      })),
+      payments: [{ method: this.paymentMethod, amount: total }]
+    };
+    try {
+      await PosService.createSale(saleData);
+      this.cartItems = [];
+      await this.refreshData();
+      alert('Sale completed!');
+    } catch (err) {
+      alert(`Checkout failed: ${err.message}`);
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  render() {
+    if (this.loading) {
+      return (
+        <div class="pos-loading-state">
+          <div class="pos-loading-ring"></div>
+          <span>Connecting to terminal…</span>
+        </div>
+      );
+    }
+
+    if (this.offline) {
+      return (
+        <div class="pos-gate-state">
+          <div class="pos-state-card">
+            <svg class="pos-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="1" y1="1" x2="23" y2="23"/>
+              <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+              <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+              <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+              <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+              <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+              <line x1="12" y1="20" x2="12.01" y2="20"/>
+            </svg>
+            <h2 class="pos-state-title">Terminal Offline</h2>
+            <p class="pos-state-desc">Connect to backend to start selling</p>
+            <button type="button" class="pos-state-btn" onclick={() => this.refreshData()}>
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!this.session) {
+      return (
+        <div class="pos-gate-state">
+          <div class="pos-state-card">
+            <svg class="pos-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
+            <h2 class="pos-state-title">Open Session</h2>
+            <p class="pos-state-desc">Register: {REGISTER_ID}</p>
+            <div class="pos-float-row">
+              <label class="pos-float-label">Opening Float (MWK)</label>
+              <input
+                type="number"
+                class="pos-float-input"
+                value={this.openingFloat}
+                oninput={(e: any) => { this.openingFloat = Number(e.target.value); }}
+                placeholder="0.00"
+              />
+            </div>
+            <button
+              type="button"
+              class="pos-state-btn"
+              onclick={() => this.openSession()}
+              disabled={this.processing}
+            >
+              {this.processing ? 'Opening…' : 'Start Session'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const q = (this.searchQuery || '').toLowerCase();
+    const catFiltered = this.selectedCategory === 'all'
+      ? this.products
+      : this.products.filter((p) => p.category && p.category.name === this.selectedCategory);
+    const filtered = q
+      ? catFiltered.filter((p) => p.name.toLowerCase().includes(q) || (p.sku && p.sku.toLowerCase().includes(q)))
+      : catFiltered;
+
+    const categories: string[] = Array.from(new Set(
+      this.products.filter((p) => p.category && p.category.name).map((p) => p.category.name as string)
+    ));
+
+    const subtotal = this.cartItems.reduce((s, i) => s + Number(i.lineTotal), 0);
+    const tax = subtotal * TAX_RATE;
+    const total = subtotal + tax;
+    const itemCount = this.cartItems.reduce((s, i) => s + i.qty, 0);
+    const sessionTime = this.session.opened_at
+      ? new Date(this.session.opened_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : '—';
+
+    return (
+      <div class="pos-terminal">
+
+        {this.showCloseModal ? (
+          <div class="pos-modal-overlay">
+            <div class="pos-modal">
+              <h3>Close Cash Session</h3>
+              <p>Register: {this.session.register_id}</p>
+              <div class="pos-float-row">
+                <label class="pos-float-label">Closing Float (MWK)</label>
+                <input
+                  type="number"
+                  class="pos-float-input"
+                  value={this.closingFloat}
+                  oninput={(e: any) => { this.closingFloat = Number(e.target.value); }}
+                />
+              </div>
+              <div class="pos-modal-actions">
+                <button type="button" class="alp-btn alp-btn--secondary" onclick={() => { this.showCloseModal = false; }} disabled={this.processing}>Cancel</button>
+                <button type="button" class="alp-btn alp-btn--ghost" onclick={() => this.closeSession()} disabled={this.processing}>
+                  {this.processing ? 'Closing…' : 'Confirm Close'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        <div class="pos-products">
+          <div class="pos-products-header">
+            <input
+              type="text"
+              class="pos-product-search"
+              placeholder="Search products…"
+              value={this.searchQuery}
+              oninput={(e: any) => { this.searchQuery = e.target.value; }}
+            />
+            <div class="pos-category-filters">
+              <button
+                type="button"
+                class={`pos-category-pill${this.selectedCategory === 'all' ? ' pos-category-pill--active' : ''}`}
+                onclick={() => { this.selectedCategory = 'all'; }}
+              >All</button>
+              {categories.map((cat) => (
+                <button
+                  type="button"
+                  class={`pos-category-pill${this.selectedCategory === cat ? ' pos-category-pill--active' : ''}`}
+                  onclick={() => { this.selectedCategory = cat; }}
+                >{cat}</button>
+              ))}
+            </div>
+          </div>
+
+          <div class="pos-product-grid">
+            {filtered.length === 0 ? (
+              <div class="pos-no-products">No products found. Add some in Inventory.</div>
+            ) : (
+              filtered.map((product) => {
+                const inStock = Number(product.stock_quantity) > 0;
+                return (
+                  <button
+                    type="button"
+                    class={`pos-product-card${inStock ? '' : ' pos-product-card--out-of-stock'}`}
+                    onclick={() => { if (inStock) this.addToCart(product); }}
+                    disabled={!inStock}
+                  >
+                    <div class="pos-product-name">{product.name}</div>
+                    <div class="pos-product-sku">{product.sku}</div>
+                    <div class="pos-product-price">{fmt(Number(product.price))}</div>
+                    <div class="pos-product-stock">
+                      {inStock ? `${Number(product.stock_quantity)} in stock` : 'Out of stock'}
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div class="pos-cart">
+          <div class="pos-cart-header">
+            <span>Current Sale</span>
+            {itemCount > 0 ? <span class="pos-cart-badge">{itemCount}</span> : null}
+          </div>
+
+          <div class="pos-cart-items">
+            {this.cartItems.length === 0 ? (
+              <div class="pos-cart-empty">No items — tap a product to add</div>
+            ) : (
+              this.cartItems.map((item) => (
+                <div class="pos-cart-item">
+                  <span class="pos-cart-item-name">{item.product.name}</span>
+                  <div class="pos-cart-qty">
+                    <button type="button" class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, -1)}>−</button>
+                    <span class="pos-cart-qty-val">{item.qty}</span>
+                    <button type="button" class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, 1)}>+</button>
+                  </div>
+                  <span class="pos-cart-item-total">{fmt(Number(item.lineTotal))}</span>
+                  <button type="button" class="pos-cart-item-remove" onclick={() => this.removeFromCart(item.product.id)} aria-label="Remove">×</button>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div class="pos-cart-totals">
+            <div class="pos-totals-row"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
+            <div class="pos-totals-row"><span>Tax (0%)</span><span>{fmt(tax)}</span></div>
+            <div class="pos-totals-row pos-totals-row--total"><span>TOTAL</span><span>{fmt(total)}</span></div>
+          </div>
+
+          <div class="pos-payment-methods">
+            <button type="button" class={`pos-pay-method${this.paymentMethod === 'cash' ? ' active' : ''}`} onclick={() => { this.paymentMethod = 'cash'; }}>Cash</button>
+            <button type="button" class={`pos-pay-method${this.paymentMethod === 'card' ? ' active' : ''}`} onclick={() => { this.paymentMethod = 'card'; }}>Card</button>
+            <button type="button" class={`pos-pay-method${this.paymentMethod === 'mixed' ? ' active' : ''}`} onclick={() => { this.paymentMethod = 'mixed'; }}>Mixed</button>
+          </div>
+
+          <button
+            type="button"
+            class="pos-charge-btn"
+            disabled={this.cartItems.length === 0 || this.processing}
+            onclick={() => this.checkout()}
+          >
+            {this.processing ? 'Processing…' : `CHARGE ${fmt(total)}`}
+          </button>
+
+          <div class="pos-session-bar">
+            <span class="pos-session-info">{this.session.register_id} · {sessionTime}</span>
+            <button
+              type="button"
+              class="pos-close-session-btn"
+              onclick={() => { this.showCloseModal = true; }}
+              disabled={this.processing}
+            >Close Session</button>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
+}

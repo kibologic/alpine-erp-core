@@ -1,0 +1,81 @@
+import { SwissComponent } from '@swissjs/core';
+
+const MAX_TERMINALS = 1;
+const MAX_PRODUCTS = 500;
+const CURRENT_TERMINALS = 1;
+const CURRENT_PRODUCTS = 6;
+
+component PosSettingsPage {
+  props = {};
+
+  render() {
+    const terminalPct = Math.min(100, (CURRENT_TERMINALS / MAX_TERMINALS) * 100);
+    const productPct  = Math.min(100, (CURRENT_PRODUCTS  / MAX_PRODUCTS)  * 100);
+
+    return (
+      <div class="erp-module-page">
+
+        <div class="erp-page-header">
+          <h2>POS Settings</h2>
+        </div>
+
+        {/* Terminal section */}
+        <section class="erp-settings-section">
+          <h3>Terminal</h3>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="pos-terminal-name">Terminal name</label>
+            <input id="pos-terminal-name" type="text" class="erp-settings-input" value="Terminal 1" />
+          </div>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="pos-currency">Currency</label>
+            <select id="pos-currency" class="erp-settings-select">
+              <option>MWK</option>
+              <option>ZWL</option>
+              <option>KES</option>
+              <option>ZAR</option>
+              <option>GHS</option>
+              <option>NGN</option>
+              <option>USD</option>
+            </select>
+          </div>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="pos-receipt">Receipt footer text</label>
+            <textarea id="pos-receipt" class="erp-settings-input" rows={3} placeholder="Thank you for your purchase!" />
+          </div>
+        </section>
+
+        {/* Plan limits section */}
+        <section class="erp-settings-section">
+          <h3>Free plan limits</h3>
+
+          <div class="pos-limit-item">
+            <div class="pos-limit-label">
+              <span>Terminals</span>
+              <span class="pos-limit-count">{CURRENT_TERMINALS} / {MAX_TERMINALS}</span>
+            </div>
+            <div class="pos-limit-bar">
+              <div class="pos-limit-bar-fill" style={`width: ${terminalPct}%`} />
+            </div>
+          </div>
+
+          <div class="pos-limit-item">
+            <div class="pos-limit-label">
+              <span>Products</span>
+              <span class="pos-limit-count">{CURRENT_PRODUCTS} / {MAX_PRODUCTS}</span>
+            </div>
+            <div class="pos-limit-bar">
+              <div class="pos-limit-bar-fill" style={`width: ${productPct}%`} />
+            </div>
+          </div>
+        </section>
+
+        <div class="erp-settings-actions">
+          <button type="button" class="erp-btn erp-btn--primary" disabled title="Database required">
+            Save changes
+          </button>
+        </div>
+
+      </div>
+    );
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@alpine/module-pos",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ui",
+  "dependencies": {
+    "@alpine/core": "workspace:*"
+  }
+}

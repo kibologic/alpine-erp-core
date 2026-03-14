@@ -1,0 +1,115 @@
+import { SwissComponent } from '@swissjs/core';
+
+component SettingsGeneralPage {
+  props = {};
+
+  toggleTheme() {
+    const root = document.documentElement;
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('alpine-theme', next); } catch (_) {}
+    this.scheduleUpdate?.();
+  }
+
+  render() {
+    const isDark = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark';
+
+    return (
+      <div class="erp-module-page">
+
+        <div class="erp-page-header">
+          <h2>General Settings</h2>
+        </div>
+
+        {/* Organisation */}
+        <section class="erp-settings-section">
+          <h3>Organisation</h3>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="org-name">Organisation name</label>
+            <input id="org-name" type="text" class="erp-settings-input" placeholder="Alpine Corp" />
+          </div>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="org-industry">Industry</label>
+            <select id="org-industry" class="erp-settings-select">
+              <option>Retail</option>
+              <option>Healthcare</option>
+              <option>Manufacturing</option>
+              <option>Services</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="org-country">Country</label>
+            <select id="org-country" class="erp-settings-select">
+              <option>Malawi</option>
+              <option>Zimbabwe</option>
+              <option>Kenya</option>
+              <option>South Africa</option>
+              <option>Ghana</option>
+              <option>Nigeria</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="org-tz">Timezone</label>
+            <select id="org-tz" class="erp-settings-select">
+              <option>Africa/Blantyre</option>
+              <option>Africa/Harare</option>
+              <option>Africa/Nairobi</option>
+              <option>Africa/Johannesburg</option>
+            </select>
+          </div>
+        </section>
+
+        {/* Localisation */}
+        <section class="erp-settings-section">
+          <h3>Localisation</h3>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="loc-currency">Currency</label>
+            <select id="loc-currency" class="erp-settings-select">
+              <option>MWK</option>
+              <option>ZWL</option>
+              <option>KES</option>
+              <option>ZAR</option>
+              <option>GHS</option>
+              <option>NGN</option>
+              <option>USD</option>
+            </select>
+          </div>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="loc-date">Date format</label>
+            <select id="loc-date" class="erp-settings-select">
+              <option>DD/MM/YYYY</option>
+              <option>MM/DD/YYYY</option>
+              <option>YYYY-MM-DD</option>
+            </select>
+          </div>
+          <div class="erp-form-row">
+            <label class="erp-settings-label" for="loc-lang">Language</label>
+            <select id="loc-lang" class="erp-settings-select">
+              <option>English</option>
+            </select>
+          </div>
+        </section>
+
+        {/* Appearance */}
+        <section class="erp-settings-section">
+          <h3>Appearance</h3>
+          <div class="erp-form-row">
+            <label class="erp-settings-label">Theme</label>
+            <button type="button" class="erp-global-settings-toggle" onclick={() => this.toggleTheme()} aria-label="Toggle theme">
+              {isDark ? '☀️ Light' : '🌙 Dark'}
+            </button>
+          </div>
+        </section>
+
+        <div class="erp-settings-actions">
+          <button type="button" class="erp-btn erp-btn--primary" disabled title="Database required">
+            Save changes
+          </button>
+        </div>
+
+      </div>
+    );
+  }
+}

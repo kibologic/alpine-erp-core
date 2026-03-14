@@ -1,0 +1,87 @@
+import { SwissComponent } from '@swissjs/core';
+import { getLicense, setLicense } from '@alpine/core';
+
+const FREE_FEATURES = [
+  { label: 'Dashboard',                    included: true  },
+  { label: 'Users (5 max)',                included: true  },
+  { label: 'Settings',                     included: true  },
+  { label: 'POS Core (1 terminal, 500 products)', included: true },
+  { label: 'Finance & Accounting',         included: false },
+  { label: 'HR & Payroll',                 included: false },
+  { label: 'Advanced Inventory',           included: false },
+  { label: 'Multi-terminal POS',           included: false },
+];
+
+component SettingsBillingPage {
+  props = {};
+
+  setFree() {
+    setLicense({ tier: 'free', features: [], expiresAt: null, org: null });
+    window.location.reload();
+  }
+
+  setEnterprise() {
+    setLicense({ tier: 'enterprise', features: [], expiresAt: null, org: null });
+    window.location.reload();
+  }
+
+  render() {
+    const tier = getLicense().tier;
+
+    return (
+      <div class="erp-module-page">
+
+        <div class="erp-page-header">
+          <h2>Billing &amp; Plan</h2>
+        </div>
+
+        {/* Current plan card */}
+        <div class="erp-plan-card">
+          <div class="erp-plan-card-header">
+            <span class="erp-plan-name">Free</span>
+            <span class="erp-plan-badge">Current plan</span>
+          </div>
+          <p class="erp-plan-description">
+            Up to 5 users, 3 core modules, single POS terminal
+          </p>
+          <ul class="erp-plan-features">
+            {FREE_FEATURES.map((f) => (
+              <li class={`erp-plan-feature ${f.included ? 'erp-plan-feature--included' : 'erp-plan-feature--excluded'}`}>
+                <span class="erp-plan-feature-mark">{f.included ? '✓' : '✗'}</span>
+                {f.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Upgrade card */}
+        <div class="erp-upgrade-card">
+          <h3>Upgrade to Enterprise</h3>
+          <p>
+            Unlock finance, payroll, advanced inventory, multi-terminal POS
+            and regional integrations
+          </p>
+          <a class="erp-upgrade-cta" href="mailto:sales@alpineerp.com">
+            Contact Sales
+          </a>
+        </div>
+
+        {/* Dev tools */}
+        <div class="erp-dev-tools">
+          <p class="erp-dev-tools-label">⚙️ Developer tools</p>
+          <div class="erp-dev-tools-row">
+            <span>License tier</span>
+            <div class="erp-dev-tools-actions">
+              <button type="button" onClick={() => this.setFree()}>Free</button>
+              <button type="button" onClick={() => this.setEnterprise()}>Enterprise</button>
+            </div>
+          </div>
+          <p class="erp-dev-tools-note">
+            Current: {tier} — page will reload on change
+          </p>
+        </div>
+
+      </div>
+    );
+  }
+}

@@ -9,7 +9,7 @@ import { SwiteServer } from '@swissjs/swite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const PYTHON_HOST = 'localhost';
+const PYTHON_HOST = '127.0.0.1';
 const PYTHON_PORT = 8000;
 const INTERNAL_TOKEN = process.env.INTERNAL_SERVICE_TOKEN || 'alpine_dev_internal_token_2026';
 

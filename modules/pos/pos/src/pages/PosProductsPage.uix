@@ -1,0 +1,63 @@
+import { SwissComponent } from '@swissjs/core';
+
+const PRODUCTS = [
+  { name: 'Coffee',      price: 500,  sku: 'BEV-001',  category: 'Beverages', stock: '—' },
+  { name: 'Sandwich',   price: 1200, sku: 'FOOD-001',  category: 'Food',      stock: '—' },
+  { name: 'Water 500ml',price: 200,  sku: 'BEV-002',   category: 'Beverages', stock: '—' },
+  { name: 'Chips',      price: 350,  sku: 'FOOD-002',  category: 'Food',      stock: '—' },
+  { name: 'Juice',      price: 800,  sku: 'BEV-003',   category: 'Beverages', stock: '—' },
+  { name: 'Muffin',     price: 600,  sku: 'FOOD-003',  category: 'Food',      stock: '—' },
+];
+
+component PosProductsPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="erp-module-page">
+
+        <div class="erp-page-header">
+          <h2>Products</h2>
+          <button type="button" class="erp-btn erp-btn--primary" disabled title="Database required">
+            Add Product
+          </button>
+        </div>
+
+        <div class="erp-tier-banner">
+          Free plan · {PRODUCTS.length} of 500 products · <a href="#/settings/billing">Upgrade for unlimited</a>
+        </div>
+
+        <div class="erp-table-wrap">
+          <table class="erp-table">
+            <thead>
+              <tr class="erp-table-header">
+                <th>SKU</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price (MWK)</th>
+                <th>Stock</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PRODUCTS.map((p) => (
+                <tr class="erp-table-row">
+                  <td class="erp-table-sku">{p.sku}</td>
+                  <td>{p.name}</td>
+                  <td>{p.category}</td>
+                  <td>{p.price.toLocaleString()}</td>
+                  <td>{p.stock}</td>
+                  <td class="erp-table-actions">
+                    <button type="button" class="erp-btn erp-btn--sm" disabled title="Database required">Edit</button>
+                    <button type="button" class="erp-btn erp-btn--sm erp-btn--danger" disabled title="Database required">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    );
+  }
+}

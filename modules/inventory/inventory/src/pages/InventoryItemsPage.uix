@@ -1,0 +1,97 @@
+import { SwissComponent } from '@swissjs/core';
+import { InventoryService, Table } from '@alpine/core';
+
+const COLUMNS = [
+  { key: 'sku',            label: 'SKU',        width: '110px' },
+  { key: 'name',           label: 'Name' },
+  { key: 'category',       label: 'Category',   width: '160px' },
+  { key: 'price_fmt',      label: 'Price',      width: '130px', align: 'right' },
+  { key: 'stock_quantity', label: 'Stock',      width: '90px',  align: 'center' },
+  { key: 'status',         label: 'Status',     width: '100px', align: 'center' },
+];
+
+function fmt(n: any): string {
+  const num = parseFloat(String(n)) || 0;
+  return `MWK ${num.toLocaleString('en-MW', { minimumFractionDigits: 2 })}`;
+}
+
+component InventoryItemsPage {
+  props = {};
+
+  state { let products: any[] = []; }
+  state { let loading: boolean = true; }
+  state { let error: string = ''; }
+  state { let search: string = ''; }
+
+  async mount() {
+    try {
+      const data = await InventoryService.getProducts();
+      this.products = data;
+    } catch (e: any) {
+      this.error = e.message || 'Failed to load products';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  get filteredRows(): any[] {
+    const q = (this.search || '').toLowerCase();
+    const rows = Array.isArray(this.products) ? this.products : [];
+    const filtered = q
+      ? rows.filter((p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.sku.toLowerCase().includes(q)
+        )
+      : rows;
+
+    return filtered.map((p) => ({
+      id:            p.id,
+      sku:           p.sku,
+      name:          p.name,
+      category:      p.category_id ? p.category_id.slice(0, 8) + '…' : '—',
+      price_fmt:     fmt(p.price),
+      stock_quantity: String(parseFloat(p.stock_quantity) || 0),
+      status:        parseFloat(p.stock_quantity) > 0 ? 'In stock' : 'No stock',
+    }));
+  }
+
+  render() {
+    if (this.error) {
+      return (
+        <div class="inv-page">
+          <div class="erp-empty-state erp-empty-state--error">
+            <span class="erp-empty-icon">⚠️</span>
+            <span>{this.error}</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div class="inv-page">
+        <div class="inv-page-header">
+          <h2 class="inv-page-title">Inventory Items</h2>
+          <button type="button" class="inv-btn inv-btn--primary">+ Add Item</button>
+        </div>
+
+        <div class="inv-search-bar">
+          <input
+            type="text"
+            class="inv-search"
+            placeholder="Search items..."
+            value={this.search}
+            onInput={(e: any) => { this.search = e.target.value; }}
+          />
+        </div>
+
+        <Table
+          columns={COLUMNS}
+          rows={this.filteredRows}
+          loading={this.loading}
+          empty="No products found"
+          rowKey="id"
+        />
+      </div>
+    );
+  }
+}
