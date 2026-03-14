@@ -43,6 +43,29 @@ Includes:
 
 ## Notes
 
-- Every session starts by reading this file.
 - Do not add enterprise module imports to `App.uix` — those live in `alpine-erp`.
 - `DEV_ENTERPRISE = false` is correct for this repo.
+
+---
+
+## Sprint — UI Component Library + Stock Take (Session current)
+
+### Completed
+- Integrated @alpine/ui component library (kibologic/alpine-ui)
+- Rebuilt PosProductsPage.uix using DataTable, PageHeader, DataImport
+- Rebuilt InventoryItemsPage.uix using DataTable, PageHeader
+- Created StockTakePage.uix — in-app stock count, split layout, draggable summary modal
+- Created StockTakeImportPage.uix — Excel import flow using DataImport.uix
+- Created StockMovementsPage.uix — movement history, searchable DataTable
+- Updated inventory module nav — Items, Stock Take, Import Stock Take, Stock Movements
+
+### Open Issues
+- Modal close/X/ESC fix — Phase 1 pending
+- Form input onchange handlers — Phase 1 pending
+- CG-08: Draggable modal support needs compiler verification
+- E-01: Stock Take export endpoint (FastAPI, Docker machine)
+- E-02: Stock Take import endpoint (FastAPI, Docker machine)
+- E-03: Online/offline export pattern
+
+### Compiler Gaps
+- CG-08 — Draggable modals: document.addEventListener in mounted() — needs verification
