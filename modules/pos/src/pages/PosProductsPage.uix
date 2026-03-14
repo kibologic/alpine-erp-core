@@ -1,62 +1,185 @@
 import { SwissComponent } from '@swissjs/core';
+import { InventoryService } from '@alpine/core';
+import PageHeader from '@alpine/ui/src/layout/PageHeader.uix';
+import DataTable from '@alpine/ui/src/data/DataTable.uix';
+import DataImport from '@alpine/ui/src/data/DataImport.uix';
+import Modal from '@alpine/ui/src/feedback/Modal.uix';
+import TextField from '@alpine/ui/src/form/TextField.uix';
+import CurrencyField from '@alpine/ui/src/form/CurrencyField.uix';
+import SelectField from '@alpine/ui/src/form/SelectField.uix';
+import FormGroup from '@alpine/ui/src/form/FormGroup.uix';
 
-const PRODUCTS = [
-  { name: 'Coffee',      price: 500,  sku: 'BEV-001',  category: 'Beverages', stock: '—' },
-  { name: 'Sandwich',   price: 1200, sku: 'FOOD-001',  category: 'Food',      stock: '—' },
-  { name: 'Water 500ml',price: 200,  sku: 'BEV-002',   category: 'Beverages', stock: '—' },
-  { name: 'Chips',      price: 350,  sku: 'FOOD-002',  category: 'Food',      stock: '—' },
-  { name: 'Juice',      price: 800,  sku: 'BEV-003',   category: 'Beverages', stock: '—' },
-  { name: 'Muffin',     price: 600,  sku: 'FOOD-003',  category: 'Food',      stock: '—' },
+const columns = [
+  { key: 'sku', label: 'SKU', sortable: false, width: '120px' },
+  { key: 'name', label: 'Name', sortable: true },
+  { key: 'category', label: 'Category', sortable: true, width: '140px' },
+  { key: 'price', label: 'Price (MWK)', sortable: true, width: '140px' },
+  { key: 'stock_quantity', label: 'Stock', sortable: true, width: '100px' },
+  { key: 'actions', label: '', width: '120px' }
+];
+
+const importColumns = [
+  { key: 'sku', label: 'SKU', required: true, type: 'string' },
+  { key: 'name', label: 'Name', required: true, type: 'string' },
+  { key: 'category', label: 'Category', required: false, type: 'string' },
+  { key: 'price', label: 'Price (MWK)', required: true, type: 'currency' },
+  { key: 'stock_quantity', label: 'Stock', required: false, type: 'number' }
 ];
 
 component PosProductsPage {
   props = {};
 
+  state { let products: any[] = []; }
+  state { let loading: boolean = true; }
+  state { let showAddModal: boolean = false; }
+  state { let showImportModal: boolean = false; }
+  state { let newProduct: any = { sku: '', name: '', category: '', price: 0 }; }
+
+  async mounted() {
+    try {
+      if (InventoryService && InventoryService.getProducts) {
+        const data = await InventoryService.getProducts();
+        this.products = data || [];
+      } else {
+        this.products = [];
+      }
+    } catch (e) {
+      // Handle 502 gracefully
+      console.error('Failed to load products', e);
+      this.products = [];
+    } finally {
+      this.loading = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  handleImport(validRows: any[]) {
+    console.log('Imported rows:', validRows);
+    // In a real app we would send to backend here
+    this.products = [...validRows, ...this.products];
+    this.scheduleUpdate?.();
+  }
+
   render() {
+    // Transform rows for display
+    const displayRows = this.products.map(p => ({
+      ...p,
+      price: new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(p.price || 0),
+      actions: '...'
+    }));
+
     return (
-      <div class="erp-module-page">
+      <div class="alp-page">
+        <PageHeader 
+          title="Products"
+          breadcrumb={[{ label: 'Point of Sale' }]}
+          actions={[
+            { label: 'Import', onclick: () => { this.showImportModal = true; this.scheduleUpdate?.(); }, variant: 'ghost' },
+            { label: 'Add Product', onclick: () => { this.showAddModal = true; this.scheduleUpdate?.(); }, variant: 'primary' }
+          ]}
+        />
+        
+        <DataTable
+          columns={columns}
+          rows={displayRows}
+          loading={this.loading}
+          searchable={true}
+          selectable={true}
+          exportable={true}
+          filename="products"
+        />
 
-        <div class="erp-page-header">
-          <h2>Products</h2>
-          <button type="button" class="erp-btn erp-btn--primary" disabled title="Database required">
-            Add Product
-          </button>
-        </div>
+        {this.showImportModal ? (
+           <DataImport
+              columns={importColumns}
+              onImport={(rows: any[]) => { this.handleImport(rows); this.showImportModal = false; this.scheduleUpdate?.(); }}
+              entityName="Products"
+           />
+        ) : null}
 
-        <div class="erp-tier-banner">
-          Free plan · {PRODUCTS.length} of 500 products · <a href="#/settings/billing">Upgrade for unlimited</a>
-        </div>
-
-        <div class="erp-table-wrap">
-          <table class="erp-table">
-            <thead>
-              <tr class="erp-table-header">
-                <th>SKU</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Price (MWK)</th>
-                <th>Stock</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {PRODUCTS.map((p) => (
-                <tr class="erp-table-row">
-                  <td class="erp-table-sku">{p.sku}</td>
-                  <td>{p.name}</td>
-                  <td>{p.category}</td>
-                  <td>{p.price.toLocaleString()}</td>
-                  <td>{p.stock}</td>
-                  <td class="erp-table-actions">
-                    <button type="button" class="erp-btn erp-btn--sm" disabled title="Database required">Edit</button>
-                    <button type="button" class="erp-btn erp-btn--sm erp-btn--danger" disabled title="Database required">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
+        {this.showAddModal ? (
+          <Modal
+            open={this.showAddModal}
+            title="Add Product"
+            size="md"
+            onclose={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}
+            renderBody={() => (
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <FormGroup
+                  label="SKU"
+                  required={true}
+                  renderField={() => (
+                    <TextField 
+                      value={this.newProduct.sku}
+                      onchange={(val: string) => { this.newProduct.sku = val; this.scheduleUpdate?.(); }}
+                      placeholder="e.g. PRD-001"
+                    />
+                  )}
+                />
+                <FormGroup
+                  label="Name"
+                  required={true}
+                  renderField={() => (
+                    <TextField 
+                      value={this.newProduct.name}
+                      onchange={(val: string) => { this.newProduct.name = val; this.scheduleUpdate?.(); }}
+                      placeholder="Product full name"
+                    />
+                  )}
+                />
+                <div style="display: flex; gap: 1rem;">
+                  <div style="flex: 1;">
+                    <FormGroup
+                      label="Category"
+                      renderField={() => (
+                        <SelectField 
+                          value={this.newProduct.category}
+                          onchange={(val: string) => { this.newProduct.category = val; this.scheduleUpdate?.(); }}
+                          options={[
+                            { value: 'Beverages', label: 'Beverages' },
+                            { value: 'Food', label: 'Food' },
+                            { value: 'Other', label: 'Other' }
+                          ]}
+                          placeholder="Select..."
+                        />
+                      )}
+                    />
+                  </div>
+                  <div style="flex: 1;">
+                    <FormGroup
+                      label="Price"
+                      required={true}
+                      renderField={() => (
+                        <CurrencyField 
+                          value={this.newProduct.price}
+                          onchange={(val: number | null) => { this.newProduct.price = val || 0; this.scheduleUpdate?.(); }}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+            renderFooter={() => (
+              <div>
+                <button 
+                  class="aui-btn aui-btn--outline" 
+                  style="margin-right: 1rem; background: transparent; border: 1px solid var(--dusty-denim); color: var(--ink-black);"
+                  onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}
+                >Cancel</button>
+                <button 
+                  class="aui-btn" 
+                  onclick={() => { 
+                    this.products = [this.newProduct, ...this.products];
+                    this.newProduct = { sku: '', name: '', category: '', price: 0 };
+                    this.showAddModal = false; 
+                    this.scheduleUpdate?.(); 
+                  }}
+                >Save</button>
+              </div>
+            )}
+          />
+        ) : null}
       </div>
     );
   }

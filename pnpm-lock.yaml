@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@alpine/ui': link:../alpine-ui/packages/ui
   '@swissjs/core': link:../swiss-lib/packages/core
   '@swissjs/compiler': link:../swiss-lib/packages/compiler
   '@swissjs/plugin-file-router': link:../swiss-lib/packages/plugins/file-router
@@ -62,6 +63,9 @@ importers:
       '@alpine/module-users':
         specifier: workspace:*
         version: link:../../modules/users
+      '@alpine/ui':
+        specifier: link:../../../alpine-ui/packages/ui
+        version: link:../../../alpine-ui/packages/ui
       '@swissjs/core':
         specifier: link:../../../swiss-lib/packages/core
         version: link:../../../swiss-lib/packages/core
