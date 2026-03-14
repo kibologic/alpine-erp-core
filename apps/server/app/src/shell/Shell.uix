@@ -35,6 +35,7 @@ component Shell {
   state { let sidebarOpen: boolean = true; }
   state { let billingStatus: 'active' | 'trial' | 'overdue' = 'active'; }
   state { let upgradeTarget: AlpineModule | null = null; }
+  state { let showQuickSale: boolean = false; }
 
   parseHash(): { moduleId: string; sectionId: string } {
     if (typeof window === 'undefined') return { moduleId: 'dashboard', sectionId: 'overview' };
@@ -207,6 +208,39 @@ component Shell {
             onClose={() => this.closeUpgradeModal()}
           />
         )}
+
+        {this.currentModuleId !== 'pos' || this.currentSectionId !== 'overview' ?
+          <div class="pos-quick-sale-widget">
+            <button 
+              class="pos-quick-sale-btn"
+              onclick={() => this.showQuickSale = true}
+              title="Quick Sale"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+              <span>Quick Sale</span>
+            </button>
+          </div>
+        : null}
+
+        {this.showQuickSale ?
+          <div class="pos-qs-overlay" onclick={(e) => { if (e.target === e.currentTarget) this.showQuickSale = false; }}>
+            <div class="pos-qs-modal">
+              <div class="pos-qs-header">
+                <span class="pos-qs-title">Quick Sale</span>
+                <button class="pos-qs-close" onclick={() => this.showQuickSale = false}>×</button>
+              </div>
+              <div class="pos-qs-body">
+                <p style="color: var(--color-text-secondary); text-align: center; padding: 40px; margin: auto;">
+                  Quick sale terminal — coming soon.<br/>
+                  Go to POS → Terminal for full terminal.
+                </p>
+              </div>
+            </div>
+          </div>
+        : null}
       </div>
     );
   }

@@ -46,9 +46,47 @@ component PosTerminalPage {
   state { let paymentMethod: any = 'cash'; }
   state { let showSuccessModal: boolean = false; }
   state { let lastSaleTotal: number = 0; }
+  state { let appFullscreen: boolean = false; }
+  state { let browserFullscreen: boolean = false; }
 
   async mount() {
     await this.refreshData();
+    
+    if (typeof document !== 'undefined') {
+      document.addEventListener('fullscreenchange', () => {
+        this.browserFullscreen = !!document.fullscreenElement;
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.appFullscreen) {
+          this.toggleAppFullscreen();
+        }
+      });
+    }
+  }
+
+  toggleAppFullscreen() {
+    this.appFullscreen = !this.appFullscreen;
+    if (typeof document !== 'undefined') {
+      if (this.appFullscreen) {
+        document.body.classList.add('pos-app-fullscreen');
+      } else {
+        document.body.classList.remove('pos-app-fullscreen');
+      }
+    }
+  }
+
+  toggleBrowserFullscreen() {
+    if (typeof document !== 'undefined') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+          this.browserFullscreen = true;
+        }).catch(() => {});
+      } else {
+        document.exitFullscreen().then(() => {
+          this.browserFullscreen = false;
+        }).catch(() => {});
+      }
+    }
   }
 
   async refreshData() {
@@ -212,6 +250,23 @@ component PosTerminalPage {
           )}
 
           <div class="pos-products-header">
+            <div class="pos-fullscreen-controls">
+              <button 
+                class="pos-fs-btn" 
+                onclick={() => this.toggleAppFullscreen()}
+                title="Hide sidebars (App fullscreen)"
+              >
+                {this.appFullscreen ? '⊠' : '⊡'}
+              </button>
+              <button 
+                class="pos-fs-btn"
+                onclick={() => this.toggleBrowserFullscreen()}
+                title="Browser fullscreen (F11)"
+              >
+                ⛶
+              </button>
+            </div>
+
             <input 
               type="text" 
               class="pos-product-search" 
