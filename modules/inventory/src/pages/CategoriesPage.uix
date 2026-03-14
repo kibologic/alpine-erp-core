@@ -1,0 +1,61 @@
+import { SwissComponent } from '@swissjs/core';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
+import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
+import { TextField } from '@alpine/ui/src/form/TextField.uix';
+
+const columns = [
+  { key: 'name', label: 'Category Name', sortable: true },
+  { key: 'products_count', label: 'Products Count', width: '160px' },
+  { key: 'created_at', label: 'Created', width: '160px' },
+  { key: 'actionsHTML', label: '', width: '120px' }
+];
+
+component CategoriesPage {
+  props = {};
+
+  state { let categories: any[] = []; }
+  state { let showAddModal: boolean = false; }
+
+  render() {
+    return (
+      <div class="alp-page">
+        <PageHeader 
+          title="Categories"
+          breadcrumb={[{ label: 'Inventory' }, { label: 'Categories' }]}
+          actions={[
+            { label: 'Add Category', onclick: () => { this.showAddModal = true; this.scheduleUpdate?.(); }, variant: 'primary' }
+          ]}
+        />
+
+        <DataTable 
+          columns={columns}
+          rows={this.categories}
+          loading={false}
+          searchable={true}
+          filename="categories"
+        />
+
+        {this.showAddModal ? (
+          <Modal 
+            open={true}
+            title="Add Category"
+            onclose={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}
+            renderBody={() => (
+              <FormGroup label="Category Name" required={true} renderField={() => (
+                <TextField placeholder="e.g. Beverages" onchange={() => {}} />
+              )} />
+            )}
+            renderFooter={() => (
+              <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="aui-btn aui-btn--outline" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="aui-btn">Save Category</button>
+              </div>
+            )}
+          />
+        ) : null}
+      </div>
+    );
+  }
+}

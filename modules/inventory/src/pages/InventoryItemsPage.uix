@@ -1,10 +1,12 @@
 import { SwissComponent } from '@swissjs/core';
 import { InventoryService } from '@alpine/core';
-import PageHeader from '@alpine/ui/src/layout/PageHeader.uix';
-import DataTable from '@alpine/ui/src/data/DataTable.uix';
-import Modal from '@alpine/ui/src/feedback/Modal.uix';
-import FormGroup from '@alpine/ui/src/form/FormGroup.uix';
-import TextField from '@alpine/ui/src/form/TextField.uix';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
+import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
+import { TextField } from '@alpine/ui/src/form/TextField.uix';
+import { SidePanel } from '@alpine/ui/src/feedback/SidePanel.uix';
+import { Tabs } from '@alpine/ui/src/layout/Tabs.uix';
 
 const columns = [
   { key: 'sku', label: 'SKU', width: '120px' },
@@ -25,6 +27,9 @@ component InventoryItemsPage {
   state { let adjustingProduct: any = null; }
   state { let adjustmentAmount: string = ''; }
   state { let adjustmentReason: string = ''; }
+  state { let selectedItem: any = null; }
+  state { let workspaceOpen: boolean = false; }
+  state { let activeTab: string = 'general'; }
 
   async mounted() {
     try {
@@ -114,10 +119,80 @@ component InventoryItemsPage {
           exportable={true}
           filename="inventory"
           onRowClick={(row) => {
-            // Because innerHTML strips events in pure JS framework rendering sometimes without specific handling, 
-            // we catch row clicks and check if action button was clicked.
-            // Simplified for task: UI handled mostly by the custom event dispatcher above.
+            this.selectedItem = this.products.find(p => p.sku === row.sku || p.id === row.id);
+            this.workspaceOpen = true;
+            this.activeTab = 'general';
+            this.scheduleUpdate?.();
           }}
+        />
+
+        <SidePanel 
+          open={this.workspaceOpen}
+          title={this.selectedItem ? this.selectedItem.name : 'Item Workspace'}
+          onclose={() => { this.workspaceOpen = false; this.scheduleUpdate?.(); }}
+          renderBody={() => (
+            <div>
+              <Tabs 
+                tabs={[
+                  { id: 'general', label: 'General' },
+                  { id: 'inventory', label: 'Inventory' },
+                  { id: 'pricing', label: 'Pricing' },
+                  { id: 'history', label: 'History' }
+                ]}
+                active={this.activeTab}
+                onchange={(id) => { this.activeTab = id; this.scheduleUpdate?.(); }}
+              />
+
+              <div style="margin-top: 1.5rem;">
+                {this.activeTab === 'general' ? (
+                  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <FormGroup label="Item Name" renderField={() => <TextField value={this.selectedItem?.name} onchange={() => {}} />} />
+                    <FormGroup label="SKU" renderField={() => <TextField value={this.selectedItem?.sku} onchange={() => {}} />} />
+                    <FormGroup label="Category" renderField={() => <TextField value={this.selectedItem?.category} onchange={() => {}} />} />
+                    <FormGroup label="Description" renderField={() => <TextField placeholder="Product description..." onchange={() => {}} />} />
+                  </div>
+                ) : null}
+
+                {this.activeTab === 'inventory' ? (
+                  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <FormGroup label="Stock on Hand" renderField={() => <TextField type="number" value={String(this.selectedItem?.stock_quantity)} onchange={() => {}} />} />
+                    <FormGroup label="Reorder Level" renderField={() => <TextField type="number" value={String(this.selectedItem?.reorder_level || 10)} onchange={() => {}} />} />
+                    <FormGroup label="Safety Stock" renderField={() => <TextField type="number" value="5" onchange={() => {}} />} />
+                  </div>
+                ) : null}
+
+                {this.activeTab === 'pricing' ? (
+                  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <FormGroup label="Sale Price" renderField={() => <TextField type="number" value={String(this.selectedItem?.price)} onchange={() => {}} />} />
+                    <FormGroup label="Cost Price" renderField={() => <TextField type="number" value="0" onchange={() => {}} />} />
+                    <div style="padding: 1rem; background: var(--color-bg-subtle); border-radius: 4px; display: flex; justify-content: space-between;">
+                        <span style="color: var(--color-text-muted);">Gross Margin</span>
+                        <strong style="color: var(--color-success-light);">100%</strong>
+                    </div>
+                  </div>
+                ) : null}
+
+                {this.activeTab === 'history' ? (
+                  <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    {[1, 2, 3].map(i => (
+                      <div style="padding: 0.75rem; border-bottom: 1px solid var(--color-bg-border); font-size: 0.875rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                          <span>Adjustment</span>
+                          <span style="color: var(--color-text-muted);">2024-03-14</span>
+                        </div>
+                        <div style="font-weight: bold; color: var(--color-success-light);">+5 units</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              <div style="margin-top: 2rem; border-top: 1px solid var(--color-bg-border); padding-top: 1.5rem; display: flex; gap: 1rem;">
+                <button class="aui-btn aui-btn--primary" style="flex: 1;">Edit Item</button>
+                <button class="aui-btn aui-btn--outline" onclick={() => this.openAdjustModal(this.selectedItem)}>Quick Adjust</button>
+              </div>
+            </div>
+          )}
         />
 
         {this.showAdjustModal ? (

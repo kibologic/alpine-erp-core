@@ -5,21 +5,25 @@ import { AppStrip } from './AppStrip.uix';
 import { AppNavSidebar } from './AppNavSidebar.uix';
 import { UpgradeModal } from './UpgradeModal.uix';
 import { DashboardPage } from '@alpine/module-dashboard/src/pages/DashboardPage.uix';
-import { UsersListPage } from '@alpine/module-users/src/pages/UsersListPage.uix';
-import { UsersRolesPage } from '@alpine/module-users/src/pages/UsersRolesPage.uix';
-import { SettingsGeneralPage } from '@alpine/module-settings/src/pages/SettingsGeneralPage.uix';
-import { SettingsBillingPage } from '@alpine/module-settings/src/pages/SettingsBillingPage.uix';
+import { UsersPage } from '@alpine/module-users/src/pages/UsersPage.uix';
+import { RolesPage } from '@alpine/module-users/src/pages/RolesPage.uix';
+import { AuditLogPage } from '@alpine/module-users/src/pages/AuditLogPage.uix';
+import { GeneralSettingsPage } from '@alpine/module-settings/src/pages/GeneralSettingsPage.uix';
+import { AppearancePage } from '@alpine/module-settings/src/pages/AppearancePage.uix';
+import { BillingPage } from '@alpine/module-settings/src/pages/BillingPage.uix';
 import { PosTerminalPage } from '@alpine/module-pos/src/pages/PosTerminalPage.uix';
+import { PosSalesPage } from '@alpine/module-pos/src/pages/PosSalesPage.uix';
+import { PosCustomersPage } from '@alpine/module-pos/src/pages/PosCustomersPage.uix';
 import { PosProductsPage } from '@alpine/module-pos/src/pages/PosProductsPage.uix';
 import { PosSessionsPage } from '@alpine/module-pos/src/pages/PosSessionsPage.uix';
 import { PosSettingsPage } from '@alpine/module-pos/src/pages/PosSettingsPage.uix';
 import { InventoryItemsPage } from '@alpine/module-inventory/src/pages/InventoryItemsPage.uix';
+import { StockLevelsPage } from '@alpine/module-inventory/src/pages/StockLevelsPage.uix';
 import { StockTakePage } from '@alpine/module-inventory/src/pages/StockTakePage.uix';
-import { StockTakeImportPage } from '@alpine/module-inventory/src/pages/StockTakeImportPage.uix';
 import { StockMovementsPage } from '@alpine/module-inventory/src/pages/StockMovementsPage.uix';
-import { InventoryCategoriesPage } from '@alpine/module-inventory/src/pages/InventoryCategoriesPage.uix';
-import { InventoryWarehousesPage } from '@alpine/module-inventory/src/pages/InventoryWarehousesPage.uix';
-import { InventoryReportsPage } from '@alpine/module-inventory/src/pages/InventoryReportsPage.uix';
+import { CategoriesPage } from '@alpine/module-inventory/src/pages/CategoriesPage.uix';
+import { SuppliersPage } from '@alpine/module-inventory/src/pages/SuppliersPage.uix';
+import { InventorySettingsPage } from '@alpine/module-inventory/src/pages/InventorySettingsPage.uix';
 
 component Shell {
   props = {
@@ -108,13 +112,15 @@ component Shell {
     }
 
     if (modId === 'users') {
-      if (secId === 'roles') return <UsersRolesPage />;
-      return <UsersListPage />;
+      if (secId === 'roles') return <RolesPage />;
+      if (secId === 'audit') return <AuditLogPage />;
+      return <UsersPage />;
     }
 
     if (modId === 'settings') {
-      if (secId === 'billing') return <SettingsBillingPage />;
-      return <SettingsGeneralPage />;
+      if (secId === 'appearance') return <AppearancePage />;
+      if (secId === 'billing')    return <BillingPage />;
+      return <GeneralSettingsPage />;
     }
 
     if (modId === 'pos') {
@@ -125,12 +131,12 @@ component Shell {
     }
 
     if (modId === 'inventory') {
-      if (secId === 'categories')  return <InventoryCategoriesPage />;
-      if (secId === 'warehouses')  return <InventoryWarehousesPage />;
-      if (secId === 'stock-take')  return <StockTakePage />;
-      if (secId === 'import')      return <StockTakeImportPage />;
-      if (secId === 'movements')   return <StockMovementsPage />;
-      if (secId === 'reports')     return <InventoryReportsPage />;
+      if (secId === 'stock-levels') return <StockLevelsPage />;
+      if (secId === 'stock-take')   return <StockTakePage />;
+      if (secId === 'movements')    return <StockMovementsPage />;
+      if (secId === 'categories')   return <CategoriesPage />;
+      if (secId === 'suppliers')    return <SuppliersPage />;
+      if (secId === 'settings')     return <InventorySettingsPage />;
       return <InventoryItemsPage />;
     }
 

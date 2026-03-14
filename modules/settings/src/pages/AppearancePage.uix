@@ -1,0 +1,42 @@
+import { SwissComponent } from '@swissjs/core';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
+
+component AppearancePage {
+  props = {};
+
+  state { 
+    let isDark: boolean = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark';
+  }
+
+  toggleTheme() {
+    const root = document.documentElement;
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('alpine-theme', next); } catch (_) {}
+    this.isDark = (next === 'dark');
+    this.scheduleUpdate?.();
+  }
+
+  render() {
+    return (
+      <div class="alp-page">
+        <PageHeader 
+          title="Appearance"
+          breadcrumb={[{ label: 'Settings' }, { label: 'Appearance' }]}
+        />
+
+        <div style="background: var(--color-bg-surface); border: 1px solid var(--color-bg-border); border-radius: var(--radius-md); padding: var(--space-6); max-width: 600px;">
+          <h3 style="margin-top: 0; font-size: 1rem;">Theme Settings</h3>
+          <p style="font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">Choose between light and dark modes.</p>
+          
+          <FormGroup label="Theme Mode" renderField={() => (
+            <button type="button" class="aui-btn aui-btn--outline" onclick={() => this.toggleTheme()}>
+              {this.isDark ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}
+            </button>
+          )} />
+        </div>
+      </div>
+    );
+  }
+}

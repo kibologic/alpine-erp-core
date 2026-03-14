@@ -1,0 +1,40 @@
+import { SwissComponent } from '@swissjs/core';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+
+const columns = [
+  { key: 'timestamp', label: 'Timestamp', width: '180px', sortable: true },
+  { key: 'user', label: 'User', width: '160px' },
+  { key: 'action', label: 'Action', width: '140px' },
+  { key: 'entity', label: 'Entity', width: '120px' },
+  { key: 'entity_id', label: 'Entity ID', width: '140px' },
+  { key: 'details', label: 'Details' }
+];
+
+component AuditLogPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="alp-page">
+        <PageHeader 
+          title="Audit Log"
+          breadcrumb={[{ label: 'Users' }, { label: 'Audit Log' }]}
+          actions={[
+            { label: 'Filter', onclick: () => {}, variant: 'outline' },
+            { label: 'Export', onclick: () => {}, variant: 'outline' }
+          ]}
+        />
+
+        <DataTable 
+          columns={columns}
+          rows={[]}
+          loading={false}
+          searchable={true}
+          exportable={true}
+          filename="audit_log"
+        />
+      </div>
+    );
+  }
+}

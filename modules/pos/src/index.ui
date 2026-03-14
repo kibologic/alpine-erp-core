@@ -8,10 +8,12 @@ registerModule({
   icon: shoppingCartSvg,
   tier: 'free',
   sections: [
-    { id: 'terminal', label: 'Terminal', icon: 'monitor' },
-    { id: 'products', label: 'Products', icon: 'package' },
-    { id: 'sessions', label: 'Sessions', icon: 'clock' },
-    { id: 'settings', label: 'Settings', icon: 'settings' },
+    { id: 'terminal', label: 'Terminal', page: 'PosTerminalPage' },
+    { id: 'sales', label: 'Sales', page: 'PosSalesPage' },
+    { id: 'customers', label: 'Customers', page: 'PosCustomersPage' },
+    { id: 'products', label: 'Products', page: 'PosProductsPage' },
+    { id: 'sessions', label: 'Sessions', page: 'PosSessionsPage' },
+    { id: 'settings', label: 'Settings', page: 'PosSettingsPage' },
   ],
   constraints: {
     maxProducts: 500,

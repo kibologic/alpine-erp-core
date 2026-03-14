@@ -1,0 +1,77 @@
+import { SwissComponent } from '@swissjs/core';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+import { EmptyState } from '@alpine/ui/src/feedback/EmptyState.uix';
+
+const columns = [
+  { key: 'id', label: 'Sale #', width: '100px' },
+  { key: 'timestamp', label: 'Date/Time', width: '160px' },
+  { key: 'customer', label: 'Customer' },
+  { key: 'cashier', label: 'Cashier' },
+  { key: 'items_count', label: 'Items', width: '80px' },
+  { key: 'totalHTML', label: 'Total', width: '120px' },
+  { key: 'payment_method', label: 'Payment', width: '120px' },
+  { key: 'statusHTML', label: 'Status', width: '120px' },
+  { key: 'actionsHTML', label: '', width: '100px' }
+];
+
+component PosSalesPage {
+  props = {};
+
+  state { let sales: any[] = []; }
+  state { let loading: boolean = false; }
+
+  render() {
+    return (
+      <div class="alp-page">
+        <PageHeader 
+          title="Sales"
+          breadcrumb={[{ label: 'Point of Sale' }, { label: 'Sales' }]}
+          actions={[
+            { label: 'Filter', onclick: () => {}, variant: 'outline' },
+            { label: 'Export', onclick: () => {}, variant: 'outline' }
+          ]}
+        />
+
+        <div class="aui-stat-strip">
+          <div class="aui-stat-card">
+            <div class="aui-stat-label">Today's Total</div>
+            <div class="aui-stat-value">MWK 0.00</div>
+            <div class="aui-stat-delta aui-stat-delta--neutral">0% from yesterday</div>
+          </div>
+          <div class="aui-stat-card">
+            <div class="aui-stat-label">Transactions</div>
+            <div class="aui-stat-value">0</div>
+          </div>
+          <div class="aui-stat-card">
+            <div class="aui-stat-label">Refunds Today</div>
+            <div class="aui-stat-value">MWK 0.00</div>
+          </div>
+          <div class="aui-stat-card">
+            <div class="aui-stat-label">Avg Basket</div>
+            <div class="aui-stat-value">MWK 0.00</div>
+          </div>
+        </div>
+
+        {this.sales.length === 0 ? (
+          <EmptyState 
+            icon="💰"
+            title="No sales yet"
+            description="Complete a sale in the terminal to see it here."
+            actionLabel="Open Terminal"
+            onAction={() => window.location.hash = '#/pos/terminal'}
+          />
+        ) : (
+          <DataTable 
+            columns={columns}
+            rows={this.sales}
+            loading={this.loading}
+            searchable={true}
+            exportable={true}
+            filename="sales_history"
+          />
+        )}
+      </div>
+    );
+  }
+}

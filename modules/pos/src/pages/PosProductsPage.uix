@@ -1,13 +1,13 @@
 import { SwissComponent } from '@swissjs/core';
 import { InventoryService } from '@alpine/core';
-import PageHeader from '@alpine/ui/src/layout/PageHeader.uix';
-import DataTable from '@alpine/ui/src/data/DataTable.uix';
-import DataImport from '@alpine/ui/src/data/DataImport.uix';
-import Modal from '@alpine/ui/src/feedback/Modal.uix';
-import TextField from '@alpine/ui/src/form/TextField.uix';
-import CurrencyField from '@alpine/ui/src/form/CurrencyField.uix';
-import SelectField from '@alpine/ui/src/form/SelectField.uix';
-import FormGroup from '@alpine/ui/src/form/FormGroup.uix';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+import { DataImport } from '@alpine/ui/src/data/DataImport.uix';
+import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
+import { TextField } from '@alpine/ui/src/form/TextField.uix';
+import { CurrencyField } from '@alpine/ui/src/form/CurrencyField.uix';
+import { SelectField } from '@alpine/ui/src/form/SelectField.uix';
+import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
 
 const columns = [
   { key: 'sku', label: 'SKU', sortable: false, width: '120px' },

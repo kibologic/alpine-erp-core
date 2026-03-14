@@ -1,0 +1,36 @@
+import { SwissComponent } from '@swissjs/core';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+
+const columns = [
+  { key: 'name', label: 'Role Name', sortable: true },
+  { key: 'permissions_count', label: 'Permissions', width: '120px' },
+  { key: 'users_count', label: 'Users Attached', width: '140px' },
+  { key: 'actionsHTML', label: '', width: '120px' }
+];
+
+component RolesPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="alp-page">
+        <PageHeader 
+          title="Roles & Permissions"
+          breadcrumb={[{ label: 'Users' }, { label: 'Roles' }]}
+          actions={[
+            { label: 'Create Role', onclick: () => {}, variant: 'primary' }
+          ]}
+        />
+
+        <DataTable 
+          columns={columns}
+          rows={[]}
+          loading={false}
+          searchable={true}
+          filename="roles"
+        />
+      </div>
+    );
+  }
+}

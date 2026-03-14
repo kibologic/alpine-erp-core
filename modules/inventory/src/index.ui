@@ -6,10 +6,13 @@ registerModule({
   icon: '📦',
   tier: 'free',
   sections: [
-    { id: 'items',       label: 'Items',           page: 'InventoryItemsPage' },
-    { id: 'stock-take',  label: 'Stock Take',      page: 'StockTakePage' },
-    { id: 'import',      label: 'Import Stock',    page: 'StockTakeImportPage' },
-    { id: 'movements',   label: 'Stock Movements', page: 'StockMovementsPage' },
+    { id: 'items', label: 'Items', page: 'InventoryItemsPage' },
+    { id: 'stock-levels', label: 'Stock Levels', page: 'StockLevelsPage' },
+    { id: 'stock-take', label: 'Stock Take', page: 'StockTakePage' },
+    { id: 'movements', label: 'Stock Movements', page: 'StockMovementsPage' },
+    { id: 'categories', label: 'Categories', page: 'CategoriesPage' },
+    { id: 'suppliers', label: 'Suppliers', page: 'SuppliersPage' },
+    { id: 'settings', label: 'Settings', page: 'InventorySettingsPage' },
   ],
   async register(app) {
     console.log('[Alpine] Inventory module registered');

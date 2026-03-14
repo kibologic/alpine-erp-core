@@ -1,0 +1,40 @@
+import { SwissComponent } from '@swissjs/core';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+
+component BillingPage {
+  props = {};
+
+  render() {
+    return (
+      <div class="alp-page">
+        <PageHeader 
+          title="Billing & Plans"
+          breadcrumb={[{ label: 'Settings' }, { label: 'Billing' }]}
+        />
+
+        <div style="background: var(--color-bg-surface); border: 1px solid var(--color-bg-border); border-radius: var(--radius-md); padding: var(--space-8); text-align: center; max-width: 600px; margin: 0 auto;">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+          <h2 style="margin-top: 0;">You are on the Free Plan</h2>
+          <p style="color: var(--color-text-muted); margin-bottom: 2rem;">
+            Enjoy core ERP features at no cost. Upgrade to Enterprise for advanced inventory, multi-terminal POS, and priority support.
+          </p>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; text-align: left; margin-bottom: 2rem;">
+            <div>
+               <h4 style="margin-bottom: 0.5rem;">Current Plan</h4>
+               <div style="font-size: 1.25rem; font-weight: bold; color: var(--color-success-light);">FREE</div>
+               <div style="font-size: 0.875rem; color: var(--color-text-muted);">MWK 0 / month</div>
+            </div>
+            <div>
+               <h4 style="margin-bottom: 0.5rem;">Next Renewal</h4>
+               <div style="font-size: 1.25rem; font-weight: bold;">Never</div>
+               <div style="font-size: 0.875rem; color: var(--color-text-muted);">Lifetime access</div>
+            </div>
+          </div>
+
+          <button class="aui-btn aui-btn--primary" style="width: 100%; padding: 1rem;">Upgrade to Enterprise</button>
+        </div>
+      </div>
+    );
+  }
+}
