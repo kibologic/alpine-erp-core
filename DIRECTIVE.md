@@ -62,3 +62,25 @@ Includes:
 ### Open Issues
 - Modal close/X/ESC fix — Phase 1 pending
 - CG-08 — Draggable modals: document.addEventListener in mounted() — needs verification
+
+## Sprint — POS Refinements + ECharts (Current)
+
+### POS-F01 — Terminal Fullscreen Modes
+Location: `modules/pos/src/pages/PosTerminalPage.uix`
+- Mode 1: App-level fullscreen — hide both sidebars + topbar via CSS class on body
+- Mode 2: Browser fullscreen via `document.documentElement.requestFullscreen()`
+- Toggle button on terminal page header
+- ESC key exits both modes
+Status: COMPLETE
+
+### POS-F02 — Global Quick Sale Widget  
+Location: `apps/server/app/src/Shell.uix`
+- Floating button bottom-left, visible on all non-terminal pages
+- Click → opens quick sale modal reusing terminal UI components
+- Status: COMPLETE (UI placeholder, wiring pending)
+
+### Dashboard — ECharts Integration
+Location: `modules/dashboard/src/pages/DashboardPage.uix`
+- Replaced static bars with real `BarChart` and `LineChart` (Apache ECharts)
+- Integrated via `@alpine/ui` base Chart component
+- Status: COMPLETE
