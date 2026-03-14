@@ -13,35 +13,12 @@ import { PosTerminalPage } from '@alpine/module-pos/src/pages/PosTerminalPage.ui
 import { PosProductsPage } from '@alpine/module-pos/src/pages/PosProductsPage.uix';
 import { PosSessionsPage } from '@alpine/module-pos/src/pages/PosSessionsPage.uix';
 import { PosSettingsPage } from '@alpine/module-pos/src/pages/PosSettingsPage.uix';
-import { FinanceAccountsPage } from '@alpine/module-finance/src/pages/FinanceAccountsPage.uix';
-import { FinanceJournalPage } from '@alpine/module-finance/src/pages/FinanceJournalPage.uix';
-import { FinanceLedgerPage } from '@alpine/module-finance/src/pages/FinanceLedgerPage.uix';
-import { FinanceTrialBalancePage } from '@alpine/module-finance/src/pages/FinanceTrialBalancePage.uix';
-import { FinanceReportsPage } from '@alpine/module-finance/src/pages/FinanceReportsPage.uix';
-import { FinanceSettingsPage } from '@alpine/module-finance/src/pages/FinanceSettingsPage.uix';
-import { HrEmployeesPage } from '@alpine/module-hr/src/pages/HrEmployeesPage.uix';
-import { HrPayrollPage } from '@alpine/module-hr/src/pages/HrPayrollPage.uix';
-import { HrAttendancePage } from '@alpine/module-hr/src/pages/HrAttendancePage.uix';
-import { HrLeavesPage } from '@alpine/module-hr/src/pages/HrLeavesPage.uix';
-import { HrSettingsPage } from '@alpine/module-hr/src/pages/HrSettingsPage.uix';
 import { InventoryItemsPage } from '@alpine/module-inventory/src/pages/InventoryItemsPage.uix';
 import { InventoryCategoriesPage } from '@alpine/module-inventory/src/pages/InventoryCategoriesPage.uix';
 import { InventoryWarehousesPage } from '@alpine/module-inventory/src/pages/InventoryWarehousesPage.uix';
 import { InventoryMovementsPage } from '@alpine/module-inventory/src/pages/InventoryMovementsPage.uix';
 import { InventoryAdjustmentsPage } from '@alpine/module-inventory/src/pages/InventoryAdjustmentsPage.uix';
 import { InventoryReportsPage } from '@alpine/module-inventory/src/pages/InventoryReportsPage.uix';
-import { SalesOverviewPage } from '@alpine/module-sales/src/pages/SalesOverviewPage.uix';
-import { CustomersPage } from '@alpine/module-sales/src/pages/CustomersPage.uix';
-import { SalesOrdersPage } from '@alpine/module-sales/src/pages/SalesOrdersPage.uix';
-import { InvoicesPage } from '@alpine/module-sales/src/pages/InvoicesPage.uix';
-import { QuotesPage } from '@alpine/module-sales/src/pages/QuotesPage.uix';
-import { SalesReportsPage } from '@alpine/module-sales/src/pages/SalesReportsPage.uix';
-import { ProcurementOverviewPage } from '@alpine/module-procurement/src/pages/ProcurementOverviewPage.uix';
-import { SuppliersPage } from '@alpine/module-procurement/src/pages/SuppliersPage.uix';
-import { PurchaseOrdersPage } from '@alpine/module-procurement/src/pages/PurchaseOrdersPage.uix';
-import { ReceiptsPage } from '@alpine/module-procurement/src/pages/ReceiptsPage.uix';
-import { BillsPage } from '@alpine/module-procurement/src/pages/BillsPage.uix';
-import { ProcurementReportsPage } from '@alpine/module-procurement/src/pages/ProcurementReportsPage.uix';
 
 component Shell {
   props = {
@@ -146,23 +123,6 @@ component Shell {
       return <PosTerminalPage />;
     }
 
-    if (modId === 'finance') {
-      if (secId === 'journal')       return <FinanceJournalPage />;
-      if (secId === 'ledger')        return <FinanceLedgerPage />;
-      if (secId === 'trial-balance') return <FinanceTrialBalancePage />;
-      if (secId === 'reports')       return <FinanceReportsPage />;
-      if (secId === 'settings')      return <FinanceSettingsPage />;
-      return <FinanceAccountsPage />;
-    }
-
-    if (modId === 'hr') {
-      if (secId === 'payroll')    return <HrPayrollPage />;
-      if (secId === 'attendance') return <HrAttendancePage />;
-      if (secId === 'leaves')     return <HrLeavesPage />;
-      if (secId === 'settings')   return <HrSettingsPage />;
-      return <HrEmployeesPage />;
-    }
-
     if (modId === 'inventory') {
       if (secId === 'categories')  return <InventoryCategoriesPage />;
       if (secId === 'warehouses')  return <InventoryWarehousesPage />;
@@ -170,24 +130,6 @@ component Shell {
       if (secId === 'adjustments') return <InventoryAdjustmentsPage />;
       if (secId === 'reports')     return <InventoryReportsPage />;
       return <InventoryItemsPage />;
-    }
-
-    if (modId === 'sales') {
-      if (secId === 'customers') return <CustomersPage />;
-      if (secId === 'orders')    return <SalesOrdersPage />;
-      if (secId === 'invoices')  return <InvoicesPage />;
-      if (secId === 'quotes')    return <QuotesPage />;
-      if (secId === 'reports')   return <SalesReportsPage />;
-      return <SalesOverviewPage />;
-    }
-
-    if (modId === 'procurement') {
-      if (secId === 'suppliers')       return <SuppliersPage />;
-      if (secId === 'purchase-orders') return <PurchaseOrdersPage />;
-      if (secId === 'receipts')        return <ReceiptsPage />;
-      if (secId === 'bills')           return <BillsPage />;
-      if (secId === 'reports')         return <ProcurementReportsPage />;
-      return <ProcurementOverviewPage />;
     }
 
     return (
