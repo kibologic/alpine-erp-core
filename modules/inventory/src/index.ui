@@ -1,19 +1,17 @@
-import { registerModule } from '@alpine/core'
+import { registerModule } from '@alpine/core';
 
 registerModule({
   id: 'inventory',
   name: 'Inventory',
   icon: '📦',
-  tier: 'enterprise',
+  tier: 'free',
   sections: [
-    { id: 'items',       label: 'Items'       },
-    { id: 'categories',  label: 'Categories'  },
-    { id: 'warehouses',  label: 'Warehouses'  },
-    { id: 'movements',   label: 'Movements'   },
-    { id: 'adjustments', label: 'Adjustments' },
-    { id: 'reports',     label: 'Reports'     },
+    { id: 'items',       label: 'Items',           page: 'InventoryItemsPage' },
+    { id: 'stock-take',  label: 'Stock Take',      page: 'StockTakePage' },
+    { id: 'import',      label: 'Import Stock',    page: 'StockTakeImportPage' },
+    { id: 'movements',   label: 'Stock Movements', page: 'StockMovementsPage' },
   ],
   async register(app) {
-    console.log('[Alpine] Inventory module registered')
+    console.log('[Alpine] Inventory module registered');
   },
-})
+});

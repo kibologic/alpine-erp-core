@@ -1,0 +1,84 @@
+import { SwissComponent } from '@swissjs/core';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { DataImport } from '@alpine/ui/src/data/DataImport.uix';
+
+component StockTakeImportPage {
+  props = {};
+
+  state { let importResult: any = null; }
+
+  handleImport(data: any[]) {
+    console.log('[Alpine] Importing stock adjustments', data);
+    
+    const stats = {
+      total: data.length,
+      positive: data.filter(d => d.adjustment_qty > 0).length,
+      negative: data.filter(d => d.adjustment_qty < 0).length,
+      valueImpact: data.reduce((acc, d) => acc + (d.adjustment_qty * 100), 0) // Dummy value impact calc
+    };
+
+    this.importResult = stats;
+    this.scheduleUpdate?.();
+    
+    // In real app: axios.post('/api/v1/inventory/stock-take/import', { adjustments: data })
+  }
+
+  render() {
+    const importColumns = [
+      { key: 'sku', label: 'SKU', required: true },
+      { key: 'adjustment_qty', label: 'Adjustment Qty', required: true, type: 'number' },
+      { key: 'reason', label: 'Reason' },
+      { key: 'date', label: 'Date' }
+    ];
+
+    return (
+      <div class="alp-page">
+        <PageHeader 
+          title="Import Stock Take"
+          breadcrumb={[{ label: 'Inventory' }, { label: 'Stock Take' }]}
+        />
+
+        <div style="background: white; border: 1px solid var(--dusty-denim); border-radius: 8px; padding: 2rem; max-width: 800px; margin: 0 auto;">
+          <h2 style="margin-top: 0; color: var(--ink-black);">Excel / CSV Import</h2>
+          <p style="color: var(--prussian-blue); margin-bottom: 2rem;">
+            Upload your stock take workbook. Ensure columns match: <strong>SKU</strong>, <strong>Adjustment Qty</strong>, and <strong>Reason</strong>.
+          </p>
+
+          {!this.importResult ? (
+            <DataImport 
+              entityName="Stock Adjustments"
+              columns={importColumns}
+              onImport={(data: any[]) => this.handleImport(data)}
+            />
+          ) : (
+            <div style="background: var(--alabaster-grey); border: 1px solid var(--dusk-blue); padding: 2rem; border-radius: 6px; text-align: center;">
+              <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+              <h3 style="color: var(--ink-black); margin-bottom: 1rem;">Import Successful</h3>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem; max-width: 300px; margin: 0 auto; text-align: left;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span>Total Adjustments:</span>
+                  <strong>{this.importResult.total}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>Positive (Found):</span>
+                  <strong>{this.importResult.positive}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>Negative (Shrinkage):</span>
+                  <strong>{this.importResult.negative}</strong>
+                </div>
+              </div>
+              <button 
+                class="aui-btn" 
+                style="margin-top: 2rem;"
+                onclick={() => { this.importResult = null; this.scheduleUpdate?.(); }}
+              >
+                Import Another File
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+}

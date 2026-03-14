@@ -14,10 +14,11 @@ import { PosProductsPage } from '@alpine/module-pos/src/pages/PosProductsPage.ui
 import { PosSessionsPage } from '@alpine/module-pos/src/pages/PosSessionsPage.uix';
 import { PosSettingsPage } from '@alpine/module-pos/src/pages/PosSettingsPage.uix';
 import { InventoryItemsPage } from '@alpine/module-inventory/src/pages/InventoryItemsPage.uix';
+import { StockTakePage } from '@alpine/module-inventory/src/pages/StockTakePage.uix';
+import { StockTakeImportPage } from '@alpine/module-inventory/src/pages/StockTakeImportPage.uix';
+import { StockMovementsPage } from '@alpine/module-inventory/src/pages/StockMovementsPage.uix';
 import { InventoryCategoriesPage } from '@alpine/module-inventory/src/pages/InventoryCategoriesPage.uix';
 import { InventoryWarehousesPage } from '@alpine/module-inventory/src/pages/InventoryWarehousesPage.uix';
-import { InventoryMovementsPage } from '@alpine/module-inventory/src/pages/InventoryMovementsPage.uix';
-import { InventoryAdjustmentsPage } from '@alpine/module-inventory/src/pages/InventoryAdjustmentsPage.uix';
 import { InventoryReportsPage } from '@alpine/module-inventory/src/pages/InventoryReportsPage.uix';
 
 component Shell {
@@ -126,8 +127,9 @@ component Shell {
     if (modId === 'inventory') {
       if (secId === 'categories')  return <InventoryCategoriesPage />;
       if (secId === 'warehouses')  return <InventoryWarehousesPage />;
-      if (secId === 'movements')   return <InventoryMovementsPage />;
-      if (secId === 'adjustments') return <InventoryAdjustmentsPage />;
+      if (secId === 'stock-take')  return <StockTakePage />;
+      if (secId === 'import')      return <StockTakeImportPage />;
+      if (secId === 'movements')   return <StockMovementsPage />;
       if (secId === 'reports')     return <InventoryReportsPage />;
       return <InventoryItemsPage />;
     }

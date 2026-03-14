@@ -8,4 +8,5 @@ export const InventoryService = {
     api.post('/inventory/adjust', { product_id: productId, quantity, reason }),
   getValuation: () => api.get('/inventory/valuation'),
   getCustomers: () => api.get('/inventory/customers'),
+  getStockMovements: () => api.get('/inventory/movements'),
 };

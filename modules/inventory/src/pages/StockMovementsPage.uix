@@ -1,0 +1,72 @@
+import { SwissComponent } from '@swissjs/core';
+import { InventoryService } from '@alpine/core';
+import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+
+const columns = [
+  { key: 'created_at', label: 'Date', sortable: true, width: '160px' },
+  { key: 'product_name', label: 'Product', sortable: true },
+  { key: 'sku', label: 'SKU', width: '120px' },
+  { key: 'quantityHTML', label: 'Quantity', width: '100px' },
+  { key: 'reason', label: 'Reason' },
+  { key: 'reference', label: 'Reference', width: '140px' },
+  { key: 'created_by_name', label: 'Created By', width: '140px' }
+];
+
+component StockMovementsPage {
+  props = {};
+
+  state { let movements: any[] = []; }
+  state { let loading: boolean = true; }
+
+  async mounted() {
+    try {
+      if (InventoryService && InventoryService.getStockMovements) {
+        const data = await InventoryService.getStockMovements();
+        this.movements = data || [];
+      } else {
+        // Fallback/Mock
+        this.movements = [];
+      }
+    } catch (e) {
+      console.error('Failed to load movements', e);
+      this.movements = [];
+    } finally {
+      this.loading = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  render() {
+    const displayRows = this.movements.map(m => {
+      const qty = parseFloat(m.quantity) || 0;
+      return {
+        ...m,
+        created_at: m.created_at ? new Date(m.created_at).toLocaleString() : '',
+        quantityHTML: `<span style="color: ${qty < 0 ? '#c0392b' : '#27ae60'}; font-weight: 600;">${qty > 0 ? '+' : ''}${qty}</span>`,
+        reference: m.reference_id ? `${m.reference_type || 'REF'}: ${m.reference_id}` : '-'
+      };
+    });
+
+    return (
+      <div class="alp-page">
+        <PageHeader 
+          title="Stock Movements"
+          breadcrumb={[{ label: 'Inventory' }, { label: 'History' }]}
+          actions={[
+             { label: 'Export Movements', onclick: () => {}, variant: 'outline' }
+          ]}
+        />
+
+        <DataTable 
+          columns={columns}
+          rows={displayRows}
+          loading={this.loading}
+          searchable={true}
+          exportable={true}
+          filename="stock_movements"
+        />
+      </div>
+    );
+  }
+}
