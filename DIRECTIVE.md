@@ -64,7 +64,27 @@ Includes:
 - Form input onchange handlers — Phase 1 pending
 - CG-08: Draggable modal support needs compiler verification
 - E-01: Stock Take export endpoint (FastAPI, Docker machine)
-- E-02: Stock Take import endpoint (FastAPI, Docker machine)
+
+## Pending Features (Post-Sprint)
+
+### POS-F01 — Terminal Fullscreen Modes
+Location: `modules/pos/src/pages/PosTerminalPage.uix`
+- Mode 1: App-level fullscreen — hide both sidebars + topbar via CSS class on body
+- Mode 2: Browser fullscreen via `document.documentElement.requestFullscreen()`
+- Toggle button on terminal page header
+- ESC key exits both modes
+Status: PENDING — build after current sprint
+
+### POS-F02 — Global Quick Sale Widget  
+Location: `apps/server/app/src/Shell.uix`
+- Floating button bottom-left, visible on all non-terminal pages
+- Click → opens quick sale modal reusing terminal UI components
+- Persists across all module navigations
+- More features TBD
+Status: PENDING — build after current sprint
+
+## Sprint — Dark Theme + POS Terminal + Charts (Current)
+dpoint (FastAPI, Docker machine)
 - E-03: Online/offline export pattern
 
 ### Compiler Gaps

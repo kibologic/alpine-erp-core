@@ -34,43 +34,6 @@ function fmt(n: number): string {
 
 component PosTerminalPage {
   props = {};
-```
-import { SwissComponent } from '@swissjs/core';
-import { PosService, InventoryService } from '@alpine/core';
-
-const TAX_RATE = 0.16;
-const REGISTER_ID = 'REG-001';
-const DEV_BYPASS_BACKEND = true; // TODO: REMOVE BEFORE PRODUCTION — bypasses backend check
-
-const MOCK_PRODUCTS = [
-  { id: '1', name: 'Coffee', sku: 'BEV-001', price: 500, category: { name: 'Beverages' }, stock_quantity: 50 },
-  { id: '2', name: 'Sandwich', sku: 'FOOD-001', price: 1200, category: { name: 'Food' }, stock_quantity: 30 },
-  { id: '3', name: 'Water 500ml', sku: 'BEV-002', price: 200, category: { name: 'Beverages' }, stock_quantity: 100 },
-  { id: '4', name: 'Chips', sku: 'FOOD-002', price: 350, category: { name: 'Food' }, stock_quantity: 45 },
-  { id: '5', name: 'Juice', sku: 'BEV-003', price: 800, category: { name: 'Beverages' }, stock_quantity: 25 },
-  { id: '6', name: 'Muffin', sku: 'FOOD-003', price: 600, category: { name: 'Food' }, stock_quantity: 20 },
-  { id: '7', name: 'Tea', sku: 'BEV-004', price: 400, category: { name: 'Beverages' }, stock_quantity: 60 },
-  { id: '8', name: 'Burger', sku: 'FOOD-004', price: 2500, category: { name: 'Food' }, stock_quantity: 15 },
-  { id: '9', name: 'Smoothie', sku: 'BEV-005', price: 1500, category: { name: 'Beverages' }, stock_quantity: 18 },
-  { id: '10', name: 'Salad', sku: 'FOOD-005', price: 1800, category: { name: 'Food' }, stock_quantity: 12 },
-  { id: '11', name: 'Espresso', sku: 'BEV-006', price: 600, category: { name: 'Beverages' }, stock_quantity: 40 },
-  { id: '12', name: 'Pizza Slice', sku: 'FOOD-006', price: 3000, category: { name: 'Food' }, stock_quantity: 8 },
-];
-
-const MOCK_SESSION = {
-  id: 'mock-session-001',
-  register_id: 'REG-001',
-  status: 'open',
-  opening_float: 50000,
-  opened_at: new Date().toISOString()
-};
-
-function fmt(n: number): string {
-  return `MWK ${(n || 0).toLocaleString()}`;
-}
-
-component PosTerminalPage {
-  props = {};
 
   state { let cartItems: any[] = []; }
   state { let products: any[] = []; }
@@ -80,10 +43,9 @@ component PosTerminalPage {
   state { let loading: boolean = true; }
   state { let openingFloat: number = 0; }
   state { let processing: boolean = false; }
-  state { let paymentMethod: 'cash' | 'card' | 'mobile' = 'cash'; }
+  state { let paymentMethod: any = 'cash'; }
   state { let showSuccessModal: boolean = false; }
   state { let lastSaleTotal: number = 0; }
-
 
   async mount() {
     await this.refreshData();
@@ -367,4 +329,3 @@ component PosTerminalPage {
     );
   }
 }
-```
