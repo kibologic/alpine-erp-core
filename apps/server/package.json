@@ -14,11 +14,7 @@
     "@alpine/module-users": "workspace:*",
     "@alpine/module-settings": "workspace:*",
     "@alpine/module-pos": "workspace:*",
-    "@alpine/module-finance": "workspace:*",
-    "@alpine/module-hr": "workspace:*",
     "@alpine/module-inventory": "workspace:*",
-    "@alpine/module-sales": "workspace:*",
-    "@alpine/module-procurement": "workspace:*",
     "@swissjs/core": "*",
     "@swissjs/swite": "*",
     "reflect-metadata": "^0.2.2"
