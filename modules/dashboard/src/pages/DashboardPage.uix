@@ -24,7 +24,7 @@ component DashboardPage {
       <div class="dash-page">
         <div class="dash-stat-strip">
           <div class="dash-card">
-            <div class="dash-stat-value">MWK 1.2M</div>
+            <div class="dash-stat-value">MWK 1,240,000</div>
             <div class="dash-stat-label">Today's Sales</div>
           </div>
           <div class="dash-card">
@@ -40,7 +40,7 @@ component DashboardPage {
             <div class="dash-stat-label">Open Sessions</div>
           </div>
           <div class="dash-card">
-            <div class="dash-stat-value">MWK 45M</div>
+            <div class="dash-stat-value">MWK 45.2M</div>
             <div class="dash-stat-label">Inventory Value</div>
           </div>
         </div>
@@ -52,6 +52,7 @@ component DashboardPage {
               categories={MOCK_SALES_DATA.categories}
               series={MOCK_SALES_DATA.series}
               height="240px"
+              class="BarChart"
             />
           </div>
           <div class="dash-card">
@@ -60,6 +61,7 @@ component DashboardPage {
               categories={MOCK_CATEGORY_DATA.categories}
               series={MOCK_CATEGORY_DATA.series}
               height="240px"
+              class="BarChart"
             />
           </div>
         </div>
@@ -81,13 +83,13 @@ component DashboardPage {
           <div class="dash-card">
             <div class="dash-card-title">Inventory Alerts</div>
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-              <div style="padding: 0.75rem; border-left: 3px solid var(--color-danger); background: var(--color-bg-elevated); border-radius: 4px; font-size: 0.875rem;">
-                <div style="font-weight: 600;">Espresso Beans (Premium)</div>
-                <div style="color: var(--color-text-muted);">Stock: 2kg (Reorder at 5kg)</div>
+              <div style="padding: 1rem; border-left: 3px solid var(--color-danger); background: var(--color-bg-elevated); border-radius: var(--radius-md); font-size: var(--font-size-sm);">
+                <div style="font-weight: 600; color: var(--color-text-primary);">Espresso Beans (Premium)</div>
+                <div style="color: var(--color-text-muted); margin-top: 0.25rem;">Stock: 2kg · Reorder level: 5kg</div>
               </div>
-              <div style="padding: 0.75rem; border-left: 3px solid var(--color-warning); background: var(--color-bg-elevated); border-radius: 4px; font-size: 0.875rem;">
-                <div style="font-weight: 600;">Paper Cups (12oz)</div>
-                <div style="color: var(--color-text-muted);">Stock: 150 units (Reorder at 200)</div>
+              <div style="padding: 1rem; border-left: 3px solid var(--color-warning); background: var(--color-bg-elevated); border-radius: var(--radius-md); font-size: var(--font-size-sm);">
+                <div style="font-weight: 600; color: var(--color-text-primary);">Paper Cups (12oz)</div>
+                <div style="color: var(--color-text-muted); margin-top: 0.25rem;">Stock: 150 units · Reorder level: 200</div>
               </div>
             </div>
           </div>
@@ -95,19 +97,19 @@ component DashboardPage {
 
         <div class="dash-quick-actions">
           <div class="dash-quick-btn" onclick={() => window.location.hash = '#/pos/terminal'}>
-            <span style="font-size: 1.25rem;">🏪</span>
+            <span>🏪</span>
             <span>Open Terminal</span>
           </div>
           <div class="dash-quick-btn" onclick={() => window.location.hash = '#/inventory/stock-take'}>
-            <span style="font-size: 1.25rem;">📋</span>
+            <span>📋</span>
             <span>Stock Take</span>
           </div>
           <div class="dash-quick-btn" onclick={() => window.location.hash = '#/inventory/items'}>
-            <span style="font-size: 1.25rem;">📦</span>
+            <span>📦</span>
             <span>Add Product</span>
           </div>
           <div class="dash-quick-btn" onclick={() => window.location.hash = '#/users/users'}>
-            <span style="font-size: 1.25rem;">👤</span>
+            <span>👤</span>
             <span>Invite User</span>
           </div>
         </div>
