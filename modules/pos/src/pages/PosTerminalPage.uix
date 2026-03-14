@@ -132,20 +132,25 @@ component PosTerminalPage {
 
     if (!this.session) {
       return (
-        <div class="pos-session-gate">
-          <div class="pos-session-card">
-            <h2>Open Cash Session</h2>
-            <p>Register: {REGISTER_ID}</p>
-            <div class="erp-form-row">
+        <div class="pos-gate-state">
+          <div class="pos-state-card">
+            <svg class="pos-state-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+              <path d="M7 7h.01M11 7h6M7 11h10"/>
+            </svg>
+            <h2 class="pos-state-title">Open Cash Session</h2>
+            <p class="pos-state-desc">Register: {REGISTER_ID}</p>
+            <div class="pos-float-row">
               <label>Opening Float (MWK)</label>
-              <input 
-                type="number" 
-                value={this.openingFloat} 
+              <input
+                type="number"
+                value={this.openingFloat}
                 oninput={(e: any) => this.openingFloat = Number(e.target.value)}
               />
             </div>
-            <button 
-              class="erp-btn erp-btn--primary" 
+            <button
+              class="pos-state-btn"
               onclick={() => this.openSession()}
               disabled={this.processing}
             >

@@ -684,6 +684,10 @@ textarea.erp-settings-input {
 .pos-state-btn:hover {
   background: var(--color-accent-hover);
 }
+.pos-state-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* Opening float row (inside gate card) */
 .pos-float-row {
