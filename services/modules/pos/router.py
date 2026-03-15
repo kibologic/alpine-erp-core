@@ -10,6 +10,36 @@ from . import schemas, service
 router = APIRouter(prefix="/pos", tags=["POS"])
 
 
+@router.get("/sessions")
+async def list_sessions(
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    from core.models import CashSession
+    from sqlalchemy import select
+
+    result = await session.execute(
+        select(CashSession)
+        .where(CashSession.tenant_id == tenant_id)
+        .order_by(CashSession.opened_at.desc())
+        .limit(50)
+    )
+    sessions = result.scalars().all()
+    return [
+        {
+            "id": str(s.id),
+            "register_id": s.register_id,
+            "status": s.status,
+            "opening_float": float(s.opening_float),
+            "closing_amount": float(s.closing_amount) if s.closing_amount else None,
+            "discrepancy": float(s.discrepancy) if s.discrepancy else None,
+            "opened_at": s.opened_at.isoformat(),
+            "closed_at": s.closed_at.isoformat() if s.closed_at else None,
+        }
+        for s in sessions
+    ]
+
+
 @router.post("/sessions/open", response_model=schemas.SessionResponse)
 async def open_session(
     data: schemas.SessionOpen,
@@ -17,7 +47,7 @@ async def open_session(
     tenant_id: str = Depends(get_current_tenant),
 ):
     # In a real app, we'd get user_id from auth token
-    user_id = "00000000-0000-0000-0000-000000000000" # Placeholder
+    user_id = "00000000-0000-0000-0000-000000000002" # admin@kibologic.com
     try:
         return await service.open_session(session, tenant_id, user_id, data)
     except ValueError as e:
@@ -31,7 +61,7 @@ async def close_session(
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
 ):
-    user_id = "00000000-0000-0000-0000-000000000000" # Placeholder
+    user_id = "00000000-0000-0000-0000-000000000002" # admin@kibologic.com
     try:
         return await service.close_session(session, tenant_id, user_id, session_id, data)
     except ValueError as e:
@@ -54,7 +84,7 @@ async def create_sale(
     tenant_id: str = Depends(get_current_tenant),
     limits: LimitEnforcer = Depends(get_limit_enforcer),
 ):
-    user_id = "00000000-0000-0000-0000-000000000000" # Placeholder
+    user_id = "00000000-0000-0000-0000-000000000002" # admin@kibologic.com
     await limits.check_sales_limit()
     try:
         return await service.create_sale(session, tenant_id, user_id, data)
@@ -68,7 +98,7 @@ async def refund_sale(
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
 ):
-    user_id = "00000000-0000-0000-0000-000000000000" # Placeholder
+    user_id = "00000000-0000-0000-0000-000000000002" # admin@kibologic.com
     try:
         return await service.refund_sale(session, tenant_id, user_id, sale_id)
     except ValueError as e:
