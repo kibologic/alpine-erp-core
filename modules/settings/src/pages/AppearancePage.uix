@@ -1,5 +1,6 @@
 import { SwissComponent } from '@swissjs/core';
 import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { Section } from '@alpine/ui/src/layout/Section.uix';
 import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
 
 component AppearancePage {
@@ -26,15 +27,20 @@ component AppearancePage {
           breadcrumb={[{ label: 'Settings' }, { label: 'Appearance' }]}
         />
 
-        <div style="background: var(--color-bg-surface); border: 1px solid var(--color-bg-border); border-radius: var(--radius-md); padding: var(--space-6); max-width: 600px;">
-          <h3 style="margin-top: 0; font-size: 1rem;">Theme Settings</h3>
-          <p style="font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">Choose between light and dark modes.</p>
-          
-          <FormGroup label="Theme Mode" renderField={() => (
-            <button type="button" class="aui-btn aui-btn--outline" onclick={() => this.toggleTheme()}>
-              {this.isDark ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}
-            </button>
-          )} />
+        <div style="max-width: 800px; display: flex; flex-direction: column; gap: 2rem;">
+          <Section 
+            title="Theme Settings"
+            renderBody={() => (
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <p style="font-size: 0.875rem; color: var(--color-text-muted); margin: 0;">Choose between light and dark modes.</p>
+                <FormGroup label="Theme Mode" renderField={() => (
+                  <button type="button" class="aui-btn aui-btn--outline" onclick={() => this.toggleTheme()}>
+                    {this.isDark ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}
+                  </button>
+                )} />
+              </div>
+            )}
+          />
         </div>
       </div>
     );

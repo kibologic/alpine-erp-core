@@ -6,12 +6,13 @@ import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
 import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
 import { TextField } from '@alpine/ui/src/form/TextField.uix';
 import { SelectField } from '@alpine/ui/src/form/SelectField.uix';
+import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
 
 const columns = [
   { key: 'name', label: 'Name', sortable: true },
   { key: 'email', label: 'Email' },
   { key: 'role', label: 'Role', width: '120px' },
-  { key: 'statusHTML', label: 'Status', width: '120px' },
+  { key: 'status', label: 'Status', width: '120px' },
   { key: 'last_login', label: 'Last Login', width: '160px' },
   { key: 'actionsHTML', label: '', width: '100px' }
 ];
@@ -23,7 +24,26 @@ component UsersPage {
   state { let showAddModal: boolean = false; }
   state { let searchQuery: string = ''; }
 
+  getStatusType(status: string) {
+    status = (status || '').toLowerCase();
+    if (status === 'active' || status === 'online') return 'success';
+    if (status === 'inactive' || status === 'offline') return 'neutral';
+    if (status === 'suspended' || status === 'locked') return 'danger';
+    if (status === 'invited') return 'info';
+    return 'neutral';
+  }
+
   render() {
+    const updatedColumns = columns.map(col => {
+      if (col.key === 'status') {
+        return {
+          ...col,
+          render: (val: string) => <StatusBadge label={val} type={this.getStatusType(val)} />
+        };
+      }
+      return col;
+    });
+
     return (
       <div class="alp-page">
         <PageHeader 
@@ -54,7 +74,7 @@ component UsersPage {
         </div>
 
         <DataTable 
-          columns={columns}
+          columns={updatedColumns}
           rows={this.users}
           loading={false}
           searchable={true}

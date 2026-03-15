@@ -8,6 +8,7 @@ import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
 import { TextField } from '@alpine/ui/src/form/TextField.uix';
 import { SidePanel } from '@alpine/ui/src/feedback/SidePanel.uix';
 import { Tabs } from '@alpine/ui/src/layout/Tabs.uix';
+import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
 
 const columns = [
   { key: 'sku', label: 'SKU', width: '120px' },
@@ -15,6 +16,7 @@ const columns = [
   { key: 'category', label: 'Category', sortable: true, width: '140px' },
   { key: 'price', label: 'Price (MWK)', sortable: true, width: '140px' },
   { key: 'stock_quantity', label: 'Stock', sortable: true, width: '100px' },
+  { key: 'stock_status', label: 'Status', width: '120px' },
   { key: 'reorder_level', label: 'Reorder At', width: '120px' },
   { key: 'actionsHTML', label: '', width: '140px' }
 ];
@@ -32,6 +34,12 @@ component InventoryItemsPage {
   state { let workspaceOpen: boolean = false; }
   state { let activeTab: string = 'general'; }
   state { let searchQuery: string = ''; }
+
+  getStockStatus(qty: number, reorder: number) {
+    if (qty <= 0) return { label: 'Out of Stock', type: 'danger' };
+    if (qty < (reorder || 10)) return { label: 'Low Stock', type: 'warning' };
+    return { label: 'In Stock', type: 'success' };
+  }
 
   async mounted() {
     try {
@@ -74,11 +82,28 @@ component InventoryItemsPage {
   }
 
   render() {
-    const displayRows = this.products.map(p => ({
-      ...p,
-      price: new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(p.price || 0),
-      actionsHTML: `<button class="aui-btn aui-btn--outline" style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid var(--dusty-denim); background: transparent; color: var(--prussian-blue);" onclick="window.dispatchEvent(new CustomEvent('adjust-stock', {detail: '${p.sku || p.id}'}))">Adjust</button>`
-    }));
+    const displayRows = this.products.map(p => {
+      const status = this.getStockStatus(p.stock_quantity || 0, p.reorder_level || 10);
+      return {
+        ...p,
+        stock_status: status.label,
+        price: new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(p.price || 0),
+        actionsHTML: `<button class="aui-btn aui-btn--outline" style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid var(--dusty-denim); background: transparent; color: var(--prussian-blue);" onclick="window.dispatchEvent(new CustomEvent('adjust-stock', {detail: '${p.sku || p.id}'}))">Adjust</button>`
+      };
+    });
+
+    const updatedColumns = columns.map(col => {
+        if (col.key === 'stock_status') {
+            return {
+                ...col,
+                render: (val: string, row: any) => {
+                    const status = this.getStockStatus(row.stock_quantity || 0, row.reorder_level || 10);
+                    return <StatusBadge label={status.label} type={status.type} />;
+                }
+            };
+        }
+        return col;
+    });
 
     if (typeof window !== 'undefined' && !(window as any)._invListenerAdded) {
       window.addEventListener('adjust-stock', (e: any) => {
@@ -126,7 +151,7 @@ component InventoryItemsPage {
         </div>
         
         <DataTable
-          columns={columns}
+          columns={updatedColumns}
           rows={displayRows}
           loading={this.loading}
           searchable={true}

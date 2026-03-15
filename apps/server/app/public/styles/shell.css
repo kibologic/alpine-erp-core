@@ -258,6 +258,17 @@
   border-radius: var(--radius-md);
 }
 
+.erp-app-strip-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  background: var(--color-accent);
+  border-radius: 0 3px 3px 0;
+}
+
 .erp-app-strip-item.active .erp-app-strip-icon-wrap svg {
   color: var(--color-accent);
   opacity: 0.9;
@@ -382,6 +393,18 @@
 .erp-nav-item.active {
   background: var(--color-sidebar-active);
   color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.erp-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--color-accent);
+  border-radius: 0 2px 2px 0;
 }
 
 /* Locked nav state */
