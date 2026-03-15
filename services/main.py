@@ -43,6 +43,8 @@ async def list_modules() -> list[dict]:
 
 from modules.inventory.router import router as inventory_router
 from modules.pos.router import router as pos_router
+from modules.users.router import router as users_router
+from modules.users.audit_router import router as audit_router
 
 register_module(
     name="inventory",
@@ -52,6 +54,16 @@ register_module(
 register_module(
     name="pos",
     router_factory=lambda app: app.include_router(pos_router, prefix="/api/v1"),
+    tier="core",
+)
+register_module(
+    name="users",
+    router_factory=lambda app: app.include_router(users_router, prefix="/api/v1"),
+    tier="core",
+)
+register_module(
+    name="audit",
+    router_factory=lambda app: app.include_router(audit_router, prefix="/api/v1"),
     tier="core",
 )
 

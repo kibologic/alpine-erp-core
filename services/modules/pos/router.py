@@ -1,10 +1,12 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
 from core.auth import get_current_tenant
 from core.limits import LimitEnforcer, get_limit_enforcer
+from core.models import Sale
 from . import schemas, service
 
 router = APIRouter(prefix="/pos", tags=["POS"])
@@ -75,6 +77,33 @@ async def get_current_session(
     tenant_id: str = Depends(get_current_tenant),
 ):
     return await service.get_current_session(session, tenant_id, register_id)
+
+
+@router.get("/sales")
+async def list_sales(
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    result = await session.execute(
+        select(Sale)
+        .where(Sale.tenant_id == tenant_id)
+        .order_by(Sale.created_at.desc())
+        .limit(100)
+    )
+    sales = result.scalars().all()
+    return [
+        {
+            "id": str(s.id),
+            "sale_number": s.sale_number,
+            "subtotal": float(s.subtotal),
+            "tax": float(s.tax),
+            "discount": float(s.discount),
+            "total": float(s.total),
+            "status": s.status,
+            "created_at": s.created_at.isoformat(),
+        }
+        for s in sales
+    ]
 
 
 @router.post("/sales", response_model=schemas.SaleResponse)
