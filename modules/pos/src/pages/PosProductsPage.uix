@@ -1,6 +1,7 @@
 import { SwissComponent } from '@swissjs/core';
 import { InventoryService } from '@alpine/core';
 import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
 import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
 import { DataImport } from '@alpine/ui/src/data/DataImport.uix';
 import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
@@ -34,6 +35,7 @@ component PosProductsPage {
   state { let showAddModal: boolean = false; }
   state { let showImportModal: boolean = false; }
   state { let newProduct: any = { sku: '', name: '', category: '', price: 0 }; }
+  state { let searchQuery: string = ''; }
 
   async mounted() {
     try {
@@ -44,7 +46,6 @@ component PosProductsPage {
         this.products = [];
       }
     } catch (e) {
-      // Handle 502 gracefully
       console.error('Failed to load products', e);
       this.products = [];
     } finally {
@@ -54,14 +55,11 @@ component PosProductsPage {
   }
 
   handleImport(validRows: any[]) {
-    console.log('Imported rows:', validRows);
-    // In a real app we would send to backend here
     this.products = [...validRows, ...this.products];
     this.scheduleUpdate?.();
   }
 
   render() {
-    // Transform rows for display
     const displayRows = this.products.map(p => ({
       ...p,
       price: new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(p.price || 0),
@@ -72,12 +70,31 @@ component PosProductsPage {
       <div class="alp-page">
         <PageHeader 
           title="Products"
-          breadcrumb={[{ label: 'Point of Sale' }]}
+          breadcrumb={[{ label: 'Point of Sale' }, { label: 'Products' }]}
           actions={[
-            { label: 'Import', onclick: () => { this.showImportModal = true; this.scheduleUpdate?.(); }, variant: 'ghost' },
+            { label: 'Import', onclick: () => { this.showImportModal = true; this.scheduleUpdate?.(); }, variant: 'outline' },
             { label: 'Add Product', onclick: () => { this.showAddModal = true; this.scheduleUpdate?.(); }, variant: 'primary' }
           ]}
         />
+
+        <StatStrip 
+          stats={[
+            { label: "Total Products", value: this.products.length.toString() },
+            { label: "Active", value: this.products.length.toString() }, // Mock logic
+            { label: "Out of Stock", value: "0" },
+            { label: "Categories", value: "0" }
+          ]}
+        />
+
+        <div class="alp-toolbar">
+          <div class="alp-toolbar-left">
+            <TextField 
+              placeholder="Search products..." 
+              value={this.searchQuery}
+              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
+            />
+          </div>
+        </div>
         
         <DataTable
           columns={columns}
@@ -87,6 +104,8 @@ component PosProductsPage {
           selectable={true}
           exportable={true}
           filename="products"
+          emptyTitle="No products yet"
+          emptyDescription="Add your first product to start selling"
         />
 
         {this.showImportModal ? (
@@ -161,11 +180,10 @@ component PosProductsPage {
               </div>
             )}
             renderFooter={() => (
-              <div>
+              <div style="display: flex; justify-content: flex-end; gap: 1rem;">
                 <button 
                   class="aui-btn aui-btn--outline" 
-                  style="margin-right: 1rem; background: transparent; border: 1px solid var(--dusty-denim); color: var(--ink-black);"
-                  onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}
+                   onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}
                 >Cancel</button>
                 <button 
                   class="aui-btn" 

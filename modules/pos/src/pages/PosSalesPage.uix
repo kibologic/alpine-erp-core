@@ -1,7 +1,8 @@
 import { SwissComponent } from '@swissjs/core';
 import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
 import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { EmptyState } from '@alpine/ui/src/feedback/EmptyState.uix';
+import { TextField } from '@alpine/ui/src/form/TextField.uix';
 
 const columns = [
   { key: 'id', label: 'Sale #', width: '100px' },
@@ -20,6 +21,7 @@ component PosSalesPage {
 
   state { let sales: any[] = []; }
   state { let loading: boolean = false; }
+  state { let searchQuery: string = ''; }
 
   render() {
     return (
@@ -33,44 +35,38 @@ component PosSalesPage {
           ]}
         />
 
-        <div class="aui-stat-strip">
-          <div class="aui-stat-card">
-            <div class="aui-stat-label">Today's Total</div>
-            <div class="aui-stat-value">MWK 0.00</div>
-            <div class="aui-stat-delta aui-stat-delta--neutral">0% from yesterday</div>
+        <StatStrip 
+          stats={[
+            { label: "Today's Total", value: "MWK 0.00", delta: "0% from yesterday", deltaType: "neutral" },
+            { label: "Transactions", value: "0" },
+            { label: "Refunds Today", value: "MWK 0.00" },
+            { label: "Avg Basket", value: "MWK 0.00" }
+          ]}
+        />
+
+        <div class="alp-toolbar">
+          <div class="alp-toolbar-left">
+            <TextField 
+              placeholder="Search sales..." 
+              value={this.searchQuery}
+              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
+            />
           </div>
-          <div class="aui-stat-card">
-            <div class="aui-stat-label">Transactions</div>
-            <div class="aui-stat-value">0</div>
-          </div>
-          <div class="aui-stat-card">
-            <div class="aui-stat-label">Refunds Today</div>
-            <div class="aui-stat-value">MWK 0.00</div>
-          </div>
-          <div class="aui-stat-card">
-            <div class="aui-stat-label">Avg Basket</div>
-            <div class="aui-stat-value">MWK 0.00</div>
+          <div class="alp-toolbar-right">
+            {/* Secondary actions if any */}
           </div>
         </div>
 
-        {this.sales.length === 0 ? (
-          <EmptyState 
-            icon="💰"
-            title="No sales yet"
-            description="Complete a sale in the terminal to see it here."
-            actionLabel="Open Terminal"
-            onAction={() => window.location.hash = '#/pos/terminal'}
-          />
-        ) : (
-          <DataTable 
-            columns={columns}
-            rows={this.sales}
-            loading={this.loading}
-            searchable={true}
-            exportable={true}
-            filename="sales_history"
-          />
-        )}
+        <DataTable 
+          columns={columns}
+          rows={this.sales}
+          loading={this.loading}
+          searchable={true}
+          exportable={true}
+          filename="sales_history"
+          emptyTitle="No sales yet"
+          emptyDescription="Open a POS terminal to start selling"
+        />
       </div>
     );
   }

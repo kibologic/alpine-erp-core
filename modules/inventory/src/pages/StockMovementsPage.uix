@@ -1,7 +1,9 @@
 import { SwissComponent } from '@swissjs/core';
 import { InventoryService } from '@alpine/core';
 import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
 import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+import { TextField } from '@alpine/ui/src/form/TextField.uix';
 
 const columns = [
   { key: 'created_at', label: 'Date', sortable: true, width: '160px' },
@@ -18,6 +20,7 @@ component StockMovementsPage {
 
   state { let movements: any[] = []; }
   state { let loading: boolean = true; }
+  state { let searchQuery: string = ''; }
 
   async mounted() {
     try {
@@ -25,7 +28,6 @@ component StockMovementsPage {
         const data = await InventoryService.getStockMovements();
         this.movements = data || [];
       } else {
-        // Fallback/Mock
         this.movements = [];
       }
     } catch (e) {
@@ -58,6 +60,25 @@ component StockMovementsPage {
           ]}
         />
 
+        <StatStrip 
+          stats={[
+            { label: "Total Movements", value: this.movements.length.toString() },
+            { label: "Stock In", value: "0" },
+            { label: "Stock Out", value: "0" },
+            { label: "Net Change", value: "0" }
+          ]}
+        />
+
+        <div class="alp-toolbar">
+          <div class="alp-toolbar-left">
+            <TextField 
+              placeholder="Search movements..." 
+              value={this.searchQuery}
+              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
+            />
+          </div>
+        </div>
+
         <DataTable 
           columns={columns}
           rows={displayRows}
@@ -65,6 +86,8 @@ component StockMovementsPage {
           searchable={true}
           exportable={true}
           filename="stock_movements"
+          emptyTitle="No movements recorded"
+          emptyDescription="Stock movements are created when you receive stock or complete a sale"
         />
       </div>
     );

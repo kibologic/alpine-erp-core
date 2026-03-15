@@ -76,7 +76,7 @@ component StockTakeImportPage {
                 Import Another File
               </button>
             </div>
-          )}
+          8)}
         </div>
       </div>
     );

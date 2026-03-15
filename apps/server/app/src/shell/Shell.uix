@@ -125,9 +125,12 @@ component Shell {
     }
 
     if (modId === 'pos') {
-      if (secId === 'products') return <PosProductsPage />;
-      if (secId === 'sessions') return <PosSessionsPage />;
-      if (secId === 'settings') return <PosSettingsPage />;
+      if (secId === 'sales')    return <PosSalesPage />;
+      if (secId === 'customers') return <PosCustomersPage />;
+      if (secId === 'products')  return <PosProductsPage />;
+      if (secId === 'sessions')  return <PosSessionsPage />;
+      if (secId === 'settings')  return <PosSettingsPage />;
+      if (secId === 'terminal')  return <PosTerminalPage />;
       return <PosTerminalPage />;
     }
 
