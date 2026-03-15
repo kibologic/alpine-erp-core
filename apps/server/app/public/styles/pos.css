@@ -631,8 +631,8 @@ textarea.erp-settings-input {
   width: 100%;
   max-width: 360px;
   padding: 48px 40px;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-bg-border);
+  background: var(--erp-surface-2);
+  border: 1px solid var(--erp-border);
   border-radius: var(--radius-lg);
   text-align: center;
 }

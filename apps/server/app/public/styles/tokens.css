@@ -15,61 +15,61 @@
 
 :root,
 [data-theme="dark"] {
-  /* ── 1. Foundation Layer (App Shell) ── */
-  --erp-bg-base: #0D1117;
+  /* ── 1. Foundation Layer (App Shell) — Neutral Deep ── */
+  --erp-bg-base: #09090B;
 
-  /* ── 2. Surface Layers (Workspace Depth) ── */
-  --erp-surface-1: #161B27;
-  --erp-surface-2: #1E2532;
-  --erp-surface-3: #262F3E;
+  /* ── 2. Surface Layers (Workspace Depth) — Neutral Grey ── */
+  --erp-surface-1: #111113;
+  --erp-surface-2: #18181B;
+  --erp-surface-3: #222226;
 
-  /* ── 3. Text Hierarchy ── */
-  --erp-text-primary:   #E6EDF3;
-  --erp-text-secondary: #CDD5E0;
-  --erp-text-muted:      #8893A3;
-  --erp-text-inverse:    #0D1117;
+  /* ── 3. Text Hierarchy — High Contrast Neutral ── */
+  --erp-text-primary:   #FAFAFA;
+  --erp-text-secondary: #A1A1AA;
+  --erp-text-muted:      #71717A;
+  --erp-text-inverse:    #09090B;
 
-  /* ── 4. Borders and Dividers ── */
-  --erp-border:  #2A3441;
-  --erp-divider: #202734;
+  /* ── 4. Borders and Dividers — Neutral ── */
+  --erp-border:  #27272A;
+  --erp-divider: #1F1F23;
 
-  /* ── 5. Accent System (Brand Dusk Blue) ── */
+  /* ── 5. Accent System (Brand Dusk Blue — Concentrated) ── */
   --erp-accent:        #415A77;
   --erp-accent-hover:  #4F6D90;
   --erp-accent-active: #364C65;
-  --erp-accent-glow:   rgba(65, 90, 119, 0.12);
+  --erp-accent-glow:   rgba(65, 90, 119, 0.15);
 
-  /* ── 6. Semantic Status Colors ── */
+  /* ── 6. Semantic Status Colors — Desaturated ── */
   --erp-success: #3D7A5A;
-  --erp-warning: #A8842F;
-  --erp-danger:  #A94444;
+  --erp-warning: #997A2E;
+  --erp-danger:  #993D3D;
 
-  /* ── 7. Table System ── */
-  --erp-table-header:   #1E2532;
-  --erp-table-row:      #161B27;
-  --erp-table-row-alt:  #141923;
-  --erp-table-hover:    #1F2734;
-  --erp-table-selected: rgba(65, 90, 119, 0.18);
+  /* ── 7. Table System — Neutral Layering ── */
+  --erp-table-header:   #18181B;
+  --erp-table-row:      #111113;
+  --erp-table-row-alt:  #0F0F11;
+  --erp-table-hover:    #1F1F23;
+  --erp-table-selected: rgba(65, 90, 119, 0.20);
 
-  /* ── 8. Inputs and Forms ── */
-  --erp-input-bg:          #121720;
-  --erp-input-border:      #2A3441;
-  --erp-input-placeholder: #6F7B8B;
+  /* ── 8. Inputs and Forms — Low Depth ── */
+  --erp-input-bg:          #0E0E10;
+  --erp-input-border:      #27272A;
+  --erp-input-placeholder: #52525B;
   --erp-input-focus:       #415A77;
 
-  /* ── 9. Card System ── */
-  --erp-card-bg:     #1E2532;
-  --erp-card-border: #2A3441;
-  --erp-card-hover:  #232C3B;
+  /* ── 9. Card System — Neutral Pop ── */
+  --erp-card-bg:     #18181B;
+  --erp-card-border: #27272A;
+  --erp-card-hover:  #1C1C21;
 
-  /* ── 10. Sidebar Styling ── */
-  --erp-sidebar-bg:     #0F141C;
-  --erp-sidebar-hover:  #1B2330;
-  --erp-sidebar-active: #1E2532;
+  /* ── 10. Sidebar Styling — Deep Neutral ── */
+  --erp-sidebar-bg:     #0C0C0E;
+  --erp-sidebar-hover:  #161619;
+  --erp-sidebar-active: #18181B;
 
-  /* ── 11. Header Strip ── */
-  --erp-header-bg:     #161B27;
-  --erp-header-border: #2A3441;
+  /* ── 11. Header Strip — Glass Context ── */
+  --erp-header-bg:     #111113;
+  --erp-header-border: #27272A;
 
   /* ── Backwards Compatibility Mappings (Semantic Aliases) ── */
   --color-bg-base:     var(--erp-bg-base);
@@ -95,8 +95,8 @@
   --color-danger:  var(--erp-danger);
   --color-info:    var(--erp-accent);
 
-  --glass-bg:     rgba(13, 17, 23, 0.90);
-  --glass-border: var(--erp-divider);
+  --glass-bg:     rgba(9, 9, 11, 0.92);
+  --glass-border: var(--erp-border);
 }
 
 [data-theme="light"] {
