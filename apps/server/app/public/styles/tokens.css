@@ -15,92 +15,162 @@
 
 :root,
 [data-theme="dark"] {
-  /* ── Backgrounds — pull towards neutral dark, away from blue ── */
-  --color-bg-base:     #0D1117;    /* near black, minimal blue */
-  --color-bg-surface:  #161B27;    /* very dark, slight cool tint */
-  --color-bg-elevated: #1E2535;    /* elevated surfaces */
-  --color-bg-border:   #252D3D;    /* subtle borders */
+  /* ── 1. Foundation Layer (App Shell) ── */
+  --erp-bg-base: #0D1117;
 
-  /* ── Sidebar — slightly warmer than surfaces ── */
-  --color-sidebar-bg:    #0F1420;
-  --color-sidebar-active:#182030;
+  /* ── 2. Surface Layers (Workspace Depth) ── */
+  --erp-surface-1: #161B27;
+  --erp-surface-2: #1E2532;
+  --erp-surface-3: #262F3E;
 
-  /* ── Accent — dusk-blue but used SPARINGLY ── */
-  --color-accent:        #415A77;  /* only on interactive elements */
-  --color-accent-hover:  #4E6D8C;
-  --color-accent-subtle: rgba(65, 90, 119, 0.12);
-  --color-accent-glow:   rgba(65, 90, 119, 0.12);
+  /* ── 3. Text Hierarchy ── */
+  --erp-text-primary:   #E6EDF3;
+  --erp-text-secondary: #CDD5E0;
+  --erp-text-muted:      #8893A3;
+  --erp-text-inverse:    #0D1117;
 
-  /* ── Glass ── */
-  --glass-bg:       rgba(13, 17, 23, 0.90);
-  --glass-border:   rgba(205, 213, 224, 0.06);
-  --glass-backdrop: blur(12px);
+  /* ── 4. Borders and Dividers ── */
+  --erp-border:  #2A3441;
+  --erp-divider: #202734;
 
-  /* ── Status — desaturated ── */
-  --color-success:        #3D7A5A;
-  --color-success-light:  #4A9B6F;
-  --color-success-bg:     rgba(61, 122, 90, 0.12);
-  --color-warning:        #8A6A2A;
-  --color-warning-bg:     rgba(138, 106, 42, 0.12);
-  --color-danger:         #8A3030;
-  --color-danger-bg:      rgba(138, 48, 48, 0.12);
-  --color-info:           #415A77;
-  --color-info-bg:        rgba(65, 90, 119, 0.10);
+  /* ── 5. Accent System (Brand Dusk Blue) ── */
+  --erp-accent:        #415A77;
+  --erp-accent-hover:  #4F6D90;
+  --erp-accent-active: #364C65;
+  --erp-accent-glow:   rgba(65, 90, 119, 0.12);
 
-  /* ── Typography — cool whites, not pure white ── */
-  --color-text-primary:   #CDD5E0;  /* slightly cool white */
-  --color-text-secondary: #6B7A99;  /* muted blue-grey */
-  --color-text-muted:     #3D4F6B;  /* very muted */
-  --color-text-inverse:   #0D1117;
+  /* ── 6. Semantic Status Colors ── */
+  --erp-success: #3D7A5A;
+  --erp-warning: #A8842F;
+  --erp-danger:  #A94444;
 
-  /* ── Shadows ── */
-  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--color-bg-border);
-  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.6);
-  --shadow-overlay:  0 16px 48px rgba(0, 0, 0, 0.8);
+  /* ── 7. Table System ── */
+  --erp-table-header:   #1E2532;
+  --erp-table-row:      #161B27;
+  --erp-table-row-alt:  #141923;
+  --erp-table-hover:    #1F2734;
+  --erp-table-selected: rgba(65, 90, 119, 0.18);
+
+  /* ── 8. Inputs and Forms ── */
+  --erp-input-bg:          #121720;
+  --erp-input-border:      #2A3441;
+  --erp-input-placeholder: #6F7B8B;
+  --erp-input-focus:       #415A77;
+
+  /* ── 9. Card System ── */
+  --erp-card-bg:     #1E2532;
+  --erp-card-border: #2A3441;
+  --erp-card-hover:  #232C3B;
+
+  /* ── 10. Sidebar Styling ── */
+  --erp-sidebar-bg:     #0F141C;
+  --erp-sidebar-hover:  #1B2330;
+  --erp-sidebar-active: #1E2532;
+
+  /* ── 11. Header Strip ── */
+  --erp-header-bg:     #161B27;
+  --erp-header-border: #2A3441;
+
+  /* ── Backwards Compatibility Mappings (Semantic Aliases) ── */
+  --color-bg-base:     var(--erp-bg-base);
+  --color-bg-surface:  var(--erp-surface-1);
+  --color-bg-elevated: var(--erp-surface-2);
+  --color-bg-border:   var(--erp-border);
+
+  --color-sidebar-bg:     var(--erp-sidebar-bg);
+  --color-sidebar-active: var(--erp-sidebar-active);
+
+  --color-accent:        var(--erp-accent);
+  --color-accent-hover:  var(--erp-accent-hover);
+  --color-accent-subtle: var(--erp-accent-glow);
+  --color-accent-glow:   var(--erp-accent-glow);
+
+  --color-text-primary:   var(--erp-text-primary);
+  --color-text-secondary: var(--erp-text-secondary);
+  --color-text-muted:     var(--erp-text-muted);
+  --color-text-inverse:   var(--erp-text-inverse);
+
+  --color-success: var(--erp-success);
+  --color-warning: var(--erp-warning);
+  --color-danger:  var(--erp-danger);
+  --color-info:    var(--erp-accent);
+
+  --glass-bg:     rgba(13, 17, 23, 0.90);
+  --glass-border: var(--erp-divider);
 }
 
 [data-theme="light"] {
-  /* ── Backgrounds ── */
-  --color-bg-base:     #E0E1DD;   /* alabaster-grey */
-  --color-bg-surface:  #FFFFFF;
-  --color-bg-elevated: #F0F0EE;
-  --color-bg-border:   #C8C9C5;
+  --erp-bg-base: #E0E1DD; /* alabaster-grey */
 
-  /* ── Sidebar ── */
-  --color-sidebar-bg:     #E0E1DD;
-  --color-sidebar-active: #D0D1CD;
+  --erp-surface-1: #FFFFFF;
+  --erp-surface-2: #F8F9FA;
+  --erp-surface-3: #F0F0EE;
 
-  /* ── Accent — same dusk-blue both modes ── */
-  --color-accent:        #415A77;
-  --color-accent-hover:  #344A63;
-  --color-accent-subtle: rgba(65, 90, 119, 0.12);
-  --color-accent-glow:   rgba(65, 90, 119, 0.12);
+  --erp-text-primary:   #0D1B2A; /* ink-black */
+  --erp-text-secondary: #415A77; /* dusk-blue */
+  --erp-text-muted:      #778DA9; /* dusty-denim */
+  --erp-text-inverse:    #E0E1DD;
 
-  /* ── Glass ── */
-  --glass-bg:       rgba(224, 225, 221, 0.92);
-  --glass-border:   rgba(13, 27, 42, 0.08);
-  --glass-backdrop: blur(12px);
+  --erp-border:  #D8D9D5;
+  --erp-divider: #E8E9E5;
 
-  /* ── Status ── */
-  --color-success:    #415A77;
-  --color-success-bg: rgba(65, 90, 119, 0.10);
-  --color-warning:    #778DA9;
-  --color-warning-bg: rgba(119, 141, 169, 0.10);
-  --color-danger:     #415A77;
-  --color-danger-bg:  rgba(65, 90, 119, 0.12);
-  --color-info:       #415A77;
-  --color-info-bg:    rgba(65, 90, 119, 0.10);
+  --erp-accent:        #415A77;
+  --erp-accent-hover:  #344A63;
+  --erp-accent-active: #2A3B4F;
+  --erp-accent-glow:   rgba(65, 90, 119, 0.10);
 
-  /* ── Typography ── */
-  --color-text-primary:   #0D1B2A;  /* ink-black */
-  --color-text-secondary: #415A77;  /* dusk-blue */
-  --color-text-muted:     #778DA9;  /* dusty-denim */
-  --color-text-inverse:   #E0E1DD;  /* alabaster — text on dark surfaces */
+  --erp-success: #3D7A5A;
+  --erp-warning: #778DA9;
+  --erp-danger:  #8A3030;
 
-  /* ── Shadows ── */
-  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--color-bg-border);
-  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.12);
-  --shadow-overlay:  0 16px 48px rgba(0, 0, 0, 0.20);
+  --erp-table-header:   #F8F9FA;
+  --erp-table-row:      #FFFFFF;
+  --erp-table-row-alt:  #FBFBFB;
+  --erp-table-hover:    #F5F6F7;
+  --erp-table-selected: rgba(65, 90, 119, 0.12);
+
+  --erp-input-bg:          #FFFFFF;
+  --erp-input-border:      #D8D9D5;
+  --erp-input-placeholder: #778DA9;
+  --erp-input-focus:       #415A77;
+
+  --erp-card-bg:     #FFFFFF;
+  --erp-card-border: #D8D9D5;
+  --erp-card-hover:  #FBFBFB;
+
+  --erp-sidebar-bg:     #E0E1DD;
+  --erp-sidebar-hover:  #D0D1CD;
+  --erp-sidebar-active: #C8C9C5;
+
+  --erp-header-bg:     #FFFFFF;
+  --erp-header-border: #D8D9D5;
+
+  /* Aliases for light theme */
+  --color-bg-base:     var(--erp-bg-base);
+  --color-bg-surface:  var(--erp-surface-1);
+  --color-bg-elevated: var(--erp-surface-2);
+  --color-bg-border:   var(--erp-border);
+
+  --color-sidebar-bg:     var(--erp-sidebar-bg);
+  --color-sidebar-active: var(--erp-sidebar-active);
+
+  --color-accent:        var(--erp-accent);
+  --color-accent-hover:  var(--erp-accent-hover);
+  --color-accent-subtle: var(--erp-accent-glow);
+  --color-accent-glow:   var(--erp-accent-glow);
+
+  --color-text-primary:   var(--erp-text-primary);
+  --color-text-secondary: var(--erp-text-secondary);
+  --color-text-muted:     var(--erp-text-muted);
+  --color-text-inverse:   var(--erp-text-inverse);
+
+  --color-success: var(--erp-success);
+  --color-warning: var(--erp-warning);
+  --color-danger:  var(--erp-danger);
+  --color-info:    var(--erp-accent);
+
+  --glass-bg:     rgba(255, 255, 255, 0.90);
+  --glass-border: var(--erp-divider);
 }
 
 /* ── Invariant tokens (same across all themes) ── */
