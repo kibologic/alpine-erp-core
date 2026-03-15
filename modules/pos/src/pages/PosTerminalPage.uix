@@ -3,7 +3,7 @@ import { PosService, InventoryService } from '@alpine/core';
 
 const TAX_RATE = 0.16;
 const REGISTER_ID = 'REG-001';
-const DEV_BYPASS_BACKEND = true; // TODO: REMOVE BEFORE PRODUCTION — bypasses backend check
+const DEV_BYPASS_BACKEND = false;
 
 const MOCK_PRODUCTS = [
   { id: '1', name: 'Coffee', sku: 'BEV-001', price: 500, category: { name: 'Beverages' }, stock_quantity: 50 },
