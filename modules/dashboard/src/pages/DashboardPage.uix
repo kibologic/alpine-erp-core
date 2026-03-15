@@ -21,7 +21,7 @@ component DashboardPage {
 
   render() {
     return (
-      <div class="dash-page">
+      <div class="alp-page">
         <div class="dash-stat-strip">
           <div class="dash-card">
             <div class="dash-stat-value">MWK 1,240,000</div>

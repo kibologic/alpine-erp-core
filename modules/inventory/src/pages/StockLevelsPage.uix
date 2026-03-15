@@ -26,15 +26,6 @@ component StockLevelsPage {
   render() {
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Stock Levels"
-          breadcrumb={[{ label: 'Inventory' }, { label: 'Stock Levels' }]}
-          actions={[
-            { label: 'Filter', onclick: () => {}, variant: 'outline' },
-            { label: 'Export', onclick: () => {}, variant: 'outline' }
-          ]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Total SKUs", value: "0" },
@@ -53,6 +44,7 @@ component StockLevelsPage {
             />
           </div>
           <div class="alp-toolbar-right">
+             <button class="aui-btn aui-btn--outline" style="margin-right: 0.5rem;">Filter</button>
              <button class="aui-btn aui-btn--outline">Inventory Analytics</button>
           </div>
         </div>

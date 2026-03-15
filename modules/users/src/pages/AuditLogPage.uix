@@ -20,15 +20,6 @@ component AuditLogPage {
   render() {
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Audit Log"
-          breadcrumb={[{ label: 'Users' }, { label: 'Audit Log' }]}
-          actions={[
-            { label: 'Filter', onclick: () => {}, variant: 'outline' },
-            { label: 'Export', onclick: () => {}, variant: 'outline' }
-          ]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Total Actions", value: "0" },

@@ -43,11 +43,6 @@ component PosSessionsPage {
 
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Sessions"
-          breadcrumb={[{ label: 'Point of Sale' }, { label: 'Sessions' }]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Open Sessions", value: "0" },

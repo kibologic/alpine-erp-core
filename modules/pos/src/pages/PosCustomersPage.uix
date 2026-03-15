@@ -26,15 +26,6 @@ component PosCustomersPage {
   render() {
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Customers"
-          breadcrumb={[{ label: 'Point of Sale' }, { label: 'Customers' }]}
-          actions={[
-            { label: 'Import', onclick: () => {}, variant: 'outline' },
-            { label: 'Add Customer', onclick: () => { this.showAddModal = true; this.scheduleUpdate?.(); }, variant: 'primary' }
-          ]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Total Customers", value: "0" },
@@ -50,6 +41,9 @@ component PosCustomersPage {
               value={this.searchQuery}
               onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
             />
+          </div>
+          <div class="alp-toolbar-right">
+             <button class="aui-btn aui-btn--outline">Export</button>
           </div>
         </div>
 

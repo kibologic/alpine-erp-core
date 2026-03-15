@@ -119,15 +119,6 @@ component InventoryItemsPage {
 
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Inventory Items"
-          breadcrumb={[{ label: 'Inventory Management' }, { label: 'Items' }]}
-          actions={[
-             { label: 'Import', onclick: () => {}, variant: 'outline' },
-            { label: 'Add Item', onclick: () => {}, variant: 'primary' }
-          ]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Total Items", value: this.products.length.toString() },
@@ -146,7 +137,8 @@ component InventoryItemsPage {
             />
           </div>
           <div class="alp-toolbar-right">
-             <button class="aui-btn aui-btn--outline">Filters</button>
+             <button class="aui-btn aui-btn--outline" style="margin-right: 0.5rem;">Filters</button>
+             <button class="aui-btn aui-btn--outline">Export</button>
           </div>
         </div>
         

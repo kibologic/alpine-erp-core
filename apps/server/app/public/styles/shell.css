@@ -312,9 +312,6 @@
   opacity: 0.4;
 }
 
-.erp-app-strip-settings {
-  /* override active border-left for settings in footer */
-}
 
 /* ============================================================
    Secondary nav sidebar — collapsible
@@ -507,12 +504,14 @@
 .erp-content {
   flex: 1;
   overflow: auto;
-  padding: var(--space-5) var(--space-6);
   background: var(--color-bg-base);
   min-width: 0;
-  padding: 0 var(--space-6);
-  padding-top: var(--space-4);
+  padding: 0; /* Removed padding to avoid double spacing */
   transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.erp-content.reveal {
+  padding: 0;
 }
 
 /* App Fullscreen Overrides */
@@ -617,12 +616,6 @@ body.pos-app-fullscreen .erp-page {
   align-items: start;
 }
 
-.erp-dashboard-grid-main {
-  /* Placeholder for future specific styles */
-}
-.erp-dashboard-grid-side {
-  /* Placeholder for future specific styles */
-}
 
 /* ============================================================
    Dashboard section titles

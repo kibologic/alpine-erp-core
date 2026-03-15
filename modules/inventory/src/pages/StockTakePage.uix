@@ -117,125 +117,129 @@ component StockTakePage {
     const stats = this.stats;
 
     return (
-      <div class="st-layout">
-        <div class="st-products">
-          <div class="st-filters">
-            <input 
-              type="text" 
-              class="st-search" 
-              placeholder="Search by SKU or name..." 
-              value={this.searchQuery}
-              oninput={(e: any) => { this.searchQuery = e.target.value; this.scheduleUpdate?.(); }}
-            />
-            <div style="width: 200px;">
-              <SelectField 
-                options={catOptions}
-                value={this.selectedCategory}
-                onchange={(val: string) => { this.selectedCategory = val; this.scheduleUpdate?.(); }}
+      <div class="alp-page" style="height: 100%; display: flex; flex-direction: column;">
+
+
+        <div class="st-layout" style="flex: 1;">
+          <div class="st-products">
+            <div class="st-filters">
+              <input 
+                type="text" 
+                class="st-search" 
+                placeholder="Search by SKU or name..." 
+                value={this.searchQuery}
+                oninput={(e: any) => { this.searchQuery = e.target.value; this.scheduleUpdate?.(); }}
               />
+              <div style="width: 200px;">
+                <SelectField 
+                  options={catOptions}
+                  value={this.selectedCategory}
+                  onchange={(val: string) => { this.selectedCategory = val; this.scheduleUpdate?.(); }}
+                />
+              </div>
             </div>
-          </div>
 
-          {filtered.length === 0 ? (
-            <div style="padding: 3rem; text-align: center; color: var(--dusty-denim);">
-              No products found matching your filters.
-            </div>
-          ) : (
-            filtered.map(p => {
-              const id = String(p.id) || p.sku;
-              const countData = this.counts[id] || { qty: null, reason: '' };
-              const sysQty = parseFloat(p.stock_quantity) || 0;
-              const isCounted = countData.qty !== null;
-              const hasVariance = isCounted && countData.qty !== sysQty;
-              
-              const rowClass = `st-product-card ${isCounted ? (hasVariance ? 'st-product-card--variance' : 'st-product-card--counted') : ''}`;
+            {filtered.length === 0 ? (
+              <div style="padding: 3rem; text-align: center; color: var(--dusty-denim);">
+                No products found matching your filters.
+              </div>
+            ) : (
+              filtered.map(p => {
+                const id = String(p.id) || p.sku;
+                const countData = this.counts[id] || { qty: null, reason: '' };
+                const sysQty = parseFloat(p.stock_quantity) || 0;
+                const isCounted = countData.qty !== null;
+                const hasVariance = isCounted && countData.qty !== sysQty;
+                
+                const rowClass = `st-product-card ${isCounted ? (hasVariance ? 'st-product-card--variance' : 'st-product-card--counted') : ''}`;
 
-              return (
-                <div class={rowClass} id={`p-${id}`}>
-                  <div class="st-sku">{p.sku}</div>
-                  <div class="st-name" title={p.name}>{p.name}</div>
-                  <div class="aui-text-muted" style="font-size: 0.75rem;">{p.zone || 'Default'}</div>
-                  <div class="st-system-qty">{sysQty}</div>
-                  <div>
-                    <input 
-                      type="number" 
-                      class="st-qty-input" 
-                      placeholder="--"
-                      value={countData.qty === null ? '' : countData.qty}
-                      oninput={(e: any) => this.handleCountChange(id, e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    {hasVariance ? (
-                      <SelectField 
-                        placeholder="Reason"
-                        options={[
-                          { value: 'damage', label: 'Damage' },
-                          { value: 'theft', label: 'Theft' },
-                          { value: 'counting_error', label: 'Count Error' },
-                          { value: 'received', label: 'Found' }
-                        ]}
-                        value={countData.reason}
-                        onchange={(val: string) => this.handleReasonChange(id, val)}
+                return (
+                  <div class={rowClass} id={`p-${id}`}>
+                    <div class="st-sku">{p.sku}</div>
+                    <div class="st-name" title={p.name}>{p.name}</div>
+                    <div class="aui-text-muted" style="font-size: 0.75rem;">{p.zone || 'Default'}</div>
+                    <div class="st-system-qty">{sysQty}</div>
+                    <div>
+                      <input 
+                        type="number" 
+                        class="st-qty-input" 
+                        placeholder="--"
+                        value={countData.qty === null ? '' : countData.qty}
+                        oninput={(e: any) => this.handleCountChange(id, e.target.value)}
                       />
-                    ) : null}
+                    </div>
+                    <div>
+                      {hasVariance ? (
+                        <SelectField 
+                          placeholder="Reason"
+                          options={[
+                            { value: 'damage', label: 'Damage' },
+                            { value: 'theft', label: 'Theft' },
+                            { value: 'counting_error', label: 'Count Error' },
+                            { value: 'received', label: 'Found' }
+                          ]}
+                          value={countData.reason}
+                          onchange={(val: string) => this.handleReasonChange(id, val)}
+                        />
+                      ) : null}
+                    </div>
+                    <div class="st-status">
+                      {isCounted ? (hasVariance ? '⚠️' : '✓') : ''}
+                    </div>
                   </div>
-                  <div class="st-status">
-                    {isCounted ? (hasVariance ? '⚠️' : '✓') : ''}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        <div class="st-sidebar">
-          <div class="st-sidebar-title">Stock Count Summary</div>
-          
-          <div style="margin: 1rem 0;">
-            <div class="st-sidebar-row">
-              <span>Session ID</span>
-              <strong>{this.sessionId}</strong>
-            </div>
-            <div class="st-sidebar-row">
-              <span>Started</span>
-              <strong>{new Date().toLocaleDateString()}</strong>
-            </div>
+                );
+              })
+            )}
           </div>
 
-          <div class="st-sidebar-row">
-            <span>Progress ({stats.totalCounted} / {stats.totalProducts})</span>
-            <strong>{stats.progress}%</strong>
-          </div>
-          <div class="st-progress-bar">
-            <div class="st-progress-fill" style={`width: ${stats.progress}%`}></div>
-          </div>
-
-          <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-            <div class="st-sidebar-row">
-              <span>Variances</span>
-              <strong style={stats.variances > 0 ? 'color: var(--ink-black);' : ''}>{stats.variances}</strong>
+          <div class="st-sidebar">
+            <div class="st-sidebar-title">Stock Count Summary</div>
+            
+            <div style="margin: 1rem 0;">
+              <div class="st-sidebar-row">
+                <span>Session ID</span>
+                <strong>{this.sessionId}</strong>
+              </div>
+              <div class="st-sidebar-row">
+                <span>Started</span>
+                <strong>{new Date().toLocaleDateString()}</strong>
+              </div>
             </div>
-            <div class="st-sidebar-row">
-              <span>Value Impact</span>
-              <strong style={stats.valueImpact < 0 ? 'color: #c0392b;' : (stats.valueImpact > 0 ? 'color: #27ae60;' : '')}>
-                MWK {new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(stats.valueImpact)}
-              </strong>
-            </div>
-          </div>
 
-          <button 
-            class="st-complete-btn" 
-            onclick={() => { this.showSummary = true; this.scheduleUpdate?.(); }}
-            disabled={stats.totalCounted === 0}
-            style={stats.totalCounted === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}
-          >
-            Complete Stock Take
-          </button>
-          
-          <button class="st-save-btn" onclick={() => alert('Session saved locally.')}>
-            Save & Exit
-          </button>
+            <div class="st-sidebar-row">
+              <span>Progress ({stats.totalCounted} / {stats.totalProducts})</span>
+              <strong>{stats.progress}%</strong>
+            </div>
+            <div class="st-progress-bar">
+              <div class="st-progress-fill" style={`width: ${stats.progress}%`}></div>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+              <div class="st-sidebar-row">
+                <span>Variances</span>
+                <strong style={stats.variances > 0 ? 'color: var(--ink-black);' : ''}>{stats.variances}</strong>
+              </div>
+              <div class="st-sidebar-row">
+                <span>Value Impact</span>
+                <strong style={stats.valueImpact < 0 ? 'color: #c0392b;' : (stats.valueImpact > 0 ? 'color: #27ae60;' : '')}>
+                  MWK {new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(stats.valueImpact)}
+                </strong>
+              </div>
+            </div>
+
+            <button 
+              class="st-complete-btn" 
+              onclick={() => { this.showSummary = true; this.scheduleUpdate?.(); }}
+              disabled={stats.totalCounted === 0}
+              style={stats.totalCounted === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}
+            >
+              Complete Stock Take
+            </button>
+            
+            <button class="st-save-btn" onclick={() => alert('Session saved locally.')}>
+              Save & Exit
+            </button>
+          </div>
         </div>
 
         {this.showSummary ? (

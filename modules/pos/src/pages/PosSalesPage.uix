@@ -46,15 +46,6 @@ component PosSalesPage {
 
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Sales"
-          breadcrumb={[{ label: 'Point of Sale' }, { label: 'Sales' }]}
-          actions={[
-            { label: 'Filter', onclick: () => {}, variant: 'outline' },
-            { label: 'Export', onclick: () => {}, variant: 'outline' }
-          ]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Today's Total", value: "MWK 0.00", delta: "0% from yesterday", deltaType: "neutral" },
@@ -73,7 +64,7 @@ component PosSalesPage {
             />
           </div>
           <div class="alp-toolbar-right">
-            {/* Secondary actions if any */}
+             <button class="aui-btn aui-btn--outline">Filter</button>
           </div>
         </div>
 

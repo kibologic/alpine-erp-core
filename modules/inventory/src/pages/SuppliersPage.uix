@@ -25,14 +25,6 @@ component SuppliersPage {
   render() {
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Suppliers"
-          breadcrumb={[{ label: 'Inventory' }, { label: 'Suppliers' }]}
-          actions={[
-            { label: 'Add Supplier', onclick: () => { this.showAddModal = true; this.scheduleUpdate?.(); }, variant: 'primary' }
-          ]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Total Suppliers", value: "0" },
@@ -47,6 +39,9 @@ component SuppliersPage {
               value={this.searchQuery}
               onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
             />
+          </div>
+          <div class="alp-toolbar-right">
+             <button class="aui-btn aui-btn--outline">Export</button>
           </div>
         </div>
 

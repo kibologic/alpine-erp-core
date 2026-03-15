@@ -33,11 +33,6 @@ component StockTakeImportPage {
 
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Import Stock Take"
-          breadcrumb={[{ label: 'Inventory' }, { label: 'Stock Take' }]}
-        />
-
         <div style="background: white; border: 1px solid var(--dusty-denim); border-radius: 8px; padding: 2rem; max-width: 800px; margin: 0 auto;">
           <h2 style="margin-top: 0; color: var(--ink-black);">Excel / CSV Import</h2>
           <p style="color: var(--prussian-blue); margin-bottom: 2rem;">

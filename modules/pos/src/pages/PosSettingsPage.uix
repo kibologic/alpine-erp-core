@@ -15,11 +15,6 @@ component PosSettingsPage {
   render() {
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="POS Settings"
-          breadcrumb={[{ label: 'Point of Sale' }, { label: 'Settings' }]}
-        />
-
         <div class="aui-tabs">
           <button class={`aui-tab ${this.activeTab === 'terminal' ? 'aui-tab--active' : ''}`} onclick={() => { this.activeTab = 'terminal'; this.scheduleUpdate?.(); }}>Terminal</button>
           <button class={`aui-tab ${this.activeTab === 'receipt' ? 'aui-tab--active' : ''}`} onclick={() => { this.activeTab = 'receipt'; this.scheduleUpdate?.(); }}>Receipt</button>

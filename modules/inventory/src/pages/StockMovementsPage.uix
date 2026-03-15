@@ -52,14 +52,6 @@ component StockMovementsPage {
 
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Stock Movements"
-          breadcrumb={[{ label: 'Inventory' }, { label: 'History' }]}
-          actions={[
-             { label: 'Export Movements', onclick: () => {}, variant: 'outline' }
-          ]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Total Movements", value: this.movements.length.toString() },
@@ -76,6 +68,9 @@ component StockMovementsPage {
               value={this.searchQuery}
               onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
             />
+          </div>
+          <div class="alp-toolbar-right">
+             <button class="aui-btn aui-btn--outline">Filters</button>
           </div>
         </div>
 

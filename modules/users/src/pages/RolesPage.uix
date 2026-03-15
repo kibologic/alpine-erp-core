@@ -15,14 +15,6 @@ component RolesPage {
   render() {
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Roles & Permissions"
-          breadcrumb={[{ label: 'Users' }, { label: 'Roles' }]}
-          actions={[
-            { label: 'Create Role', onclick: () => {}, variant: 'primary' }
-          ]}
-        />
-
         <DataTable 
           columns={columns}
           rows={[]}

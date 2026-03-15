@@ -22,11 +22,6 @@ component AppearancePage {
   render() {
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Appearance"
-          breadcrumb={[{ label: 'Settings' }, { label: 'Appearance' }]}
-        />
-
         <div style="max-width: 800px; display: flex; flex-direction: column; gap: 2rem;">
           <Section 
             title="Theme Settings"

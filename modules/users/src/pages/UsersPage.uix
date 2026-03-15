@@ -46,14 +46,6 @@ component UsersPage {
 
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Users"
-          breadcrumb={[{ label: 'Users' }, { label: 'List' }]}
-          actions={[
-            { label: 'Add User', onclick: () => { this.showAddModal = true; this.scheduleUpdate?.(); }, variant: 'primary' }
-          ]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Total Users", value: "0" },
@@ -70,6 +62,9 @@ component UsersPage {
               value={this.searchQuery}
               onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
             />
+          </div>
+          <div class="alp-toolbar-right">
+             <button class="aui-btn aui-btn--outline">Filters</button>
           </div>
         </div>
 

@@ -8,11 +8,6 @@ component BillingPage {
   render() {
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Billing & Plans"
-          breadcrumb={[{ label: 'Settings' }, { label: 'Billing' }]}
-        />
-
         <div style="max-width: 800px; display: flex; flex-direction: column; gap: 2rem;">
           <Section 
             title="Current Subscription"

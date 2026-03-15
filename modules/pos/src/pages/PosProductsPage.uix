@@ -68,15 +68,6 @@ component PosProductsPage {
 
     return (
       <div class="alp-page">
-        <PageHeader 
-          title="Products"
-          breadcrumb={[{ label: 'Point of Sale' }, { label: 'Products' }]}
-          actions={[
-            { label: 'Import', onclick: () => { this.showImportModal = true; this.scheduleUpdate?.(); }, variant: 'outline' },
-            { label: 'Add Product', onclick: () => { this.showAddModal = true; this.scheduleUpdate?.(); }, variant: 'primary' }
-          ]}
-        />
-
         <StatStrip 
           stats={[
             { label: "Total Products", value: this.products.length.toString() },
