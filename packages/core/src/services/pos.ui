@@ -1,6 +1,7 @@
 import { api } from './api.ui';
 
 export const PosService = {
+  getSessions: () => api.get('/pos/sessions'),
   getCurrentSession: (registerId: string) => api.get(`/pos/sessions/current/${registerId}`),
   openSession: (registerId: string, openingFloat: number) => 
     api.post('/pos/sessions/open', { register_id: registerId, opening_float: openingFloat }),

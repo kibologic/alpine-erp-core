@@ -191,11 +191,14 @@ component PosTerminalPage {
       session_id: this.session.id,
       subtotal,
       tax,
+      discount: 0,
       total,
       lines: this.cartItems.map(i => ({
         product_id: i.product.id,
         quantity: i.qty,
         unit_price: i.product.price,
+        discount: 0,
+        tax: 0,
         line_total: i.lineTotal
       })),
       payments: [{ method: this.paymentMethod, amount: total }]

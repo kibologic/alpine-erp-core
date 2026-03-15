@@ -41,7 +41,7 @@ class SaleLineCreate(BaseModel):
 
 
 class PaymentCreate(BaseModel):
-    method: str = Field(..., pattern="^(cash|card)$")
+    method: str = Field(..., pattern="^(cash|card|mobile)$")
     amount: Decimal = Field(..., gt=0)
 
 
