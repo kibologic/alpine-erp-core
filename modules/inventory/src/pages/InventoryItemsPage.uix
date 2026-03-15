@@ -1,14 +1,6 @@
 import { SwissComponent } from '@swissjs/core';
 import { InventoryService } from '@alpine/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
-import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
-import { TextField } from '@alpine/ui/src/form/TextField.uix';
-import { SidePanel } from '@alpine/ui/src/feedback/SidePanel.uix';
-import { Tabs } from '@alpine/ui/src/layout/Tabs.uix';
-import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
+import { ListView, FormView, FormSection, TextField, StatusBadge } from '@alpine/ui';
 
 const columns = [
   { key: 'sku', label: 'SKU', width: '120px' },
@@ -16,222 +8,100 @@ const columns = [
   { key: 'category', label: 'Category', sortable: true, width: '140px' },
   { key: 'price', label: 'Price (MWK)', sortable: true, width: '140px' },
   { key: 'stock_quantity', label: 'Stock', sortable: true, width: '100px' },
-  { key: 'stock_status', label: 'Status', width: '120px' },
-  { key: 'reorder_level', label: 'Reorder At', width: '120px' },
-  { key: 'actionsHTML', label: '', width: '140px' }
+  { 
+    key: 'stock_status', 
+    label: 'Status', 
+    width: '120px',
+    render: (val, row) => {
+        const status = row.stock_quantity <= 0 ? { label: 'Out of Stock', type: 'danger' } : 
+                       row.stock_quantity < 10 ? { label: 'Low Stock', type: 'warning' } : 
+                       { label: 'In Stock', type: 'success' };
+        return <StatusBadge label={status.label} type={status.type} />;
+    }
+  }
 ];
 
 component InventoryItemsPage {
-  props = {};
-
   state { let products: any[] = []; }
   state { let loading: boolean = true; }
-  state { let showAdjustModal: boolean = false; }
-  state { let adjustingProduct: any = null; }
-  state { let adjustmentAmount: string = ''; }
-  state { let adjustmentReason: string = ''; }
-  state { let selectedItem: any = null; }
   state { let workspaceOpen: boolean = false; }
+  state { let selectedItem: any = null; }
   state { let activeTab: string = 'general'; }
   state { let searchQuery: string = ''; }
-
-  getStockStatus(qty: number, reorder: number) {
-    if (qty <= 0) return { label: 'Out of Stock', type: 'danger' };
-    if (qty < (reorder || 10)) return { label: 'Low Stock', type: 'warning' };
-    return { label: 'In Stock', type: 'success' };
-  }
+  state { let selectedFilters: string[] = []; }
 
   async mounted() {
     try {
-      if (InventoryService && InventoryService.getProducts) {
-        const data = await InventoryService.getProducts();
-        this.products = data || [];
-      } else {
-        this.products = [];
-      }
+      const data = await InventoryService.getProducts();
+      this.products = data || [];
     } catch (e) {
       console.error('Failed to load products', e);
-      this.products = [];
     } finally {
       this.loading = false;
       this.scheduleUpdate?.();
     }
   }
 
-  openAdjustModal(product: any) {
-    this.adjustingProduct = product;
-    this.showAdjustModal = true;
-    this.adjustmentAmount = '';
-    this.adjustmentReason = '';
-    this.scheduleUpdate?.();
-  }
-
-  confirmAdjustment() {
-    if (!this.adjustingProduct) return;
-    const amount = parseInt(this.adjustmentAmount, 10);
-    if (isNaN(amount)) return;
-    this.products = this.products.map(p => {
-        if (p.id === this.adjustingProduct.id || p.sku === this.adjustingProduct.sku) {
-            return { ...p, stock_quantity: (p.stock_quantity || 0) + amount };
-        }
-        return p;
-    });
-    this.showAdjustModal = false;
-    this.adjustingProduct = null;
-    this.scheduleUpdate?.();
-  }
-
   render() {
-    const displayRows = this.products.map(p => {
-      const status = this.getStockStatus(p.stock_quantity || 0, p.reorder_level || 10);
-      return {
-        ...p,
-        stock_status: status.label,
-        price: new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(p.price || 0),
-        actionsHTML: `<button class="aui-btn aui-btn--outline" style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid var(--dusty-denim); background: transparent; color: var(--prussian-blue);" onclick="window.dispatchEvent(new CustomEvent('adjust-stock', {detail: '${p.sku || p.id}'}))">Adjust</button>`
-      };
-    });
-
-    const updatedColumns = columns.map(col => {
-        if (col.key === 'stock_status') {
-            return {
-                ...col,
-                render: (val: string, row: any) => {
-                    const status = this.getStockStatus(row.stock_quantity || 0, row.reorder_level || 10);
-                    return <StatusBadge label={status.label} type={status.type} />;
-                }
-            };
-        }
-        return col;
-    });
-
-    if (typeof window !== 'undefined' && !(window as any)._invListenerAdded) {
-      window.addEventListener('adjust-stock', (e: any) => {
-        const id = e.detail;
-        const prod = this.products.find(p => p.sku === id || p.id === id);
-        if (prod) this.openAdjustModal(prod);
-      });
-      (window as any)._invListenerAdded = true;
-    }
-
-    const lowStockCount = this.products.filter(p => (p.stock_quantity || 0) < (p.reorder_level || 10)).length;
-    const outOfStockCount = this.products.filter(p => (p.stock_quantity || 0) <= 0).length;
-
+    const lowStockCount = this.products.filter(p => (p.stock_quantity || 0) < 10).length;
+    
     return (
       <div class="alp-page">
-        <StatStrip 
-          stats={[
-            { label: "Total Items", value: this.products.length.toString() },
-            { label: "Active", value: this.products.length.toString() },
-            { label: "Low Stock", value: lowStockCount.toString(), delta: lowStockCount > 0 ? "Needs attention" : "Healthy", deltaType: lowStockCount > 0 ? "negative" : "positive" },
-            { label: "Out of Stock", value: outOfStockCount.toString(), deltaType: outOfStockCount > 0 ? "negative" : "neutral" }
-          ]}
-        />
-
-        <div class="alp-toolbar">
-          <div class="alp-toolbar-left">
-            <TextField 
-              placeholder="Search items..." 
-              value={this.searchQuery}
-              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
-            />
-          </div>
-          <div class="alp-toolbar-right">
-             <button class="aui-btn aui-btn--outline" style="margin-right: 0.5rem;">Filters</button>
-             <button class="aui-btn aui-btn--outline">Export</button>
-          </div>
-        </div>
-        
-        <DataTable
-          columns={updatedColumns}
-          rows={displayRows}
-          loading={this.loading}
-          searchable={true}
-          selectable={true}
-          exportable={true}
-          filename="inventory"
-          emptyTitle="No items yet"
-          emptyDescription="Add your first item to start tracking inventory"
-          onRowClick={(row) => {
-            this.selectedItem = this.products.find(p => p.sku === row.sku || p.id === row.id);
-            this.workspaceOpen = true;
-            this.activeTab = 'general';
-            this.scheduleUpdate?.();
-          }}
-        />
-
-        <SidePanel 
-          open={this.workspaceOpen}
-          title={this.selectedItem ? this.selectedItem.name : 'Item Workspace'}
-          onclose={() => { this.workspaceOpen = false; this.scheduleUpdate?.(); }}
-          renderBody={() => (
-            <div>
-              <Tabs 
-                tabs={[
-                  { id: 'general', label: 'General' },
-                  { id: 'inventory', label: 'Inventory' },
-                  { id: 'pricing', label: 'Pricing' },
-                  { id: 'history', label: 'History' }
+        {!this.workspaceOpen ? (
+            <ListView
+                title="Inventory Products"
+                model="inventory.product"
+                columns={columns}
+                rows={this.products}
+                loading={this.loading}
+                stats={[
+                    { label: "Total Items", value: String(this.products.length) },
+                    { label: "Low Stock", value: String(lowStockCount), deltaType: lowStockCount > 0 ? "negative" : "positive" },
                 ]}
-                active={this.activeTab}
-                onchange={(id) => { this.activeTab = id; this.scheduleUpdate?.(); }}
-              />
+                filters={[
+                    { value: 'low_stock', label: 'Low Stock' },
+                    { value: 'out_of_stock', label: 'Out of Stock' }
+                ]}
+                selectedFilters={this.selectedFilters}
+                searchQuery={this.searchQuery}
+                primaryAction={{ label: 'New Product', action: 'create' }}
+                onSearch={(val) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
+                onFilterChange={(next) => { this.selectedFilters = next; this.scheduleUpdate?.(); }}
+                onRowClick={(row) => { 
+                    this.selectedItem = this.products.find(p => p.sku === row.sku);
+                    this.workspaceOpen = true;
+                    this.scheduleUpdate?.();
+                }}
+            />
+        ) : (
+            <FormView
+                title={this.selectedItem?.name}
+                subtitle={this.selectedItem?.sku}
+                status={this.selectedItem?.stock_quantity > 10 ? 'Healthy' : 'Low Stock'}
+                statusVariant={this.selectedItem?.stock_quantity > 10 ? 'success' : 'warning'}
+                isDirty={false}
+                onCancel={() => { this.workspaceOpen = false; this.scheduleUpdate?.(); }}
+                tabs={[
+                    { id: 'general', label: 'General' },
+                    { id: 'inventory', label: 'Inventory' }
+                ]}
+                activeTab={this.activeTab}
+                onTabChange={(id) => { this.activeTab = id; this.scheduleUpdate?.(); }}
+            >
+                <FormSection title="Basic Information" columns={2}>
+                    <TextField label="Product Name" value={this.selectedItem?.name} />
+                    <TextField label="SKU" value={this.selectedItem?.sku} />
+                    <TextField label="Category" value={this.selectedItem?.category} />
+                </FormSection>
 
-              <div style="margin-top: 1.5rem;">
-                {this.activeTab === 'general' ? (
-                  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                    <FormGroup label="Item Name" renderField={() => <TextField value={this.selectedItem?.name} onchange={() => {}} />} />
-                    <FormGroup label="SKU" renderField={() => <TextField value={this.selectedItem?.sku} onchange={() => {}} />} />
-                    <FormGroup label="Category" renderField={() => <TextField value={this.selectedItem?.category} onchange={() => {}} />} />
-                    <FormGroup label="Description" renderField={() => <TextField placeholder="Product description..." onchange={() => {}} />} />
-                  </div>
-                ) : null}
+                <div style="height: 2rem"></div>
 
-                {this.activeTab === 'inventory' ? (
-                  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                    <FormGroup label="Stock on Hand" renderField={() => <TextField type="number" value={String(this.selectedItem?.stock_quantity)} onchange={() => {}} />} />
-                    <FormGroup label="Reorder Level" renderField={() => <TextField type="number" value={String(this.selectedItem?.reorder_level || 10)} onchange={() => {}} />} />
-                    <FormGroup label="Safety Stock" renderField={() => <TextField type="number" value="5" onchange={() => {}} />} />
-                  </div>
-                ) : null}
-              </div>
-
-              <div style="margin-top: 2rem; border-top: 1px solid var(--color-bg-border); padding-top: 1.5rem; display: flex; gap: 1rem;">
-                <button class="aui-btn aui-btn--primary" style="flex: 1;">Save Changes</button>
-                <button class="aui-btn aui-btn--outline" onclick={() => this.openAdjustModal(this.selectedItem)}>Quick Adjust</button>
-              </div>
-            </div>
-          )}
-        />
-
-        {this.showAdjustModal ? (
-          <Modal
-            open={this.showAdjustModal}
-            title={`Adjust Stock: ${this.adjustingProduct?.name}`}
-            size="sm"
-            onclose={() => { this.showAdjustModal = false; this.scheduleUpdate?.(); }}
-            renderBody={() => (
-              <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="color: var(--dusty-denim); font-size: 0.875rem;">
-                    Current Stock: <strong style="color: var(--ink-black);">{this.adjustingProduct?.stock_quantity || 0}</strong>
-                </div>
-                <FormGroup
-                  label="Adjustment Amount (+ or -)"
-                  required={true}
-                  renderField={() => (
-                    <TextField value={this.adjustmentAmount} onchange={(v: string) => { this.adjustmentAmount = v; this.scheduleUpdate?.(); }} type="number" />
-                  )}
-                />
-              </div>
-            )}
-            renderFooter={() => (
-              <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showAdjustModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn" onclick={() => this.confirmAdjustment()}>Confirm</button>
-              </div>
-            )}
-          />
-        ) : null}
+                <FormSection title="Stock Management" columns={2}>
+                    <TextField type="number" label="Stock on Hand" value={String(this.selectedItem?.stock_quantity)} />
+                    <TextField type="number" label="Reorder Level" value="10" />
+                </FormSection>
+            </FormView>
+        )}
       </div>
     );
   }
