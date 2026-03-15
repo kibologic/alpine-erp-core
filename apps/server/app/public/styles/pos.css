@@ -709,10 +709,10 @@ textarea.erp-settings-input {
 .pos-float-input {
   width: 100%;
   padding: 8px 12px;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-bg-border);
+  background: var(--erp-input-bg);
+  border: 1px solid var(--erp-input-border);
   border-radius: var(--radius-md);
-  color: var(--color-text-primary);
+  color: var(--erp-text-primary);
   font-size: var(--font-size-sm);
   font-family: inherit;
   outline: none;
@@ -756,10 +756,10 @@ textarea.erp-settings-input {
 .pos-product-search {
   width: 100%;
   padding: 8px 12px;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-bg-border);
+  background: var(--erp-input-bg);
+  border: 1px solid var(--erp-input-border);
   border-radius: var(--radius-md);
-  color: var(--color-text-primary);
+  color: var(--erp-text-primary);
   font-size: var(--font-size-sm);
   font-family: inherit;
   outline: none;
@@ -779,8 +779,8 @@ textarea.erp-settings-input {
 
 .pos-category-pill {
   padding: 4px 12px;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-bg-border);
+  background: var(--erp-surface-2);
+  border: 1px solid var(--erp-border);
   border-radius: 999px;
   font-size: var(--font-size-xs);
   font-weight: 500;
