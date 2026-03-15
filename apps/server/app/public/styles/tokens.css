@@ -97,53 +97,65 @@
 
   --glass-bg:     rgba(9, 9, 11, 0.92);
   --glass-border: var(--erp-border);
+  --glass-backdrop: blur(16px) saturate(180%);
 }
 
 [data-theme="light"] {
-  --erp-bg-base: #E0E1DD; /* alabaster-grey */
+  /* ── 1. Foundation Layer (App Shell) — Neutral Alabaster ── */
+  --erp-bg-base: #F4F4F5;
 
+  /* ── 2. Surface Layers (Workspace Depth) — White & Light Grey ── */
   --erp-surface-1: #FFFFFF;
-  --erp-surface-2: #F8F9FA;
-  --erp-surface-3: #F0F0EE;
+  --erp-surface-2: #FAFAFA;
+  --erp-surface-3: #F0F0F2;
 
-  --erp-text-primary:   #0D1B2A; /* ink-black */
-  --erp-text-secondary: #415A77; /* dusk-blue */
-  --erp-text-muted:      #778DA9; /* dusty-denim */
-  --erp-text-inverse:    #E0E1DD;
+  /* ── 3. Text Hierarchy — High Contrast Charcoal ── */
+  --erp-text-primary:   #18181B;
+  --erp-text-secondary: #52525B;
+  --erp-text-muted:      #8E8E93;
+  --erp-text-inverse:    #FAFAFA;
 
-  --erp-border:  #D8D9D5;
-  --erp-divider: #E8E9E5;
+  /* ── 4. Borders and Dividers — Neutral ── */
+  --erp-border:  #E4E4E7;
+  --erp-divider: #F1F1F4;
 
-  --erp-accent:        #415A77;
-  --erp-accent-hover:  #344A63;
+  /* ── 5. Accent System (Brand Dusk Blue — Light Context) ── */
+  --erp-accent:        #4E6D90;
+  --erp-accent-hover:  #3A526E;
   --erp-accent-active: #2A3B4F;
-  --erp-accent-glow:   rgba(65, 90, 119, 0.10);
+  --erp-accent-glow:   rgba(78, 109, 144, 0.12);
 
+  /* ── 6. Semantic Status Colors — Desaturated ── */
   --erp-success: #3D7A5A;
-  --erp-warning: #778DA9;
-  --erp-danger:  #8A3030;
+  --erp-warning: #997A2E;
+  --erp-danger:  #993D3D;
 
-  --erp-table-header:   #F8F9FA;
+  /* ── 7. Table System — Neutral Light ── */
+  --erp-table-header:   #FAFAFA;
   --erp-table-row:      #FFFFFF;
-  --erp-table-row-alt:  #FBFBFB;
-  --erp-table-hover:    #F5F6F7;
-  --erp-table-selected: rgba(65, 90, 119, 0.12);
+  --erp-table-row-alt:  #F9F9F9;
+  --erp-table-hover:    #F4F4F5;
+  --erp-table-selected: rgba(78, 109, 144, 0.10);
 
+  /* ── 8. Inputs and Forms — High Visibility Light ── */
   --erp-input-bg:          #FFFFFF;
-  --erp-input-border:      #D8D9D5;
-  --erp-input-placeholder: #778DA9;
-  --erp-input-focus:       #415A77;
+  --erp-input-border:      #D4D4D8;
+  --erp-input-placeholder: #A1A1AA;
+  --erp-input-focus:       #4E6D90;
 
+  /* ── 9. Card System — Minimal Light ── */
   --erp-card-bg:     #FFFFFF;
-  --erp-card-border: #D8D9D5;
-  --erp-card-hover:  #FBFBFB;
+  --erp-card-border: #E4E4E7;
+  --erp-card-hover:  #FAFAFA;
 
-  --erp-sidebar-bg:     #E0E1DD;
-  --erp-sidebar-hover:  #D0D1CD;
-  --erp-sidebar-active: #C8C9C5;
+  /* ── 10. Sidebar Styling — Alabaster Neutral ── */
+  --erp-sidebar-bg:     #F4F4F5;
+  --erp-sidebar-hover:  #EBEBEB;
+  --erp-sidebar-active: #E4E4E7;
 
+  /* ── 11. Header Strip — Clean White ── */
   --erp-header-bg:     #FFFFFF;
-  --erp-header-border: #D8D9D5;
+  --erp-header-border: #E4E4E7;
 
   /* Aliases for light theme */
   --color-bg-base:     var(--erp-bg-base);
@@ -171,6 +183,7 @@
 
   --glass-bg:     rgba(255, 255, 255, 0.90);
   --glass-border: var(--erp-divider);
+  --glass-backdrop: blur(16px) saturate(180%);
 }
 
 /* ── Invariant tokens (same across all themes) ── */
