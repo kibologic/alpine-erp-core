@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
 from core.auth import get_current_tenant, verify_internal_token
+from core.auth_deps import get_current_user_optional
 from core.limits import LimitEnforcer, get_limit_enforcer
 from core.models import Product, StockMovement, Supplier
 from . import schemas, service
@@ -184,9 +185,10 @@ async def adjust_stock(
     data: schemas.StockAdjustmentCreate,
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
+    optional_user: dict | None = Depends(get_current_user_optional),
 ):
-    # In a real app, we'd get the user_id from the auth token
-    return await service.adjust_stock(session, tenant_id, data)
+    created_by = optional_user["user_id"] if optional_user else None
+    return await service.adjust_stock(session, tenant_id, data, user_id=created_by)
 
 
 @router.get("/stock/{product_id}")
@@ -455,6 +457,7 @@ async def import_stock_take(
     file: UploadFile = File(...),
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
+    optional_user: dict | None = Depends(get_current_user_optional),
 ):
     contents = await file.read()
     wb = openpyxl.load_workbook(io.BytesIO(contents), data_only=True)
@@ -508,6 +511,7 @@ async def import_stock_take(
             quantity=variance,
             reason="stock_take",
             reference_type=note_text,
+            created_by=optional_user["user_id"] if optional_user else None,
         )
         session.add(movement)
         await session.flush()

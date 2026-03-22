@@ -8,6 +8,22 @@ from core.db import get_session
 from core.models import AuthToken, User, UserTenant
 
 
+async def get_current_user_optional(
+    authorization: str | None = Header(None),
+    session: AsyncSession = Depends(get_session),
+) -> dict | None:
+    """
+    Same as get_current_user but returns None instead of raising 401.
+    Use on endpoints that work without auth but should record the user when present.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    try:
+        return await get_current_user(authorization=authorization, session=session)
+    except HTTPException:
+        return None
+
+
 async def get_current_user(
     authorization: str | None = Header(None),
     session: AsyncSession = Depends(get_session),
