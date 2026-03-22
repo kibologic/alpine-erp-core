@@ -17,7 +17,11 @@ from core.limits import LimitEnforcer, get_limit_enforcer
 from core.models import Product, StockMovement, Supplier
 from . import schemas, service
 
-router = APIRouter(prefix="/inventory", tags=["Inventory"])
+router = APIRouter(
+    prefix="/inventory",
+    tags=["Inventory"],
+    dependencies=[Depends(verify_internal_token)],
+)
 
 
 @router.get("/categories", response_model=List[schemas.CategoryResponse])
@@ -37,8 +41,7 @@ async def create_category(
     return await service.create_category(session, tenant_id, data)
 
 
-@router.patch("/categories/{category_id}", response_model=schemas.CategoryResponse,
-              dependencies=[Depends(verify_internal_token)])
+@router.patch("/categories/{category_id}", response_model=schemas.CategoryResponse)
 async def update_category(
     category_id: str,
     data: schemas.CategoryUpdate,
@@ -59,8 +62,7 @@ async def update_category(
     return category
 
 
-@router.delete("/categories/{category_id}", status_code=204,
-               dependencies=[Depends(verify_internal_token)])
+@router.delete("/categories/{category_id}", status_code=204)
 async def delete_category(
     category_id: str,
     session: AsyncSession = Depends(get_session),
@@ -207,7 +209,7 @@ def _supplier_dict(s: Supplier) -> dict:
     }
 
 
-@router.get("/suppliers", dependencies=[Depends(verify_internal_token)])
+@router.get("/suppliers")
 async def list_suppliers(
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
@@ -236,7 +238,7 @@ class SupplierUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
-@router.post("/suppliers", dependencies=[Depends(verify_internal_token)])
+@router.post("/suppliers")
 async def create_supplier(
     data: SupplierCreate,
     session: AsyncSession = Depends(get_session),
@@ -256,7 +258,7 @@ async def create_supplier(
     return _supplier_dict(supplier)
 
 
-@router.patch("/suppliers/{supplier_id}", dependencies=[Depends(verify_internal_token)])
+@router.patch("/suppliers/{supplier_id}")
 async def update_supplier(
     supplier_id: str,
     data: SupplierUpdate,
@@ -276,7 +278,7 @@ async def update_supplier(
     return _supplier_dict(supplier)
 
 
-@router.get("/stock-take/export", dependencies=[Depends(verify_internal_token)])
+@router.get("/stock-take/export")
 async def export_stock_take(
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
@@ -319,7 +321,7 @@ async def export_stock_take(
     )
 
 
-@router.post("/stock-take/import", dependencies=[Depends(verify_internal_token)])
+@router.post("/stock-take/import")
 async def import_stock_take(
     file: UploadFile = File(...),
     session: AsyncSession = Depends(get_session),
