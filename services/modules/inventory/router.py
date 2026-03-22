@@ -2,6 +2,8 @@ import io
 from datetime import date
 from typing import List, Optional
 
+from pydantic import BaseModel
+
 import openpyxl
 from openpyxl.styles import Font
 from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, File
@@ -192,7 +194,20 @@ async def list_stock_levels(
     ]
 
 
-@router.get("/suppliers")
+def _supplier_dict(s: Supplier) -> dict:
+    return {
+        "id": str(s.id),
+        "name": s.name,
+        "email": s.email,
+        "phone": s.phone,
+        "address": s.address,
+        "is_active": s.is_active,
+        "created_at": s.created_at.isoformat(),
+        "updated_at": s.updated_at.isoformat(),
+    }
+
+
+@router.get("/suppliers", dependencies=[Depends(verify_internal_token)])
 async def list_suppliers(
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
@@ -202,18 +217,63 @@ async def list_suppliers(
         .where(Supplier.tenant_id == tenant_id, Supplier.is_active == True)
         .order_by(Supplier.name)
     )
-    suppliers = result.scalars().all()
-    return [
-        {
-            "id": str(s.id),
-            "name": s.name,
-            "email": s.email,
-            "phone": s.phone,
-            "address": s.address,
-            "created_at": s.created_at.isoformat(),
-        }
-        for s in suppliers
-    ]
+    return [_supplier_dict(s) for s in result.scalars().all()]
+
+
+class SupplierCreate(BaseModel):
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    is_active: bool = True
+
+
+class SupplierUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+@router.post("/suppliers", dependencies=[Depends(verify_internal_token)])
+async def create_supplier(
+    data: SupplierCreate,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    supplier = Supplier(
+        tenant_id=tenant_id,
+        name=data.name,
+        email=data.email,
+        phone=data.phone,
+        address=data.address,
+        is_active=data.is_active,
+    )
+    session.add(supplier)
+    await session.commit()
+    await session.refresh(supplier)
+    return _supplier_dict(supplier)
+
+
+@router.patch("/suppliers/{supplier_id}", dependencies=[Depends(verify_internal_token)])
+async def update_supplier(
+    supplier_id: str,
+    data: SupplierUpdate,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    result = await session.execute(
+        select(Supplier).where(Supplier.id == supplier_id, Supplier.tenant_id == tenant_id)
+    )
+    supplier = result.scalar_one_or_none()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(supplier, field, value)
+    await session.commit()
+    await session.refresh(supplier)
+    return _supplier_dict(supplier)
 
 
 @router.get("/stock-take/export", dependencies=[Depends(verify_internal_token)])
