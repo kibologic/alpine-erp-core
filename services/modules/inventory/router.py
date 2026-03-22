@@ -1,10 +1,16 @@
+import io
+from datetime import date
 from typing import List, Optional
+
+import openpyxl
+from openpyxl.styles import Font
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
-from core.auth import get_current_tenant
+from core.auth import get_current_tenant, verify_internal_token
 from core.limits import LimitEnforcer, get_limit_enforcer
 from core.models import StockMovement, Supplier
 from . import schemas, service
@@ -167,6 +173,49 @@ async def list_suppliers(
         }
         for s in suppliers
     ]
+
+
+@router.get("/stock-take/export", dependencies=[Depends(verify_internal_token)])
+async def export_stock_take(
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    result = await session.execute(
+        text("""
+            SELECT p.sku, p.name, COALESCE(s.quantity, 0) as stock_on_hand
+            FROM products p
+            LEFT JOIN stock_on_hand s ON p.id::text = s.product_id::text
+                AND s.tenant_id::text = :tenant_id
+            WHERE p.tenant_id::text = :tenant_id AND p.is_active = true
+            ORDER BY p.name
+        """),
+        {"tenant_id": tenant_id},
+    )
+    rows = result.fetchall()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Stock Take"
+
+    headers = ["SKU", "Product Name", "Stock On Hand", "Counted Quantity", "Variance", "Notes"]
+    ws.append(headers)
+    bold = Font(bold=True)
+    for cell in ws[1]:
+        cell.font = bold
+
+    for row in rows:
+        ws.append([row.sku, row.name, float(row.stock_on_hand), None, None, None])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    filename = f"stock-take-{date.today().isoformat()}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post("/customers", response_model=schemas.CustomerResponse)
