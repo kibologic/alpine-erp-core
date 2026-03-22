@@ -8,36 +8,8 @@ from core.db import get_session
 from core.models import AuthToken, User, UserTenant
 
 
-async def get_current_user_optional(
-    authorization: str | None = Header(None),
-    session: AsyncSession = Depends(get_session),
-) -> dict | None:
-    """
-    Same as get_current_user but returns None instead of raising 401.
-    Use on endpoints that work without auth but should record the user when present.
-    """
-    if not authorization or not authorization.startswith("Bearer "):
-        return None
-    try:
-        return await get_current_user(authorization=authorization, session=session)
-    except HTTPException:
-        return None
-
-
-async def get_current_user(
-    authorization: str | None = Header(None),
-    session: AsyncSession = Depends(get_session),
-) -> dict:
-    """
-    Validates Bearer token from Authorization header.
-    Returns { user_id, email, role, tenant_memberships[] }.
-    Raises HTTP 401 if missing, invalid, or expired.
-    """
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
-
-    token = authorization.removeprefix("Bearer ")
-
+async def _resolve_token(token: str, session: AsyncSession) -> User:
+    """Validate token and return the associated User. Raises 401 on failure."""
     result = await session.execute(
         select(AuthToken).where(AuthToken.token == token)
     )
@@ -58,17 +30,79 @@ async def get_current_user(
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
-    tenants_result = await session.execute(
+    return user
+
+
+async def _check_tenant(user: User, tenant_id: str, session: AsyncSession) -> str:
+    """Verify user belongs to tenant. Returns the user's role in that tenant."""
+    result = await session.execute(
+        select(UserTenant).where(
+            UserTenant.user_id == user.id,
+            UserTenant.tenant_id == tenant_id,
+        )
+    )
+    membership = result.scalar_one_or_none()
+    if not membership:
+        raise HTTPException(status_code=403, detail="User does not belong to this organisation")
+    return membership.role
+
+
+async def _get_all_tenants(user: User, session: AsyncSession) -> list[dict]:
+    result = await session.execute(
         select(UserTenant).where(UserTenant.user_id == user.id)
     )
-    tenant_memberships = [
+    return [
         {"tenant_id": ut.tenant_id, "role": ut.role}
-        for ut in tenants_result.scalars().all()
+        for ut in result.scalars().all()
     ]
 
-    return {
+
+async def get_current_user(
+    authorization: str | None = Header(None),
+    tenant_id: str | None = Header(None, alias="X-Tenant-ID"),
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """
+    Validates Bearer token. If X-Tenant-ID header is present, also verifies
+    the user belongs to that tenant. Raises 401/403 on failure.
+    Returns { user_id, email, role, tenant_memberships[], tenant_role (if tenant checked) }.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    user = await _resolve_token(authorization.removeprefix("Bearer "), session)
+    tenants = await _get_all_tenants(user, session)
+
+    result: dict = {
         "user_id": user.id,
         "email": user.email,
         "role": user.role,
-        "tenant_memberships": tenant_memberships,
+        "tenant_memberships": tenants,
     }
+
+    if tenant_id:
+        tenant_role = await _check_tenant(user, tenant_id, session)
+        result["tenant_role"] = tenant_role
+
+    return result
+
+
+async def get_current_user_optional(
+    authorization: str | None = Header(None),
+    tenant_id: str | None = Header(None, alias="X-Tenant-ID"),
+    session: AsyncSession = Depends(get_session),
+) -> dict | None:
+    """
+    Same as get_current_user but returns None instead of raising on any failure.
+    Use on endpoints that work without auth but should record the user when present.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    try:
+        return await get_current_user(
+            authorization=authorization,
+            tenant_id=tenant_id,
+            session=session,
+        )
+    except HTTPException:
+        return None
