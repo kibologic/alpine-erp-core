@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import openpyxl
 from openpyxl.styles import Font
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, File
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,6 +33,47 @@ async def create_category(
     tenant_id: str = Depends(get_current_tenant),
 ):
     return await service.create_category(session, tenant_id, data)
+
+
+@router.patch("/categories/{category_id}", response_model=schemas.CategoryResponse,
+              dependencies=[Depends(verify_internal_token)])
+async def update_category(
+    category_id: str,
+    data: schemas.CategoryUpdate,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    from core.models import Category
+    result = await session.execute(
+        select(Category).where(Category.id == category_id, Category.tenant_id == tenant_id)
+    )
+    category = result.scalar_one_or_none()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    if data.name is not None:
+        category.name = data.name
+    await session.commit()
+    await session.refresh(category)
+    return category
+
+
+@router.delete("/categories/{category_id}", status_code=204,
+               dependencies=[Depends(verify_internal_token)])
+async def delete_category(
+    category_id: str,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    from core.models import Category
+    result = await session.execute(
+        select(Category).where(Category.id == category_id, Category.tenant_id == tenant_id)
+    )
+    category = result.scalar_one_or_none()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    await session.delete(category)
+    await session.commit()
+    return Response(status_code=204)
 
 
 @router.get("/products", response_model=List[schemas.ProductResponse])
