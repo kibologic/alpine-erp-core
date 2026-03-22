@@ -28,6 +28,19 @@ const server = new SwiteServer({
 // SwiteServer uses Express (server.app) but doesn't expose the underlying
 // http.Server. Register the proxy directly on server.app BEFORE start() so
 // it sits ahead of Swite's SPA catch-all fallback in the middleware chain.
+
+server.app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3100');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+  next();
+});
+
 // When Express mounts on '/api/v1', req.url inside the handler is the
 // suffix after the mount point — prepend the prefix to reconstruct the path.
 
