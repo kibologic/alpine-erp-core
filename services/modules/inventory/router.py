@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import openpyxl
 from openpyxl.styles import Font
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_session
 from core.auth import get_current_tenant, verify_internal_token
 from core.limits import LimitEnforcer, get_limit_enforcer
-from core.models import StockMovement, Supplier
+from core.models import Product, StockMovement, Supplier
 from . import schemas, service
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
@@ -216,6 +216,80 @@ async def export_stock_take(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@router.post("/stock-take/import", dependencies=[Depends(verify_internal_token)])
+async def import_stock_take(
+    file: UploadFile = File(...),
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    contents = await file.read()
+    wb = openpyxl.load_workbook(io.BytesIO(contents), data_only=True)
+
+    if "Stock Take" not in wb.sheetnames:
+        raise HTTPException(status_code=400, detail="Sheet 'Stock Take' not found")
+
+    ws = wb["Stock Take"]
+    rows = list(ws.iter_rows(min_row=2, values_only=True))
+
+    # Pre-load all products for this tenant keyed by SKU
+    result = await session.execute(
+        select(Product).where(Product.tenant_id == tenant_id, Product.is_active == True)
+    )
+    products_by_sku = {p.sku: p for p in result.scalars().all()}
+
+    processed = 0
+    adjusted = 0
+    skipped = []
+    movement_ids = []
+
+    for row in rows:
+        if not any(row):
+            continue
+
+        sku, _name, stock_on_hand, counted_qty, _variance, notes = (
+            row[0], row[1], row[2], row[3], row[4], row[5]
+        )
+
+        if counted_qty is None or counted_qty == "":
+            continue
+
+        processed += 1
+
+        if sku not in products_by_sku:
+            skipped.append(str(sku))
+            continue
+
+        stock_on_hand = float(stock_on_hand or 0)
+        variance = float(counted_qty) - stock_on_hand
+
+        if variance == 0:
+            continue
+
+        product = products_by_sku[sku]
+        note_text = str(notes) if notes else "Stock take adjustment"
+
+        movement = StockMovement(
+            tenant_id=tenant_id,
+            product_id=product.id,
+            quantity=variance,
+            reason="stock_take",
+            reference_type=note_text,
+        )
+        session.add(movement)
+        await session.flush()
+        movement_ids.append(str(movement.id))
+        adjusted += 1
+
+    await session.commit()
+
+    return {
+        "processed": processed,
+        "adjusted": adjusted,
+        "skipped": skipped,
+        "movements_created": movement_ids,
+    }
 
 
 @router.post("/customers", response_model=schemas.CustomerResponse)
