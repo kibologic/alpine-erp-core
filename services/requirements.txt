@@ -7,3 +7,4 @@ python-dotenv==1.0.0
 cryptography
 python-multipart==0.0.9
 openpyxl==3.1.5
+bcrypt==3.2.2
