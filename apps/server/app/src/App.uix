@@ -58,6 +58,12 @@ component App {
         : lic.features;
       await bootstrap(licenseFeatures);
       this.modules = getModules();
+      if (window.__skltn) {
+        const navigation = window.__skltn.registry.get('navigation');
+        if (navigation) {
+          this.modules.forEach((mod) => navigation.registerModule(mod));
+        }
+      }
       this.view = 'app';
       this.scheduleUpdate?.();
       this.syncWithBackend();
