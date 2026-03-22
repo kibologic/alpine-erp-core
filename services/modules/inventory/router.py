@@ -217,28 +217,78 @@ async def list_customers(
 
 @router.get("/movements")
 async def list_movements(
+    product_id: Optional[str] = None,
+    reason: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    page: int = 1,
+    page_size: int = 50,
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
 ):
-    result = await session.execute(
-        select(StockMovement)
-        .where(StockMovement.tenant_id == tenant_id)
-        .order_by(StockMovement.created_at.desc())
-        .limit(100)
+    page_size = min(page_size, 200)
+    offset = (page - 1) * page_size
+
+    filters = "sm.tenant_id = :tenant_id"
+    params: dict = {"tenant_id": tenant_id}
+
+    if product_id:
+        filters += " AND sm.product_id::text = :product_id"
+        params["product_id"] = product_id
+    if reason:
+        filters += " AND sm.reason = :reason"
+        params["reason"] = reason
+    if date_from:
+        filters += " AND sm.created_at >= :date_from"
+        params["date_from"] = date_from
+    if date_to:
+        filters += " AND sm.created_at < :date_to::date + interval '1 day'"
+        params["date_to"] = date_to
+
+    count_result = await session.execute(
+        text(f"SELECT COUNT(*) FROM stock_movements sm WHERE {filters}"),
+        params,
     )
-    movements = result.scalars().all()
-    return [
-        {
-            "id": str(m.id),
-            "product_id": str(m.product_id),
-            "quantity": float(m.quantity),
-            "reason": m.reason,
-            "reference_type": m.reference_type,
-            "reference_id": m.reference_id,
-            "created_at": m.created_at.isoformat(),
-        }
-        for m in movements
-    ]
+    total = count_result.scalar()
+
+    items_result = await session.execute(
+        text(f"""
+            SELECT
+                sm.id::text, sm.product_id::text,
+                p.name AS product_name, p.sku AS product_sku,
+                sm.quantity, sm.reason, sm.reference_type,
+                sm.reference_id, sm.created_by::text, sm.created_at
+            FROM stock_movements sm
+            LEFT JOIN products p ON sm.product_id = p.id
+            WHERE {filters}
+            ORDER BY sm.created_at DESC
+            LIMIT :limit OFFSET :offset
+        """),
+        {**params, "limit": page_size, "offset": offset},
+    )
+    rows = items_result.mappings().all()
+
+    return {
+        "items": [
+            {
+                "id": r["id"],
+                "product_id": r["product_id"],
+                "product_name": r["product_name"],
+                "product_sku": r["product_sku"],
+                "quantity": float(r["quantity"]),
+                "reason": r["reason"],
+                "reference_type": r["reference_type"],
+                "reference_id": r["reference_id"],
+                "created_by": r["created_by"],
+                "created_at": r["created_at"].isoformat(),
+            }
+            for r in rows
+        ],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "pages": max(1, -(-total // page_size)),  # ceiling division
+    }
 
 
 @router.get("/stock-levels")
