@@ -41,11 +41,17 @@ async def list_modules() -> list[dict]:
 # --- Module self-registration ---
 # Open-core modules only. Enterprise modules live in kibologic/alpine-erp.
 
+from modules.auth.router import router as auth_router
 from modules.inventory.router import router as inventory_router
 from modules.pos.router import router as pos_router
 from modules.users.router import router as users_router
 from modules.users.audit_router import router as audit_router
 
+register_module(
+    name="auth",
+    router_factory=lambda app: app.include_router(auth_router, prefix="/api/v1"),
+    tier="core",
+)
 register_module(
     name="inventory",
     router_factory=lambda app: app.include_router(inventory_router, prefix="/api/v1"),
