@@ -100,6 +100,85 @@ async def create_product(
     return await service.create_product(session, tenant_id, data)
 
 
+@router.get("/products/{product_id}")
+async def get_product(
+    product_id: str,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    result = await session.execute(
+        text("""
+            SELECT
+                p.id::text, p.tenant_id::text, p.category_id::text,
+                p.name, p.sku, p.barcode, p.price, p.cost, p.tax_rate,
+                p.is_active, p.created_at, p.extra_data,
+                p.canonical_material_id, p.quality_tier,
+                COALESCE(s.quantity, 0) AS stock_quantity
+            FROM products p
+            LEFT JOIN stock_on_hand s ON p.id = s.product_id AND p.tenant_id = s.tenant_id
+            WHERE p.tenant_id = :t AND p.id::text = :id
+        """),
+        {"t": tenant_id, "id": product_id},
+    )
+    row = result.mappings().one_or_none()
+    if not row:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return dict(row)
+
+
+@router.patch("/products/{product_id}")
+async def update_product(
+    product_id: str,
+    data: schemas.ProductUpdate,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    result = await session.execute(
+        select(Product).where(Product.id == product_id, Product.tenant_id == tenant_id)
+    )
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(product, field, value)
+    await session.commit()
+    await session.refresh(product)
+    # Re-fetch with stock_quantity
+    stock_result = await session.execute(
+        text("SELECT COALESCE(quantity, 0) FROM stock_on_hand WHERE product_id = :id AND tenant_id = :t"),
+        {"id": product_id, "t": tenant_id},
+    )
+    stock_row = stock_result.one_or_none()
+    stock_qty = float(stock_row[0]) if stock_row else 0.0
+    return {
+        "id": str(product.id), "tenant_id": str(product.tenant_id),
+        "category_id": str(product.category_id) if product.category_id else None,
+        "name": product.name, "sku": product.sku, "barcode": product.barcode,
+        "price": float(product.price), "cost": float(product.cost),
+        "tax_rate": float(product.tax_rate), "is_active": product.is_active,
+        "created_at": product.created_at, "extra_data": product.extra_data,
+        "canonical_material_id": product.canonical_material_id,
+        "quality_tier": product.quality_tier, "stock_quantity": stock_qty,
+    }
+
+
+@router.delete("/products/{product_id}")
+async def deactivate_product(
+    product_id: str,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    result = await session.execute(
+        select(Product).where(Product.id == product_id, Product.tenant_id == tenant_id)
+    )
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    product.is_active = False
+    await session.commit()
+    return {"id": product_id, "deactivated": True}
+
+
 @router.post("/adjust", response_model=schemas.StockMovementResponse)
 async def adjust_stock(
     data: schemas.StockAdjustmentCreate,
