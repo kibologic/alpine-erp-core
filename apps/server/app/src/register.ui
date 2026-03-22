@@ -1,0 +1,32 @@
+import { bootstrap, getModules, getLicense } from '@alpine/core';
+
+import '@alpine/module-dashboard';
+import '@alpine/module-users';
+import '@alpine/module-settings';
+import '@alpine/module-pos';
+import '@alpine/module-inventory';
+
+async function register() {
+  try {
+    const lic = getLicense();
+    const features = lic.tier === 'enterprise'
+      ? getModules().map((m) => m.id)
+      : lic.features;
+
+    await bootstrap(features);
+
+    if (window.__skltn) {
+      const navigation = window.__skltn.registry.get('navigation');
+      if (navigation) {
+        getModules().forEach((mod) => navigation.registerModule(mod));
+        console.log('[erp-core] modules registered into alpine-shell:', getModules().map((m) => m.id));
+      }
+    } else {
+      console.warn('[erp-core] window.__skltn not found — alpine-shell not detected');
+    }
+  } catch (err) {
+    console.error('[erp-core] registration failed:', err);
+  }
+}
+
+register();
