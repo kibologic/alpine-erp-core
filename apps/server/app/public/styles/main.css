@@ -29,7 +29,6 @@
   --glass-shadow: var(--shadow-elevated);
 
   /* Shell layout dimensions */
-  --header-height:    var(--topbar-height);
   --app-strip-width:  var(--sidebar-icon-width);
   --sidebar-width:    var(--sidebar-nav-width);
   --font-size-base:   13px;
