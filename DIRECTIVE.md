@@ -89,6 +89,12 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 
 ## Session Log
 
+### 2026-03-23
+#### Completed
+- Removed duplicated `shell.css` and `tokens.css` from public styles as `@skltn/shell` now owns them.
+- Updated `dev.mjs` to natively serve `@skltn/shell` CSS files implicitly via Express static routes.
+- Restored shell rendering by syncing internal topbar/header tokens.
+
 ### 2026-03-22
 #### Completed
 - feat(auth): POST /api/v1/auth/login + /refresh — f33ee88
