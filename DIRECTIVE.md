@@ -84,3 +84,27 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 - Replaced static bars with real `BarChart` and `LineChart` (Apache ECharts)
 - Integrated via `@alpine/ui` base Chart component
 - Status: COMPLETE
+
+---
+
+## Session Log
+
+### 2026-03-22
+#### Completed
+- feat(auth): POST /api/v1/auth/login + /refresh — f33ee88
+- feat(tenant): GET /api/v1/tenant/{id}/config — 98c71e7
+- feat(users): GET /api/v1/users/{id}/role — 1c28df1
+- feat(inventory): GET /api/v1/inventory/stock-take/export (E-01) — 1bc524b
+- feat(inventory): POST /api/v1/inventory/stock-take/import (E-02) — ceb7ea3
+- chore(deps): python-multipart + openpyxl added to requirements.txt — bd9b258
+- feat(inventory): POST/PATCH/DELETE /api/v1/inventory/categories — fd29597
+- feat(inventory): GET/POST/PATCH /api/v1/inventory/suppliers — 00c1f92
+- feat(users): POST /api/v1/users/invite + PATCH /api/v1/users/{id}/role — 694bb1a
+
+#### Open Issues
+- User.password_hash missing — login accepts any password, migration needed before production
+- User.name missing — invite accepts name field but ignores it, migration needed
+- User.updated_at missing — role updates have no timestamp
+- Category.description missing — no backing column, migration needed if frontend requires it
+- Auth tokens stored in-memory — will reset on uvicorn restart, needs DB-backed token table
+- Suppliers table has no seed data

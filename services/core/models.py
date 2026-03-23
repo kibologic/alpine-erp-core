@@ -77,12 +77,15 @@ class User(Base):
         nullable=False,
     )
     email: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[str | None] = mapped_column(String(), nullable=True)
     role: Mapped[str] = mapped_column(String(50), nullable=False, default="staff")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc)
 
     tenant: Mapped["Tenant"] = relationship(back_populates="users")
     audit_logs: Mapped[list["AuditLog"]] = relationship(back_populates="user")
+    user_tenants: Mapped[list["UserTenant"]] = relationship(back_populates="user")
+    auth_tokens: Mapped[list["AuthToken"]] = relationship(back_populates="user")
 
 
 class AuditLog(Base):
@@ -522,3 +525,42 @@ class SupplierPerformanceLog(Base):
     tenant: Mapped["Tenant"] = relationship()
     supplier: Mapped["Supplier"] = relationship(back_populates="performance_logs")
     purchase_order: Mapped["PurchaseOrder"] = relationship(back_populates="performance_logs")
+
+
+class UserTenant(Base):
+    __tablename__ = "user_tenants"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    user_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
+    )
+    role: Mapped[str] = mapped_column(String(50), nullable=False, default="cashier")
+    joined_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "tenant_id", name="uq_user_tenants"),
+    )
+
+    user: Mapped["User"] = relationship(back_populates="user_tenants")
+    tenant: Mapped["Tenant"] = relationship()
+
+
+class AuthToken(Base):
+    __tablename__ = "auth_tokens"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    user_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    token: Mapped[str] = mapped_column(String(), nullable=False, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc)
+
+    user: Mapped["User"] = relationship(back_populates="auth_tokens")

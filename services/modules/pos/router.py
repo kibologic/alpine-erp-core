@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
 from core.auth import get_current_tenant
+from core.auth_deps import get_current_user
 from core.limits import LimitEnforcer, get_limit_enforcer
 from core.models import Sale
 from . import schemas, service
@@ -47,11 +48,10 @@ async def open_session(
     data: schemas.SessionOpen,
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
+    current_user: dict = Depends(get_current_user),
 ):
-    # In a real app, we'd get user_id from auth token
-    user_id = "00000000-0000-0000-0000-000000000002" # admin@kibologic.com
     try:
-        return await service.open_session(session, tenant_id, user_id, data)
+        return await service.open_session(session, tenant_id, current_user["user_id"], data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -62,10 +62,10 @@ async def close_session(
     data: schemas.SessionClose,
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
+    current_user: dict = Depends(get_current_user),
 ):
-    user_id = "00000000-0000-0000-0000-000000000002" # admin@kibologic.com
     try:
-        return await service.close_session(session, tenant_id, user_id, session_id, data)
+        return await service.close_session(session, tenant_id, current_user["user_id"], session_id, data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -112,11 +112,11 @@ async def create_sale(
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
     limits: LimitEnforcer = Depends(get_limit_enforcer),
+    current_user: dict = Depends(get_current_user),
 ):
-    user_id = "00000000-0000-0000-0000-000000000002" # admin@kibologic.com
     await limits.check_sales_limit()
     try:
-        return await service.create_sale(session, tenant_id, user_id, data)
+        return await service.create_sale(session, tenant_id, current_user["user_id"], data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -126,10 +126,10 @@ async def refund_sale(
     sale_id: str,
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
+    current_user: dict = Depends(get_current_user),
 ):
-    user_id = "00000000-0000-0000-0000-000000000002" # admin@kibologic.com
     try:
-        return await service.refund_sale(session, tenant_id, user_id, sale_id)
+        return await service.refund_sale(session, tenant_id, current_user["user_id"], sale_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
