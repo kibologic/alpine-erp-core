@@ -39,7 +39,8 @@
       "@swiss-package/security": "link:../swiss-packages/lib/ts/security",
       "@swiss-package/action-catalog": "link:../swiss-packages/lib/swiss/action-catalog",
       "@swiss-package/ai-agents": "link:../swiss-packages/lib/swiss/ai-agents",
-      "@swiss-package/ai-orchestrator": "link:../swiss-packages/lib/swiss/ai-orchestrator"
+      "@swiss-package/ai-orchestrator": "link:../swiss-packages/lib/swiss/ai-orchestrator",
+      "@skltn/shell": "link:../alpine-shell"
     }
   }
 }

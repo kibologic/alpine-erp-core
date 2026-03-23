@@ -16,6 +16,7 @@
     "@alpine/module-pos": "workspace:*",
     "@alpine/module-inventory": "workspace:*",
     "@skltn/shell": "link:../../../alpine-shell",
+    "@skltn/contracts": "link:../../../alpine-shell/packages/contracts",
     "@skltn/event-bus": "link:../../../alpine-shell/packages/event-bus",
     "@skltn/logging": "link:../../../alpine-shell/packages/logging",
     "@skltn/storage": "link:../../../alpine-shell/packages/storage",
@@ -35,7 +36,7 @@
     "@skltn/notifications": "link:../../../alpine-shell/packages/notifications",
     "@skltn/navigation": "link:../../../alpine-shell/packages/navigation",
     "@skltn/workspace": "link:../../../alpine-shell/packages/workspace",
-    "@swissjs/core": "*",
+    "@swissjs/core": "link:../../../swiss-lib/packages/core",
     "@swissjs/swite": "*",
     "@alpine/ui": "link:../../../../alpine-ui/packages/ui",
     "reflect-metadata": "^0.2.2"

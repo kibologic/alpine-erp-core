@@ -31,6 +31,7 @@ overrides:
   '@swiss-package/action-catalog': link:../swiss-packages/lib/swiss/action-catalog
   '@swiss-package/ai-agents': link:../swiss-packages/lib/swiss/ai-agents
   '@swiss-package/ai-orchestrator': link:../swiss-packages/lib/swiss/ai-orchestrator
+  '@skltn/shell': link:../alpine-shell
 
 importers:
 
@@ -66,6 +67,69 @@ importers:
       '@alpine/ui':
         specifier: link:../../../alpine-ui/packages/ui
         version: link:../../../alpine-ui/packages/ui
+      '@skltn/auth':
+        specifier: link:../../../alpine-shell/packages/auth
+        version: link:../../../alpine-shell/packages/auth
+      '@skltn/cache':
+        specifier: link:../../../alpine-shell/packages/cache
+        version: link:../../../alpine-shell/packages/cache
+      '@skltn/connectivity':
+        specifier: link:../../../alpine-shell/packages/connectivity
+        version: link:../../../alpine-shell/packages/connectivity
+      '@skltn/contracts':
+        specifier: link:../../../alpine-shell/packages/contracts
+        version: link:../../../alpine-shell/packages/contracts
+      '@skltn/device':
+        specifier: link:../../../alpine-shell/packages/device
+        version: link:../../../alpine-shell/packages/device
+      '@skltn/event-bus':
+        specifier: link:../../../alpine-shell/packages/event-bus
+        version: link:../../../alpine-shell/packages/event-bus
+      '@skltn/feature-flags':
+        specifier: link:../../../alpine-shell/packages/feature-flags
+        version: link:../../../alpine-shell/packages/feature-flags
+      '@skltn/heartbeat':
+        specifier: link:../../../alpine-shell/packages/heartbeat
+        version: link:../../../alpine-shell/packages/heartbeat
+      '@skltn/i18n':
+        specifier: link:../../../alpine-shell/packages/i18n
+        version: link:../../../alpine-shell/packages/i18n
+      '@skltn/l10n':
+        specifier: link:../../../alpine-shell/packages/l10n
+        version: link:../../../alpine-shell/packages/l10n
+      '@skltn/logging':
+        specifier: link:../../../alpine-shell/packages/logging
+        version: link:../../../alpine-shell/packages/logging
+      '@skltn/navigation':
+        specifier: link:../../../alpine-shell/packages/navigation
+        version: link:../../../alpine-shell/packages/navigation
+      '@skltn/notifications':
+        specifier: link:../../../alpine-shell/packages/notifications
+        version: link:../../../alpine-shell/packages/notifications
+      '@skltn/permissions':
+        specifier: link:../../../alpine-shell/packages/permissions
+        version: link:../../../alpine-shell/packages/permissions
+      '@skltn/rtl':
+        specifier: link:../../../alpine-shell/packages/rtl
+        version: link:../../../alpine-shell/packages/rtl
+      '@skltn/shell':
+        specifier: link:../../../alpine-shell
+        version: link:../../../alpine-shell
+      '@skltn/storage':
+        specifier: link:../../../alpine-shell/packages/storage
+        version: link:../../../alpine-shell/packages/storage
+      '@skltn/sync':
+        specifier: link:../../../alpine-shell/packages/sync
+        version: link:../../../alpine-shell/packages/sync
+      '@skltn/tenant':
+        specifier: link:../../../alpine-shell/packages/tenant
+        version: link:../../../alpine-shell/packages/tenant
+      '@skltn/theming':
+        specifier: link:../../../alpine-shell/packages/theming
+        version: link:../../../alpine-shell/packages/theming
+      '@skltn/workspace':
+        specifier: link:../../../alpine-shell/packages/workspace
+        version: link:../../../alpine-shell/packages/workspace
       '@swissjs/core':
         specifier: link:../../../swiss-lib/packages/core
         version: link:../../../swiss-lib/packages/core

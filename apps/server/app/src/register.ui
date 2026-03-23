@@ -6,7 +6,22 @@ import '@alpine/module-settings';
 import '@alpine/module-pos';
 import '@alpine/module-inventory';
 
-async function register() {
+// Import actual page components
+import { DashboardPage } from '../../../../modules/dashboard/src/pages/DashboardPage.uix';
+import { UsersPage } from '../../../../modules/users/src/pages/UsersPage.uix';
+import { SettingsGeneralPage } from '../../../../modules/settings/src/pages/SettingsGeneralPage.uix';
+import { PosTerminalPage } from '../../../../modules/pos/src/pages/PosTerminalPage.uix';
+import { InventoryItemsPage } from '../../../../modules/inventory/src/pages/InventoryItemsPage.uix';
+
+const PAGE_MAP = {
+  'dashboard': { 'dashboard': DashboardPage },
+  'users': { 'users': UsersPage },
+  'settings': { 'general': SettingsGeneralPage },
+  'pos': { 'terminal': PosTerminalPage },
+  'inventory': { 'items': InventoryItemsPage }
+};
+
+export async function register() {
   try {
     const lic = getLicense();
     const features = lic.tier === 'enterprise'
@@ -18,8 +33,17 @@ async function register() {
     if (window.__skltn) {
       const navigation = window.__skltn.registry.get('navigation');
       if (navigation) {
-        getModules().forEach((mod) => navigation.registerModule(mod));
-        console.log('[erp-core] modules registered into alpine-shell:', getModules().map((m) => m.id));
+        getModules().forEach((mod) => {
+          // Attach renderPage function to the module
+          mod.renderPage = (sectionId, route) => {
+            const pages = PAGE_MAP[mod.id];
+            if (!pages) return null;
+            const PageComp = pages[sectionId] || Object.values(pages)[0];
+            return PageComp ? <PageComp route={route} /> : null;
+          };
+          navigation.registerModule(mod);
+        });
+        console.log('[erp-core] modules registered into alpine-shell with renderPage support');
       }
     } else {
       console.warn('[erp-core] window.__skltn not found — alpine-shell not detected');
@@ -28,5 +52,3 @@ async function register() {
     console.error('[erp-core] registration failed:', err);
   }
 }
-
-register();

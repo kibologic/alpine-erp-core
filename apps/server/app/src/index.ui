@@ -1,4 +1,21 @@
-// alpine-erp-core no longer mounts its own shell.
-// Modules are registered into alpine-shell via register.ui.
-// This file is intentionally empty.
-console.log('[erp-core] standing by — loaded by alpine-shell');
+import { SwissApp } from '@swissjs/core';
+import { Shell } from '@skltn/shell/host/src/Shell.uix';
+import { boot } from '@skltn/shell/host/src/boot.ui';
+import { register } from './register.ui';
+
+async function main() {
+  const container = document.getElementById('shell-root');
+  if (!container) {
+    console.error('[Alpine] #shell-root not found');
+    return;
+  }
+  await boot();
+  await register();
+  SwissApp.mount(Shell, container);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', main);
+} else {
+  main();
+}
