@@ -1,20 +1,30 @@
-import logging
 from contextlib import asynccontextmanager
+from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, Query
 from core.auth import verify_internal_token
 from core.exceptions import register_handlers
 from core.db import engine
 from core.module_registry import register_module, load_all_modules, get_registered_modules
+from core.config import get_config
+from core.realtime import setup_realtime, _server
+from gbil.logger import configure as configure_logger, get_logger
 import core.models  # noqa: F401
-
-logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Schema is owned by Alembic migrations — no create_all here
+    cfg = get_config()
+    configure_logger(
+        level=cfg.LOG_LEVEL,
+        environment=cfg.ENVIRONMENT,
+        service_name=cfg.SERVICE_NAME,
+    )
+    setup_realtime()
+    log = get_logger("alpine-erp-core")
+    log.info("startup", service=cfg.SERVICE_NAME, environment=cfg.ENVIRONMENT)
     yield
+    log.info("shutdown")
 
 
 app = FastAPI(
@@ -30,6 +40,15 @@ register_handlers(app)
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.websocket("/ws")
+async def ws_endpoint(
+    websocket: WebSocket,
+    tenant_id: Optional[str] = Query(default=None),
+):
+    """WebSocket endpoint. Clients connect as: /ws?tenant_id=<id>"""
+    await _server.handle_connection(websocket, tenant_id=tenant_id)
 
 
 @app.get("/api/v1/modules")

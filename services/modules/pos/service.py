@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from core.models import CashSession, Sale, SaleLine, Payment, StockMovement, User
 from core.audit import log_event
+from core.events import publish_event
 from . import schemas
 
 
@@ -47,7 +48,8 @@ async def open_session(
     
     # Audit log
     await log_event(session, tenant_id, user_id, "OPEN_SESSION", "CashSession", str(new_session.id), {"register_id": data.register_id})
-    
+    await publish_event("pos.session.open", {"session_id": str(new_session.id), "register_id": data.register_id}, tenant_id=tenant_id)
+
     return new_session
 
 
@@ -86,7 +88,8 @@ async def close_session(
     
     # Audit log
     await log_event(session, tenant_id, user_id, "CLOSE_SESSION", "CashSession", str(pos_session.id), {"discrepancy": str(pos_session.discrepancy)})
-    
+    await publish_event("pos.session.close", {"session_id": str(pos_session.id), "discrepancy": str(pos_session.discrepancy)}, tenant_id=tenant_id)
+
     return pos_session
 
 
@@ -166,6 +169,7 @@ async def create_sale(
     
     # Audit log
     await log_event(session, tenant_id, user_id, "CREATE_SALE", "Sale", str(sale.id), {"sale_number": sale.sale_number, "total": str(sale.total)})
+    await publish_event("pos.sale.created", {"sale_id": str(sale.id), "sale_number": sale.sale_number, "total": str(sale.total)}, tenant_id=tenant_id)
     
     # We need to load lines and payments for the response
     result = await session.execute(
@@ -210,5 +214,6 @@ async def refund_sale(
     
     # Audit log
     await log_event(session, tenant_id, user_id, "REFUND_SALE", "Sale", str(sale.id), {"sale_number": sale.sale_number})
-    
+    await publish_event("pos.sale.refunded", {"sale_id": str(sale.id), "sale_number": sale.sale_number}, tenant_id=tenant_id)
+
     return sale

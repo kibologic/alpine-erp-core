@@ -89,11 +89,28 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 
 ## Session Log
 
+### 2026-03-24
+#### Completed
+- feat(gbil-integration): replaced core/events.py stub with gbil-events wrapper — publish_event/on_event API unchanged, Event now carries tenant_id
+- feat(gbil-integration): added GbilError exception handler to core/exceptions.py
+- feat(gbil-integration): created core/config.py (AppConfig subclassing GbilConfig)
+- feat(gbil-integration): wired gbil-logger in main.py lifespan — structured JSON/dev output from startup
+- feat(gbil-integration): created core/realtime.py — gbil-realtime server, wildcard bus→WebSocket bridge
+- feat(gbil-integration): added /ws WebSocket endpoint to main.py (tenant_id query param)
+- feat(gbil-integration): publish_event calls added to POS service (pos.session.open/close, pos.sale.created/refunded)
+- feat(gbil-integration): publish_event calls added to inventory service (inventory.stock.adjusted)
+- chore(deps): gbil packages + pydantic-settings + structlog + websockets added to requirements.txt
+- fix(gbil-logger): removed add_logger_name processor (PrintLogger has no .name attr) — pushed to gbil repo
+- fix(gbil-namespace): removed empty gbil/__init__.py from all 5 packages — pushed to gbil repo
+
 ### 2026-03-23
 #### Completed
 - Removed duplicated `shell.css` and `tokens.css` from public styles as `@skltn/shell` now owns them.
-- Updated `dev.mjs` to natively serve `@skltn/shell` CSS files implicitly via Express static routes.
-- Restored shell rendering by syncing internal topbar/header tokens.
+- Updated `dev.mjs` to natively serve `@skltn/shell` CSS files statically via Express.
+- Renamed all UI component classes to `skltn-` namespace and consolidated `shell.css` with a stable fixed-position layout.
+- Verified final shell rendering and positioning of Header, AppStrip, and NavPanel on port 3000.
+- fix(inventory): replaced 📦 placeholder with professional SVG icon (ee14d0c).
+- fix(shell): stable fixed-positioning, fixed app-nav offset, and robust SVG/Emoji icon rendering (3174cce).
 
 ### 2026-03-22
 #### Completed

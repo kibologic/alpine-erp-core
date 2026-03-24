@@ -1,61 +1,45 @@
 """
-Alpine ERP — Domain Event Bus (Stub)
-────────────────────────────────────
-Phase 3 event infrastructure, per DIRECTIVE.md.
+Alpine ERP — Domain Event Bus
+─────────────────────────────
+Thin wrapper around gbil-events. Keeps the existing
+publish_event / on_event API stable for all call sites.
 
 Architecture decisions:
-- Pure in-process async dispatcher (no Kafka/Redis yet).
-- Handlers registered with `on_event()`.
-- `publish_event()` MUST NOT block or raise inside handlers;
-  exceptions are logged and swallowed so the calling
-  transaction commits cleanly.
-- When an async broker is added (Phase N), simply swap out
-  `_dispatch()` with a producer.send() call — signature stays stable.
+- Pure in-process async dispatcher backed by gbil EventBus.
+- Handlers registered with on_event(); gbil wildcard routing available.
+- publish_event() fires-and-forgets so callers' DB transactions
+  commit cleanly — handler exceptions are isolated by gbil.
+- When an async broker is added, attach an EventStore to the bus
+  in lifespan and swap nothing else.
 """
 
-import asyncio
-import logging
 from typing import Any, Callable, Coroutine
+import asyncio
 
-logger = logging.getLogger(__name__)
+from gbil.events import get_bus, Event
 
-# Handler registry: event_name → list[async handler]
-_handlers: dict[str, list[Callable[[str, dict], Coroutine]]] = {}
+_bus = get_bus()
 
 
 def on_event(event_name: str):
     """Decorator: register an async handler for a named event."""
-    def decorator(fn: Callable[[str, dict], Coroutine]):
-        _handlers.setdefault(event_name, []).append(fn)
+    def decorator(fn: Callable):
+        async def _wrapper(event: Event) -> None:
+            await fn(event.type, event.payload)
+        _wrapper.__name__ = fn.__name__
+        _bus.on(event_name, _wrapper)
         return fn
     return decorator
 
 
-async def _dispatch(event_name: str, payload: dict) -> None:
-    """Fan-out to all registered handlers. Errors are isolated."""
-    for handler in _handlers.get(event_name, []):
-        try:
-            await handler(event_name, payload)
-        except Exception as exc:  # noqa: BLE001
-            logger.error(
-                "[events] Handler %s raised for %s: %s",
-                handler.__name__, event_name, exc, exc_info=True
-            )
-
-
-async def publish_event(event_name: str, payload: dict) -> None:
+async def publish_event(
+    event_name: str,
+    payload: dict,
+    tenant_id: str | None = None,
+) -> None:
     """
-    Publish a domain event.
-
-    Non-blocking: schedules the dispatch as a background task
-    so that the calling database transaction is never blocked or
-    rolled back by a downstream handler failure.
-
-    Emitted events:
-        purchase_order_drafted   — payload: {tenant_id, po_id, po_number}
-        purchase_order_approved  — payload: {tenant_id, po_id, po_number, approved_by}
-        goods_received           — payload: {tenant_id, po_id, line_id, product_id, quantity}
+    Publish a domain event. Fire-and-forget.
+    tenant_id is forwarded to gbil Event for realtime routing.
     """
-    logger.debug("[events] %s → %s", event_name, payload)
-    # Fire-and-forget so callers' transactions commit unimpeded
-    asyncio.ensure_future(_dispatch(event_name, payload))
+    event = Event(type=event_name, payload=payload, tenant_id=tenant_id)
+    asyncio.ensure_future(_bus.publish(event))

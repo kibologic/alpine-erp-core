@@ -1,3 +1,12 @@
+# gbil — Generic Backend Infrastructure Layer
+gbil-errors>=0.1.0
+gbil-config>=0.1.0
+gbil-logger>=0.1.0
+gbil-events>=0.1.0
+gbil-realtime>=0.1.0
+pydantic-settings>=2.0.0
+structlog>=24.0.0
+websockets>=12.0
 fastapi>=0.115.6
 uvicorn[standard]==0.30.0
 sqlalchemy[asyncio]==2.0.0

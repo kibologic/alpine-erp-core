@@ -6,6 +6,7 @@ from sqlalchemy import select, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import Product, Category, StockMovement
 from core.audit import log_event
+from core.events import publish_event
 from . import schemas
 
 
@@ -112,7 +113,8 @@ async def adjust_stock(
     
     # Audit log
     await log_event(session, tenant_id, user_id or "SYSTEM", "ADJUST_STOCK", "Product", data.product_id, {"qty": str(data.quantity), "reason": data.reason})
-    
+    await publish_event("inventory.stock.adjusted", {"product_id": data.product_id, "quantity": str(data.quantity), "reason": data.reason}, tenant_id=tenant_id)
+
     return movement
 
 
