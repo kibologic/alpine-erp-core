@@ -66,6 +66,7 @@ from modules.inventory.router import router as inventory_router
 from modules.pos.router import router as pos_router
 from modules.users.router import router as users_router
 from modules.users.audit_router import router as audit_router
+from modules.ws.router import router as ws_router
 
 register_module(
     name="auth",
@@ -95,6 +96,12 @@ register_module(
 register_module(
     name="audit",
     router_factory=lambda app: app.include_router(audit_router, prefix="/api/v1"),
+    tier="core",
+)
+
+register_module(
+    name="ws",
+    router_factory=lambda app: app.include_router(ws_router),
     tier="core",
 )
 
