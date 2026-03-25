@@ -138,3 +138,4 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 - feat(deps): python-jose[cryptography]==3.3.0 added to requirements.txt
 - feat(migrations): 20260325_add_mobile_tables — stock_take_sessions, stock_take_counts, approvals, push_tokens, media
 - feat(ws): WebSocket endpoint /ws/register/{register_id} — JWT auth via ?token=, tenant-scoped fan-out, 35s heartbeat timeout
+- feat(mobile): stock-take endpoints (active, count, progress), approvals (list, detail, decision), push register, media upload, dashboard pulse
