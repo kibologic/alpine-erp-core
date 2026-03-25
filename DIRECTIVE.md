@@ -131,3 +131,9 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 - Category.description missing — no backing column, migration needed if frontend requires it
 - Auth tokens stored in-memory — will reset on uvicorn restart, needs DB-backed token table
 - Suppliers table has no seed data
+
+### 2026-03-25
+#### Completed
+- feat(auth): POST /api/v1/auth/mobile/login + /mobile/refresh — JWT endpoints for alpine-mobile
+- feat(deps): python-jose[cryptography]==3.3.0 added to requirements.txt
+- feat(migrations): 20260325_add_mobile_tables — stock_take_sessions, stock_take_counts, approvals, push_tokens, media

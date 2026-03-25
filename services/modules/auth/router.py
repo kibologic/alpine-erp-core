@@ -1,14 +1,19 @@
+import os
 import uuid
 from datetime import datetime, timedelta
 
 import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, Header
+from jose import JWTError, jwt
 from pydantic import BaseModel
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
 from core.models import AuthToken, User, UserTenant
+
+_JWT_SECRET = os.getenv("JWT_SECRET", "alpine_dev_jwt_secret_2026")
+_JWT_ALGORITHM = "HS256"
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -145,4 +150,79 @@ async def me(
         "email": user.email,
         "role": user.role,
         "tenants": tenants,
+    }
+
+
+# ── Mobile JWT endpoints ────────────────────────────────────────────────────
+
+class MobileLoginRequest(BaseModel):
+    email: str
+    password: str
+    tenant_id: str
+
+
+class MobileRefreshRequest(BaseModel):
+    refresh_token: str
+
+
+def _issue_jwt(user_id: str, tenant_id: str, role: str, expires_in: int) -> str:
+    payload = {
+        "user_id": user_id,
+        "tenant_id": tenant_id,
+        "role": role,
+        "exp": datetime.utcnow() + timedelta(seconds=expires_in),
+    }
+    return jwt.encode(payload, _JWT_SECRET, algorithm=_JWT_ALGORITHM)
+
+
+@router.post("/mobile/login")
+async def mobile_login(
+    data: MobileLoginRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    result = await session.execute(
+        select(User).where(User.email == data.email, User.active == True)
+    )
+    user = result.scalar_one_or_none()
+
+    if not user or not user.password_hash:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if not bcrypt.checkpw(data.password.encode(), user.password_hash.encode()):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    ut_result = await session.execute(
+        select(UserTenant).where(
+            UserTenant.user_id == user.id,
+            UserTenant.tenant_id == data.tenant_id,
+        )
+    )
+    membership = ut_result.scalar_one_or_none()
+    if not membership:
+        raise HTTPException(status_code=403, detail="User is not a member of this organisation")
+
+    access_token = _issue_jwt(user.id, data.tenant_id, membership.role, 3600)
+    refresh_token = _issue_jwt(user.id, data.tenant_id, membership.role, 86400)
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_in": 3600,
+    }
+
+
+@router.post("/mobile/refresh")
+async def mobile_refresh(data: MobileRefreshRequest):
+    try:
+        payload = jwt.decode(data.refresh_token, _JWT_SECRET, algorithms=[_JWT_ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+    access_token = _issue_jwt(
+        payload["user_id"], payload["tenant_id"], payload["role"], 3600
+    )
+
+    return {
+        "access_token": access_token,
+        "expires_in": 3600,
     }
