@@ -338,5 +338,3 @@ component StockTakePage {
     );
   }
 }
-  }
-}
