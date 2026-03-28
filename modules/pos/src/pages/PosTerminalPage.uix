@@ -33,6 +33,11 @@ component PosTerminalPage {
     if (typeof document !== 'undefined') {
       document.addEventListener('fullscreenchange', () => {
         this.browserFullscreen = !!document.fullscreenElement;
+        this.scheduleUpdate?.();
+      });
+      document.addEventListener('webkitfullscreenchange', () => {
+        this.browserFullscreen = !!(document as any).webkitFullscreenElement;
+        this.scheduleUpdate?.();
       });
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && this.appFullscreen) {
@@ -44,26 +49,14 @@ component PosTerminalPage {
 
   toggleAppFullscreen() {
     this.appFullscreen = !this.appFullscreen;
-    if (typeof document !== 'undefined') {
-      if (this.appFullscreen) {
-        document.body.classList.add('pos-app-fullscreen');
-      } else {
-        document.body.classList.remove('pos-app-fullscreen');
-      }
-    }
+    this.scheduleUpdate?.();
   }
 
-  toggleBrowserFullscreen() {
-    if (typeof document !== 'undefined') {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().then(() => {
-          this.browserFullscreen = true;
-        }).catch(() => {});
-      } else {
-        document.exitFullscreen().then(() => {
-          this.browserFullscreen = false;
-        }).catch(() => {});
-      }
+  async toggleBrowserFullscreen() {
+    if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+      await (document.exitFullscreen?.() || (document as any).webkitExitFullscreen?.());
+    } else {
+      await (document.documentElement.requestFullscreen?.() || (document.documentElement as any).webkitRequestFullscreen?.());
     }
   }
 
@@ -222,24 +215,16 @@ component PosTerminalPage {
     const total = subtotal + tax;
 
     return (
-      <div class="pos-terminal">
+      <div class="pos-terminal" style={this.appFullscreen ? 'position:fixed;inset:0;z-index:9999;background:var(--color-bg-base);' : ''}>
         {/* Left Panel — Products */}
         <div class="pos-products">
           <div class="pos-products-header">
             <div class="pos-fullscreen-controls">
-              <button 
-                class="pos-fs-btn" 
-                onclick={() => this.toggleAppFullscreen()}
-                title="Hide sidebars (App fullscreen)"
-              >
-                {this.appFullscreen ? '⊠' : '⊡'}
+              <button class="pos-fs-btn" onclick={() => this.toggleAppFullscreen()}>
+                {this.appFullscreen ? '✕ Exit Focus' : '⛶ Focus'}
               </button>
-              <button 
-                class="pos-fs-btn"
-                onclick={() => this.toggleBrowserFullscreen()}
-                title="Browser fullscreen (F11)"
-              >
-                ⛶
+              <button class="pos-fs-btn" onclick={() => this.toggleBrowserFullscreen()}>
+                {this.browserFullscreen ? '⤡ Exit' : '⤢ Fullscreen'}
               </button>
             </div>
 
@@ -292,13 +277,13 @@ component PosTerminalPage {
             ) : (
               this.cartItems.map(item => (
                 <div class="pos-cart-item">
-                  <div class="pos-cart-item-name">{item.product.name}</div>
+                  <span class="pos-cart-item-name">{item.product.name}</span>
                   <div class="pos-cart-qty">
                     <button class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, -1)}>−</button>
                     <span class="pos-cart-qty-val">{item.qty}</span>
                     <button class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, 1)}>+</button>
                   </div>
-                  <div class="pos-cart-item-total">{fmt(item.lineTotal)}</div>
+                  <span class="pos-cart-item-total">{fmt(item.lineTotal)}</span>
                   <button class="pos-cart-item-remove" onclick={() => this.removeFromCart(item.product.id)}>×</button>
                 </div>
               ))
