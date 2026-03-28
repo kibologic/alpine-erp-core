@@ -33,8 +33,10 @@ component InventoryItemsPage {
   state { let saving: boolean = false; }
   state { let newProduct: any = {}; }
   state { let editProduct: any = {}; }
+  state { let notifications: any = null; }
 
   async mounted() {
+    this.notifications = window.__skltn.registry.get('notifications');
     this.loading = true;
     try {
       const [productsRes, categoriesRes] = await Promise.all([
@@ -44,7 +46,7 @@ component InventoryItemsPage {
       this.products = productsRes.data || productsRes || [];
       this.categories = categoriesRes.data || categoriesRes || [];
     } catch (e) {
-      console.error('Failed to load inventory data', e);
+      this.notifications?.error('Failed to load inventory data');
       this.products = [];
       this.categories = [];
     } finally {
@@ -55,7 +57,7 @@ component InventoryItemsPage {
 
   async createProduct() {
     if (!this.newProduct.name || !this.newProduct.sku) {
-       alert('Name and SKU are required');
+       this.notifications?.warning('Name and SKU are required');
        return;
     }
     this.saving = true;
@@ -75,8 +77,7 @@ component InventoryItemsPage {
       this.showAddModal = false;
       this.newProduct = {};
     } catch (e) {
-      console.error('Failed to create product', e);
-      alert('Failed to create product');
+      this.notifications?.error('Failed to create product');
     } finally {
       this.saving = false;
       this.scheduleUpdate?.();
@@ -107,8 +108,7 @@ component InventoryItemsPage {
       this.showEditModal = false;
       this.editProduct = {};
     } catch (e) {
-      console.error('Failed to update product', e);
-      alert('Failed to update product');
+      this.notifications?.error('Failed to update product');
     } finally {
       this.saving = false;
       this.scheduleUpdate?.();
@@ -121,8 +121,7 @@ component InventoryItemsPage {
       await InventoryService.deleteProduct(productId);
       this.products = this.products.filter(p => p.id !== productId);
     } catch (e) {
-      console.error('Failed to delete product', e);
-      alert('Failed to delete product');
+      this.notifications?.error('Failed to delete product');
     }
   }
 

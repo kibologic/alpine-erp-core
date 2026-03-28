@@ -29,14 +29,16 @@ component SuppliersPage {
   state { let showAddModal: boolean = false; }
   state { let newSupplier: any = { name: '', email: '', phone: '', address: '', contact_person: '' }; }
   state { let saving: boolean = false; }
+  state { let notifications: any = null; }
 
   async mounted() {
+    this.notifications = window.__skltn.registry.get('notifications');
     this.loading = true;
     try {
       const response = await InventoryService.getSuppliers();
       this.suppliers = response.data || response || [];
     } catch (e) {
-      console.error('Failed to load suppliers', e);
+      this.notifications?.error('Failed to load suppliers');
       this.suppliers = [];
     } finally {
       this.loading = false;
@@ -46,7 +48,7 @@ component SuppliersPage {
 
   async createSupplier() {
     if (!this.newSupplier.name) {
-      alert('Supplier name is required');
+      this.notifications?.warning('Supplier name is required');
       return;
     }
     this.saving = true;
@@ -58,8 +60,7 @@ component SuppliersPage {
       this.showAddModal = false;
       this.newSupplier = { name: '', email: '', phone: '', address: '', contact_person: '' };
     } catch (e) {
-      console.error('Failed to create supplier', e);
-      alert('Failed to save supplier');
+      this.notifications?.error('Failed to create supplier');
     } finally {
       this.saving = false;
       this.scheduleUpdate?.();

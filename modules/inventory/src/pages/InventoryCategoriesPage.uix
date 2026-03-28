@@ -28,14 +28,16 @@ component InventoryCategoriesPage {
   state { let newCategoryName: string = ''; }
   state { let newCategoryDesc: string = ''; }
   state { let saving: boolean = false; }
+  state { let notifications: any = null; }
 
   async mounted() {
+    this.notifications = window.__skltn.registry.get('notifications');
     this.loading = true;
     try {
       const response = await InventoryService.getCategories();
       this.categories = response.data || response || [];
     } catch (e) {
-      console.error('Failed to load categories', e);
+      this.notifications?.error('Failed to load categories');
       this.categories = [];
     } finally {
       this.loading = false;
@@ -45,7 +47,7 @@ component InventoryCategoriesPage {
 
   async createCategory() {
     if (!this.newCategoryName) {
-      alert('Category name is required');
+      this.notifications?.warning('Category name is required');
       return;
     }
     this.saving = true;
@@ -61,8 +63,7 @@ component InventoryCategoriesPage {
       this.newCategoryName = '';
       this.newCategoryDesc = '';
     } catch (e) {
-      console.error('Failed to create category', e);
-      alert('Failed to save category');
+      this.notifications?.error('Failed to create category');
     } finally {
       this.saving = false;
       this.scheduleUpdate?.();

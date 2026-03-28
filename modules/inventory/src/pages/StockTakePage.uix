@@ -17,8 +17,10 @@ component StockTakePage {
   state { let showSummary: boolean = false; }
   state { let saving: boolean = false; }
   state { let sessionId: string = 'ST-' + Math.floor(1000 + Math.random() * 9000); }
+  state { let notifications: any = null; }
 
   async mounted() {
+    this.notifications = window.__skltn.registry.get('notifications');
     this.loading = true;
     try {
       const [productsRes, categoriesRes] = await Promise.all([
@@ -28,7 +30,7 @@ component StockTakePage {
       this.products = productsRes.data || productsRes || [];
       this.categories = categoriesRes.data || categoriesRes || [];
     } catch (e) {
-      console.error('Failed to load stock take data', e);
+      this.notifications?.error('Failed to load stock take data');
       this.products = [];
       this.categories = [];
     } finally {
@@ -103,11 +105,11 @@ component StockTakePage {
         
         this.showSummary = false;
         this.counts = {}; // Reset
-        alert('Stock take completed. All variances have been adjusted.');
+        this.notifications?.success('Stock take completed. All variances adjusted.');
         await this.mounted(); // Reload products to get new stock levels
     } catch (e) {
-        console.error('Failed to complete stock take', e);
-        alert('Error applying adjustments. Some changes might not have saved.');
+        this.notifications?.error('Failed to complete stock take');
+        this.notifications?.error('Error applying adjustments');
     } finally {
         this.saving = false;
         this.scheduleUpdate?.();
@@ -123,7 +125,7 @@ component StockTakePage {
           a.download = `stock_take_template_${new Date().toISOString().split('T')[0]}.xlsx`;
           a.click();
       } catch (e) {
-          alert('Failed to export template');
+          this.notifications?.error('Failed to export template');
       }
   }
 
@@ -135,10 +137,10 @@ component StockTakePage {
       this.scheduleUpdate?.();
       try {
           await InventoryService.importStockTake(file);
-          alert('Import successful. Stock levels updated.');
+          this.notifications?.success('Import successful. Stock levels updated.');
           await this.mounted();
       } catch (e) {
-          alert('Failed to import stock take file');
+          this.notifications?.error('Failed to import stock take file');
       } finally {
           this.loading = false;
           this.scheduleUpdate?.();

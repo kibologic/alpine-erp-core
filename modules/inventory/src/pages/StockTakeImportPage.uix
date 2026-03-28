@@ -8,8 +8,6 @@ component StockTakeImportPage {
   state { let importResult: any = null; }
 
   handleImport(data: any[]) {
-    console.log('[Alpine] Importing stock adjustments', data);
-    
     const stats = {
       total: data.length,
       positive: data.filter(d => d.adjustment_qty > 0).length,

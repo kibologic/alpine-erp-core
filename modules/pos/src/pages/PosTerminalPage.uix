@@ -24,8 +24,10 @@ component PosTerminalPage {
   state { let lastSaleTotal: number = 0; }
   state { let appFullscreen: boolean = false; }
   state { let browserFullscreen: boolean = false; }
+  state { let notifications: any = null; }
 
   async mounted() {
+    this.notifications = window.__skltn.registry.get('notifications');
     await this.refreshData();
     
     if (typeof document !== 'undefined') {
@@ -75,7 +77,7 @@ component PosTerminalPage {
       this.session = sess;
       this.products = prods || [];
     } catch (err) {
-      console.error('[POS] Refresh failed:', err);
+      this.notifications?.error('Failed to refresh POS data');
     } finally {
       this.loading = false;
     }
@@ -86,7 +88,7 @@ component PosTerminalPage {
     try {
       this.session = await PosService.openSession(REGISTER_ID, this.openingFloat);
     } catch (err) {
-      alert(`Failed to open session: ${err.message}`);
+      this.notifications?.error(`Failed to open session: ${err.message}`);
     } finally {
       this.processing = false;
     }
@@ -102,7 +104,7 @@ component PosTerminalPage {
       this.session = null;
       this.cartItems = [];
     } catch (err) {
-      alert(`Failed to close session: ${err.message}`);
+      this.notifications?.error(`Failed to close session: ${err.message}`);
     } finally {
       this.processing = false;
     }
@@ -188,7 +190,7 @@ component PosTerminalPage {
       this.showSuccessModal = true;
       await this.refreshData();
     } catch (err) {
-      alert(`Checkout failed: ${err.message}`);
+      this.notifications?.error(`Checkout failed: ${err.message}`);
     } finally {
       this.processing = false;
     }

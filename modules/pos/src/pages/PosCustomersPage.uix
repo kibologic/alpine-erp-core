@@ -25,8 +25,10 @@ component PosCustomersPage {
   state { let newCustomerPhone: string = ''; }
   state { let newCustomerEmail: string = ''; }
   state { let saving: boolean = false; }
+  state { let notifications: any = null; }
 
   async mounted() {
+    this.notifications = window.__skltn.registry.get('notifications');
     this.loading = true;
     try {
       const response = await PosService.getCustomers();
@@ -41,7 +43,7 @@ component PosCustomersPage {
 
   async createCustomer() {
     if (!this.newCustomerName || !this.newCustomerPhone) {
-       alert('Name and Phone are required');
+       this.notifications?.warning('Name and Phone are required');
        return;
     }
     
@@ -62,8 +64,8 @@ component PosCustomersPage {
       this.newCustomerPhone = '';
       this.newCustomerEmail = '';
     } catch (e) {
-      console.error('Failed to create customer', e);
-      alert('Failed to save customer. Please try again.');
+      this.notifications?.error('Failed to create customer');
+      this.notifications?.error('Failed to save customer. Please try again.');
     } finally {
       this.saving = false;
       this.scheduleUpdate?.();
