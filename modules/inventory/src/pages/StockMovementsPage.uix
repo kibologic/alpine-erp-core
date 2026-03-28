@@ -9,9 +9,14 @@ const columns = [
   { key: 'created_at', label: 'Date', sortable: true, width: '160px' },
   { key: 'product_name', label: 'Product', sortable: true },
   { key: 'sku', label: 'SKU', width: '120px' },
-  { key: 'quantityHTML', label: 'Quantity', width: '100px' },
+  { key: 'quantity', label: 'Qty Change', width: '120px', render: (val: number) => {
+      const qty = parseFloat(val) || 0;
+      const color = qty < 0 ? 'var(--danger-color)' : 'var(--success-color)';
+      const prefix = qty > 0 ? '+' : '';
+      return <span style={`color: ${color}; font-weight: 600;`}>{prefix}{qty}</span>;
+  }},
   { key: 'reason', label: 'Reason' },
-  { key: 'reference', label: 'Reference', width: '140px' },
+  { key: 'reference', label: 'Reference', width: '180px' },
   { key: 'created_by_name', label: 'Created By', width: '140px' }
 ];
 
@@ -23,15 +28,12 @@ component StockMovementsPage {
   state { let searchQuery: string = ''; }
 
   async mounted() {
+    this.loading = true;
     try {
-      if (InventoryService && InventoryService.getStockMovements) {
-        const data = await InventoryService.getStockMovements();
-        this.movements = data || [];
-      } else {
-        this.movements = [];
-      }
+      const response = await InventoryService.getStockMovements();
+      this.movements = response.data || response || [];
     } catch (e) {
-      console.error('Failed to load movements', e);
+      console.error('Failed to load stock movements', e);
       this.movements = [];
     } finally {
       this.loading = false;
@@ -40,37 +42,47 @@ component StockMovementsPage {
   }
 
   render() {
-    const displayRows = this.movements.map(m => {
-      const qty = parseFloat(m.quantity) || 0;
-      return {
+    const q = this.searchQuery.toLowerCase();
+    const filtered = this.movements.filter(m => 
+        !q || 
+        (m.product_name || '').toLowerCase().includes(q) || 
+        (m.sku || '').toLowerCase().includes(q) ||
+        (m.reason || '').toLowerCase().includes(q) ||
+        (m.reference_id || '').toLowerCase().includes(q)
+    );
+
+    const stockIn = this.movements.reduce((acc, m) => acc + (parseFloat(m.quantity) > 0 ? parseFloat(m.quantity) : 0), 0);
+    const stockOut = this.movements.reduce((acc, m) => acc + (parseFloat(m.quantity) < 0 ? Math.abs(parseFloat(m.quantity)) : 0), 0);
+    const netChange = stockIn - stockOut;
+
+    const displayRows = filtered.map(m => ({
         ...m,
-        created_at: m.created_at ? new Date(m.created_at).toLocaleString() : '',
-        quantityHTML: `<span style="color: ${qty < 0 ? '#c0392b' : '#27ae60'}; font-weight: 600;">${qty > 0 ? '+' : ''}${qty}</span>`,
+        created_at: m.created_at ? new Date(m.created_at).toLocaleString() : 'N/A',
         reference: m.reference_id ? `${m.reference_type || 'REF'}: ${m.reference_id}` : '-'
-      };
-    });
+    }));
 
     return (
       <div class="alp-page">
         <StatStrip 
           stats={[
-            { label: "Total Movements", value: this.movements.length.toString() },
-            { label: "Stock In", value: "0" },
-            { label: "Stock Out", value: "0" },
-            { label: "Net Change", value: "0" }
+            { label: "Total Movements", value: String(this.movements.length) },
+            { label: "Stock In (+)", value: String(stockIn), deltaType: "positive" },
+            { label: "Stock Out (-)", value: String(stockOut), deltaType: "negative" },
+            { label: "Net Inventory Change", value: (netChange >= 0 ? '+' : '') + String(netChange) }
           ]}
         />
 
         <div class="alp-toolbar">
           <div class="alp-toolbar-left">
             <TextField 
-              placeholder="Search movements..." 
+              placeholder="Search by SKU, product, or reason..." 
               value={this.searchQuery}
               onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
             />
           </div>
           <div class="alp-toolbar-right">
-             <button class="aui-btn aui-btn--outline">Filters</button>
+             <button class="aui-btn aui-btn--outline" onclick={() => this.mounted()}>Refresh</button>
+             <button class="aui-btn aui-btn--outline" style="margin-left: 0.5rem;">Export History</button>
           </div>
         </div>
 
@@ -80,9 +92,9 @@ component StockMovementsPage {
           loading={this.loading}
           searchable={true}
           exportable={true}
-          filename="stock_movements"
+          filename="stock_movements_history"
           emptyTitle="No movements recorded"
-          emptyDescription="Stock movements are created when you receive stock or complete a sale"
+          emptyDescription={this.loading ? 'Scanning movement logs...' : 'Stock movements are created when you receive stock, complete sales, or perform adjustments.'}
         />
       </div>
     );

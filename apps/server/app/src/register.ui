@@ -33,8 +33,9 @@ import { InventoryItemsPage } from '../../../../modules/inventory/src/pages/Inve
 import { StockLevelsPage } from '../../../../modules/inventory/src/pages/StockLevelsPage.uix';
 import { StockTakePage } from '../../../../modules/inventory/src/pages/StockTakePage.uix';
 import { StockMovementsPage } from '../../../../modules/inventory/src/pages/StockMovementsPage.uix';
-import { CategoriesPage } from '../../../../modules/inventory/src/pages/CategoriesPage.uix';
+import { InventoryCategoriesPage } from '../../../../modules/inventory/src/pages/InventoryCategoriesPage.uix';
 import { SuppliersPage } from '../../../../modules/inventory/src/pages/SuppliersPage.uix';
+import { InventoryReportsPage } from '../../../../modules/inventory/src/pages/InventoryReportsPage.uix';
 import { InventorySettingsPage } from '../../../../modules/inventory/src/pages/InventorySettingsPage.uix';
 
 const PAGE_MAP = {
@@ -61,13 +62,14 @@ const PAGE_MAP = {
     'settings':  PosSettingsPage,
   },
   'inventory': {
-    'items':       InventoryItemsPage,
-    'stock-levels': StockLevelsPage,
-    'stock-take':  StockTakePage,
-    'movements':   StockMovementsPage,
-    'categories':  CategoriesPage,
-    'suppliers':   SuppliersPage,
-    'settings':    InventorySettingsPage,
+    'items':          InventoryItemsPage,
+    'stock-levels':   StockLevelsPage,
+    'stock-take':     StockTakePage,
+    'movements':      StockMovementsPage,
+    'categories':     InventoryCategoriesPage,
+    'suppliers':      SuppliersPage,
+    'reports':        InventoryReportsPage,
+    'settings':       InventorySettingsPage,
   },
 };
 

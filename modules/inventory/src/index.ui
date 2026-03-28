@@ -12,8 +12,9 @@ registerModule({
     { id: 'stock-levels', label: 'Stock Levels', page: 'StockLevelsPage' },
     { id: 'stock-take', label: 'Stock Take', page: 'StockTakePage' },
     { id: 'movements', label: 'Stock Movements', page: 'StockMovementsPage' },
-    { id: 'categories', label: 'Categories', page: 'CategoriesPage' },
+    { id: 'categories', label: 'Categories', page: 'InventoryCategoriesPage' },
     { id: 'suppliers', label: 'Suppliers', page: 'SuppliersPage' },
+    { id: 'reports', label: 'Reports', page: 'InventoryReportsPage' },
     { id: 'settings', label: 'Settings', page: 'InventorySettingsPage' },
   ],
   async register(app) {
