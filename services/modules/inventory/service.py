@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import Product, Category, StockMovement
 from core.audit import log_event
 from core.events import publish_event
+from core.ws_manager import manager
 from . import schemas
 
 
@@ -99,6 +100,14 @@ async def adjust_stock(
     data: schemas.StockAdjustmentCreate,
     user_id: Optional[str] = None
 ) -> StockMovement:
+    # 1. Before adjustment: query current stock and product
+    previous_qty = await get_stock_on_hand(session, tenant_id, data.product_id)
+    product_result = await session.execute(
+        select(Product).where(Product.id == data.product_id, Product.tenant_id == tenant_id)
+    )
+    product = product_result.scalar_one_or_none()
+
+    # 2. Apply the adjustment
     movement = StockMovement(
         tenant_id=tenant_id,
         product_id=data.product_id,
@@ -111,9 +120,29 @@ async def adjust_stock(
     await session.commit()
     await session.refresh(movement)
     
+    # 3. Query stock again for new_qty
+    new_qty = await get_stock_on_hand(session, tenant_id, data.product_id)
+
+    # 4. Broadcast stock.adjusted
+    await manager.broadcast(
+        tenant_id=str(tenant_id),
+        event_type="inventory.stock.adjusted",
+        payload={
+            "product_id": str(data.product_id),
+            "product_name": product.name if product else "",
+            "sku": product.sku if product else "",
+            "previous_qty": float(previous_qty),
+            "new_qty": float(new_qty),
+            "adjustment": float(data.quantity),
+            "reason": data.reason
+        }
+    )
+
+    # Note: reorder_level check omitted as column does not exist on Product model.
+    # Added to DIRECTIVE.md as open issue.
+
     # Audit log
     await log_event(session, tenant_id, user_id or "SYSTEM", "ADJUST_STOCK", "Product", data.product_id, {"qty": str(data.quantity), "reason": data.reason})
-    await publish_event("inventory.stock.adjusted", {"product_id": data.product_id, "quantity": str(data.quantity), "reason": data.reason}, tenant_id=tenant_id)
 
     return movement
 

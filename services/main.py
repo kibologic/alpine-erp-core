@@ -7,8 +7,9 @@ from core.exceptions import register_handlers
 from core.db import engine
 from core.module_registry import register_module, load_all_modules, get_registered_modules
 from core.config import get_config
-from core.realtime import setup_realtime, _server
 from gbil.logger import configure as configure_logger, get_logger
+from core.ws_manager import manager
+import asyncio
 import core.models  # noqa: F401
 
 
@@ -20,9 +21,23 @@ async def lifespan(app: FastAPI):
         environment=cfg.ENVIRONMENT,
         service_name=cfg.SERVICE_NAME,
     )
-    setup_realtime()
     log = get_logger("alpine-erp-core")
     log.info("startup", service=cfg.SERVICE_NAME, environment=cfg.ENVIRONMENT)
+
+    async def heartbeat_loop():
+        while True:
+            await asyncio.sleep(30)
+            for tid, connections in list(manager._connections.items()):
+                dead = set()
+                for ws in connections:
+                    try:
+                        await ws.send_text('{"type":"ping"}')
+                    except Exception:
+                        dead.add(ws)
+                for ws in dead:
+                    manager._connections[tid].discard(ws)
+
+    asyncio.create_task(heartbeat_loop())
     yield
     log.info("shutdown")
 
@@ -42,13 +57,21 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.websocket("/ws")
-async def ws_endpoint(
+@app.websocket("/ws/tenant/{tenant_id}")
+async def websocket_endpoint(
     websocket: WebSocket,
-    tenant_id: Optional[str] = Query(default=None),
+    tenant_id: str,
+    token: str = Query(...)
 ):
-    """WebSocket endpoint. Clients connect as: /ws?tenant_id=<id>"""
-    await _server.handle_connection(websocket, tenant_id=tenant_id)
+    if not token:
+        await websocket.close(code=4001)
+        return
+    await manager.connect(tenant_id, websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(tenant_id, websocket)
 
 
 @app.get("/api/v1/modules")

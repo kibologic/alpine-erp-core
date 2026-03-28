@@ -9,6 +9,7 @@ from sqlalchemy.orm import selectinload
 from core.models import CashSession, Sale, SaleLine, Payment, StockMovement, User
 from core.audit import log_event
 from core.events import publish_event
+from core.ws_manager import manager
 from . import schemas
 
 
@@ -48,7 +49,16 @@ async def open_session(
     
     # Audit log
     await log_event(session, tenant_id, user_id, "OPEN_SESSION", "CashSession", str(new_session.id), {"register_id": data.register_id})
-    await publish_event("pos.session.open", {"session_id": str(new_session.id), "register_id": data.register_id}, tenant_id=tenant_id)
+    await manager.broadcast(
+        tenant_id=str(tenant_id),
+        event_type="pos.session.opened",
+        payload={
+            "session_id": str(new_session.id),
+            "register_id": new_session.register_id,
+            "opened_by": str(new_session.opened_by) if new_session.opened_by else None,
+            "opening_float": float(new_session.opening_float)
+        }
+    )
 
     return new_session
 
@@ -88,7 +98,16 @@ async def close_session(
     
     # Audit log
     await log_event(session, tenant_id, user_id, "CLOSE_SESSION", "CashSession", str(pos_session.id), {"discrepancy": str(pos_session.discrepancy)})
-    await publish_event("pos.session.close", {"session_id": str(pos_session.id), "discrepancy": str(pos_session.discrepancy)}, tenant_id=tenant_id)
+    await manager.broadcast(
+        tenant_id=str(tenant_id),
+        event_type="pos.session.closed",
+        payload={
+            "session_id": str(session_id),
+            "register_id": pos_session.register_id,
+            "closing_amount": float(pos_session.closing_amount),
+            "discrepancy": float(pos_session.discrepancy)
+        }
+    )
 
     return pos_session
 
@@ -169,7 +188,18 @@ async def create_sale(
     
     # Audit log
     await log_event(session, tenant_id, user_id, "CREATE_SALE", "Sale", str(sale.id), {"sale_number": sale.sale_number, "total": str(sale.total)})
-    await publish_event("pos.sale.created", {"sale_id": str(sale.id), "sale_number": sale.sale_number, "total": str(sale.total)}, tenant_id=tenant_id)
+    await manager.broadcast(
+        tenant_id=str(tenant_id),
+        event_type="pos.sale.created",
+        payload={
+            "sale_id": str(sale.id),
+            "sale_number": str(sale.sale_number),
+            "total": float(sale.total),
+            "cashier_id": str(sale.cashier_id) if sale.cashier_id else None,
+            "session_id": str(sale.session_id),
+            "items_count": len(data.lines)
+        }
+    )
     
     # We need to load lines and payments for the response
     result = await session.execute(

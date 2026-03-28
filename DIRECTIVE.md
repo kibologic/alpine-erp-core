@@ -131,6 +131,7 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 - Category.description missing — no backing column, migration needed if frontend requires it
 - Auth tokens stored in-memory — will reset on uvicorn restart, needs DB-backed token table
 - Suppliers table has no seed data
+- Product.reorder_level missing — column needed for inventory.stock.low alerts
 
 ### 2026-03-25
 #### Completed
@@ -139,3 +140,10 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 - feat(migrations): 20260325_add_mobile_tables — stock_take_sessions, stock_take_counts, approvals, push_tokens, media
 - feat(ws): WebSocket endpoint /ws/register/{register_id} — JWT auth via ?token=, tenant-scoped fan-out, 35s heartbeat timeout
 - feat(mobile): stock-take endpoints (active, count, progress), approvals (list, detail, decision), push register, media upload, dashboard pulse
+### 2026-03-28
+#### Completed
+- feat(ws): replaced generic /ws with /ws/tenant/{tenant_id} architecture
+- feat(ws): implemented ConnectionManager with structured JSON event broadcasting
+- feat(ws): added WebSocket heartbeat (ping) loop in main.py lifespan
+- feat(pos): wired pos.session.opened, pos.session.closed, and pos.sale.created events
+- feat(inventory): wired inventory.stock.adjusted event with stateful previous_qty capture
