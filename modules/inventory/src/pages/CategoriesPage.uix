@@ -18,7 +18,6 @@ component CategoriesPage {
 
   state { let categories: any[] = []; }
   state { let showAddModal: boolean = false; }
-  state { let searchQuery: string = ''; }
 
   render() {
     return (
@@ -30,17 +29,8 @@ component CategoriesPage {
           ]}
         />
 
-        <div class="alp-toolbar">
-          <div class="alp-toolbar-left">
-            <TextField 
-              placeholder="Search categories..." 
-              value={this.searchQuery}
-              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
-            />
-          </div>
-          <div class="alp-toolbar-right">
-             <button class="aui-btn aui-btn--outline">Export</button>
-          </div>
+        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
+          <button class="aui-btn aui-btn--outline">Export</button>
         </div>
 
         <DataTable 

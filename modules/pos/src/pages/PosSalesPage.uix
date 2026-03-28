@@ -3,7 +3,6 @@ import { PosService } from '@alpine/core';
 import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
 import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
 import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { TextField } from '@alpine/ui/src/form/TextField.uix';
 import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
 import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
 
@@ -22,7 +21,6 @@ component PosSalesPage {
 
   state { let sales: any[] = []; }
   state { let loading: boolean = true; }
-  state { let searchQuery: string = ''; }
   state { let selectedSale: any = null; }
 
   async mounted() {
@@ -48,13 +46,6 @@ component PosSalesPage {
   }
 
   render() {
-    const q = this.searchQuery.toLowerCase();
-    const filtered = this.sales.filter(s => 
-      !q || 
-      (s.id || '').toLowerCase().includes(q) ||
-      (String(s.total) || '').includes(q)
-    );
-
     const updatedColumns = columns.map(col => {
       if (col.key === 'status') {
         return {
@@ -89,19 +80,9 @@ component PosSalesPage {
           ]}
         />
 
-        <div class="alp-toolbar">
-          <div class="alp-toolbar-left">
-            <TextField 
-              placeholder="Search by ID or amount..." 
-              value={this.searchQuery}
-              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
-            />
-          </div>
-        </div>
-
-        <DataTable 
+        <DataTable
           columns={updatedColumns}
-          rows={filtered}
+          rows={this.sales}
           loading={this.loading}
           searchable={true}
           exportable={true}

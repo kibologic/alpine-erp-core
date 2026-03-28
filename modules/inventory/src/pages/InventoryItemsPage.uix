@@ -27,7 +27,6 @@ component InventoryItemsPage {
   state { let products: any[] = []; }
   state { let categories: any[] = []; }
   state { let loading: boolean = true; }
-  state { let searchQuery: string = ''; }
   state { let selectedCategory: string = ''; }
   state { let showAddModal: boolean = false; }
   state { let showEditModal: boolean = false; }
@@ -135,12 +134,9 @@ component InventoryItemsPage {
 
   get filteredProducts() {
     return this.products.filter(p => {
-      const matchesSearch = !this.searchQuery ||
-        p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        p.sku.toLowerCase().includes(this.searchQuery.toLowerCase());
       const matchesCategory = !this.selectedCategory ||
         p.category_id === this.selectedCategory;
-      return matchesSearch && matchesCategory;
+      return matchesCategory;
     });
   }
 
@@ -189,26 +185,17 @@ component InventoryItemsPage {
           ]}
         />
 
-        <div class="alp-toolbar">
-          <div class="alp-toolbar-left" style="display: flex; gap: 1rem; flex: 1;">
-            <TextField 
-              placeholder="Search products..." 
-              value={this.searchQuery}
-              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
-            />
-            <SelectField
-              placeholder="All Categories"
-              options={[
-                  { value: '', label: 'All Categories' },
-                  ...this.categories.map(c => ({ value: c.id, label: c.name }))
-              ]}
-              value={this.selectedCategory}
-              onchange={(val: string) => { this.selectedCategory = val; this.scheduleUpdate?.(); }}
-            />
-          </div>
-          <div class="alp-toolbar-right">
-             <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Product</button>
-          </div>
+        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
+          <SelectField
+            placeholder="All Categories"
+            options={[
+                { value: '', label: 'All Categories' },
+                ...this.categories.map(c => ({ value: c.id, label: c.name }))
+            ]}
+            value={this.selectedCategory}
+            onchange={(val: string) => { this.selectedCategory = val; this.scheduleUpdate?.(); }}
+          />
+          <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Product</button>
         </div>
 
         <DataTable 

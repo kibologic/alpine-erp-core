@@ -77,3 +77,116 @@ INFO:     127.0.0.1:35086 - "GET /api/v1/inventory/products HTTP/1.1" 500 Intern
 INFO:     127.0.0.1:35072 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:35100 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:33736 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:34208 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:33542 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38384 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38406 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38392 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38414 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38416 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38424 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38434 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38442 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38454 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:38460 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55744 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55750 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55760 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55776 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55790 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55806 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:37806 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:37820 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:37822 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:45076 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60138 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55166 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55168 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:55180 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:47074 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:47086 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:47096 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:47110 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60742 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60758 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60774 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:56054 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:43364 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:43376 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:43380 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:37326 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:37340 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:37336 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:41092 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:41102 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:41108 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:34616 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:34630 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:34646 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:34654 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:34664 - "GET /api/v1/pos/sessions HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51248 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51260 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51268 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51270 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:47378 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:47386 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:47402 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:45306 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:45322 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:45326 - "POST /api/v1/pos/sessions/open HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:39906 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59934 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59938 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59946 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59962 - "GET /api/v1/pos/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35232 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35238 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:43764 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:43770 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:45368 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:45380 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:45390 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:45394 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:45410 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35342 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35352 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35362 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35374 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:33450 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:33456 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:33462 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49388 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49394 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49398 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35044 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35054 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35060 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35076 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35088 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:35100 - "GET /api/v1/inventory/movements HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49620 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49626 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49632 - "GET /api/v1/pos/sales?page=1&page_size=100 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49642 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49658 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49660 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49676 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49682 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:49694 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52602 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52614 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52622 - "GET /api/v1/inventory/customers HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52630 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52638 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52640 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52650 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:52662 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:34198 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:34202 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:34216 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59886 - "GET /api/v1/inventory/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:59894 - "GET /api/v1/inventory/products HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:58110 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45356 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45366 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK

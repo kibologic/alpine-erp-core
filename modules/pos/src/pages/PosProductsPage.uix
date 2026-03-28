@@ -35,7 +35,6 @@ component PosProductsPage {
   state { let showAddModal: boolean = false; }
   state { let showImportModal: boolean = false; }
   state { let newProduct: any = { sku: '', name: '', category: '', price: 0 }; }
-  state { let searchQuery: string = ''; }
 
   async mounted() {
     try {
@@ -77,16 +76,6 @@ component PosProductsPage {
           ]}
         />
 
-        <div class="alp-toolbar">
-          <div class="alp-toolbar-left">
-            <TextField 
-              placeholder="Search products..." 
-              value={this.searchQuery}
-              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
-            />
-          </div>
-        </div>
-        
         <DataTable
           columns={columns}
           rows={displayRows}

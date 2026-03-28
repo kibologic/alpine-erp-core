@@ -20,7 +20,6 @@ component PosCustomersPage {
 
   state { let customers: any[] = []; }
   state { let loading: boolean = true; }
-  state { let searchQuery: string = ''; }
   state { let showAddModal: boolean = false; }
   state { let newCustomerName: string = ''; }
   state { let newCustomerPhone: string = ''; }
@@ -72,13 +71,6 @@ component PosCustomersPage {
   }
 
   render() {
-    const q = this.searchQuery.toLowerCase();
-    const filtered = this.customers.filter(c => 
-      !q || 
-      (c.name || '').toLowerCase().includes(q) ||
-      (c.phone || '').toLowerCase().includes(q)
-    );
-
     const updatedColumns = columns.map(col => {
       if (col.key === 'created_at') {
         return {
@@ -99,23 +91,14 @@ component PosCustomersPage {
           ]}
         />
 
-        <div class="alp-toolbar">
-          <div class="alp-toolbar-left">
-            <TextField 
-              placeholder="Search by name or phone..." 
-              value={this.searchQuery}
-              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
-            />
-          </div>
-          <div class="alp-toolbar-right">
-             <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Customer</button>
-             <button class="aui-btn aui-btn--outline" style="margin-left: 0.5rem;">Export</button>
-          </div>
+        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
+          <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Customer</button>
+          <button class="aui-btn aui-btn--outline">Export</button>
         </div>
 
         <DataTable 
           columns={updatedColumns}
-          rows={filtered}
+          rows={this.customers}
           loading={this.loading}
           searchable={true}
           exportable={true}

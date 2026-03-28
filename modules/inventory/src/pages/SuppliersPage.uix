@@ -27,7 +27,6 @@ component SuppliersPage {
   state { let suppliers: any[] = []; }
   state { let loading: boolean = true; }
   state { let showAddModal: boolean = false; }
-  state { let searchQuery: string = ''; }
   state { let newSupplier: any = { name: '', email: '', phone: '', address: '', contact_person: '' }; }
   state { let saving: boolean = false; }
 
@@ -68,14 +67,6 @@ component SuppliersPage {
   }
 
   render() {
-    const q = this.searchQuery.toLowerCase();
-    const filtered = this.suppliers.filter(s => 
-      !q || 
-      (s.name || '').toLowerCase().includes(q) || 
-      (s.email || '').toLowerCase().includes(q) ||
-      (s.phone || '').toLowerCase().includes(q)
-    );
-
     return (
       <div class="alp-page">
         <StatStrip 
@@ -85,23 +76,14 @@ component SuppliersPage {
           ]}
         />
 
-        <div class="alp-toolbar">
-          <div class="alp-toolbar-left">
-            <TextField 
-              placeholder="Search by name, email or phone..." 
-              value={this.searchQuery}
-              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
-            />
-          </div>
-          <div class="alp-toolbar-right">
-             <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Supplier</button>
-             <button class="aui-btn aui-btn--outline" style="margin-left: 0.5rem;">Export CSV</button>
-          </div>
+        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
+          <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Supplier</button>
+          <button class="aui-btn aui-btn--outline">Export CSV</button>
         </div>
 
-        <DataTable 
+        <DataTable
           columns={columns}
-          rows={filtered}
+          rows={this.suppliers}
           loading={this.loading}
           searchable={true}
           filename="suppliers_list"
