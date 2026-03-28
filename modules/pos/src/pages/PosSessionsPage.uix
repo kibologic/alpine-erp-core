@@ -99,7 +99,7 @@ component PosSessionsPage {
           columns={updatedColumns}
           rows={filtered}
           loading={this.loading}
-          searchable={true}
+          searchable={false}
           exportable={true}
           filename="pos_sessions"
           emptyTitle="No sessions found"
