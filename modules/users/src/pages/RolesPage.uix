@@ -1,48 +1,39 @@
 import { SwissComponent } from '@swissjs/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
+import { api } from '@alpine/core/src/services/api.ui';
 
 const ROLES = [
   {
-    name: 'Admin',
     key: 'admin',
-    description: 'Full system access — can manage all settings, users, inventory, and POS.',
+    name: 'Admin',
+    description: 'Full system access — can manage all settings, users, inventory, billing, and POS.',
+    accentVar: 'var(--color-accent)',
     permissions: [
-      'pos.sell',
-      'pos.refund',
-      'pos.open_session',
-      'pos.close_session',
-      'inventory.view',
-      'inventory.adjust',
-      'inventory.manage',
-      'users.view',
-      'users.manage',
-      'settings.view',
-      'settings.manage',
+      'all_access', 'user_management', 'billing_access',
+      'settings_write', 'reports_read', 'reports_write',
+      'inventory_read', 'inventory_write', 'pos_access',
+      'customers_read', 'customers_write', 'audit_log_read',
+      'tenant_management', 'role_management',
+      'stock_take_approve', 'refund_approve',
     ],
   },
   {
-    name: 'Manager',
     key: 'manager',
-    description: 'Operational access — can run POS, manage inventory, view users and settings.',
+    name: 'Manager',
+    description: 'Operational access — can run POS, manage inventory, view customers and reports.',
+    accentVar: 'var(--color-warning)',
     permissions: [
-      'pos.sell',
-      'pos.refund',
-      'pos.open_session',
-      'pos.close_session',
-      'inventory.view',
-      'inventory.adjust',
-      'users.view',
-      'settings.view',
+      'pos_access', 'inventory_read', 'inventory_write',
+      'reports_read', 'customers_read', 'customers_write',
+      'stock_take_approve', 'refund_approve',
     ],
   },
   {
-    name: 'Cashier',
     key: 'cashier',
-    description: 'Frontline access — can sell and open sessions, view inventory.',
+    name: 'Cashier',
+    description: 'Frontline access — can operate the POS terminal and serve customers.',
+    accentVar: 'var(--color-text-muted)',
     permissions: [
-      'pos.sell',
-      'pos.open_session',
-      'inventory.view',
+      'pos_access', 'customers_read', 'customers_write',
     ],
   },
 ];
@@ -50,36 +41,40 @@ const ROLES = [
 component RolesPage {
   props = {};
 
-  getRoleHeaderClass(key: string) {
-    if (key === 'admin') return 'alp-role-card__header alp-role-card__header--accent';
-    if (key === 'manager') return 'alp-role-card__header alp-role-card__header--warning';
-    return 'alp-role-card__header alp-role-card__header--muted';
+  state { let users: any[] = []; }
+  state { let loading: boolean = true; }
+
+  async mounted() {
+    try {
+      const res = await api.get('/users');
+      this.users = Array.isArray(res) ? res : (res.data || []);
+    } finally {
+      this.loading = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  getMemberCount(roleKey: string) {
+    return this.users.filter((u: any) => u.role === roleKey).length;
   }
 
   render() {
     return (
       <div class="alp-page">
-        <div class="alp-role-cards" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 640px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:960px;">
           {ROLES.map((role: any) => (
-            <div class="alp-role-card" style="border: 1px solid var(--aui-border, #e2e8f0); border-radius: 8px; overflow: hidden;">
-              <div
-                class={this.getRoleHeaderClass(role.key)}
-                style="padding: 0.75rem 1rem; background: var(--aui-surface-2, #f8fafc); border-bottom: 1px solid var(--aui-border, #e2e8f0);"
-              >
-                <span style="font-weight: 600; font-size: 1rem;">{role.name}</span>
-                <span style="margin-left: 0.5rem; color: var(--aui-text-muted, #64748b); font-size: 0.875rem;">
-                  {role.permissions.length} permissions
+            <div style={`border:1px solid var(--color-border);border-left:3px solid ${role.accentVar};border-radius:8px;overflow:hidden;background:var(--color-surface);`}>
+              <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--color-border);display:flex;align-items:baseline;justify-content:space-between;">
+                <span style="font-weight:600;font-size:1.05rem;color:var(--color-text);">{role.name}</span>
+                <span style="font-size:0.8rem;color:var(--color-text-muted);">
+                  {this.getMemberCount(role.key)} member{this.getMemberCount(role.key) !== 1 ? 's' : ''}
                 </span>
               </div>
-              <div style="padding: 1rem;">
-                <p style="margin: 0 0 0.75rem; color: var(--aui-text-muted, #64748b); font-size: 0.875rem;">
-                  {role.description}
-                </p>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.375rem;">
+              <div style="padding:1rem 1.25rem;">
+                <p style="margin:0 0 1rem;color:var(--color-text-muted);font-size:0.875rem;line-height:1.5;">{role.description}</p>
+                <div style="display:flex;flex-wrap:wrap;gap:0.375rem;">
                   {role.permissions.map((perm: string) => (
-                    <span
-                      style="background: var(--aui-surface-2, #f1f5f9); border: 1px solid var(--aui-border, #e2e8f0); border-radius: 4px; padding: 0.125rem 0.5rem; font-size: 0.75rem; font-family: monospace; color: var(--aui-text, #1e293b);"
-                    >
+                    <span style="background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:4px;padding:2px 7px;font-size:0.72rem;font-family:monospace;color:var(--color-text-muted);">
                       {perm}
                     </span>
                   ))}

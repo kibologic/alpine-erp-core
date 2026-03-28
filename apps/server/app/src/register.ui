@@ -11,8 +11,8 @@ import { DashboardPage } from '../../../../modules/dashboard/src/pages/Dashboard
 
 // Users
 import { UsersPage } from '../../../../modules/users/src/pages/UsersPage.uix';
-import { UsersListPage } from '../../../../modules/users/src/pages/UsersListPage.uix';
-import { UsersRolesPage } from '../../../../modules/users/src/pages/UsersRolesPage.uix';
+import { RolesPage } from '../../../../modules/users/src/pages/RolesPage.uix';
+import { OrganisationPage } from '../../../../modules/users/src/pages/OrganisationPage.uix';
 import { AuditLogPage } from '../../../../modules/users/src/pages/AuditLogPage.uix';
 
 // Settings
@@ -44,9 +44,10 @@ const PAGE_MAP = {
     'overview':  DashboardPage,
   },
   'users': {
-    'users':  UsersListPage,
-    'roles':  UsersRolesPage,
-    'audit':  AuditLogPage,
+    'members':      UsersPage,
+    'roles':        RolesPage,
+    'organisation': OrganisationPage,
+    'audit-log':    AuditLogPage,
   },
   'settings': {
     'general':    SettingsGeneralPage,
