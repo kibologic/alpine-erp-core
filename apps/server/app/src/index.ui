@@ -2,6 +2,7 @@ import { SwissApp } from '@swissjs/core';
 import { Shell } from '@skltn/shell/host/src/Shell.uix';
 import { boot } from '@skltn/shell/host/src/boot.ui';
 import { register } from './register.ui';
+import { LoginPage } from './auth/LoginPage.uix';
 
 async function main() {
   const container = document.getElementById('shell-root');
@@ -9,6 +10,25 @@ async function main() {
     console.error('[Alpine] #shell-root not found');
     return;
   }
+
+  const isLoginRoute = window.location.pathname === '/login';
+  const token = localStorage.getItem('alpine-auth-token');
+
+  if (isLoginRoute || !token) {
+    if (token && isLoginRoute) {
+      // Already authenticated — bounce back to app
+      window.location.href = '/';
+      return;
+    }
+    SwissApp.mount(LoginPage, container, {
+      onNavigate: (page: string) => {
+        if (page === 'signup') window.location.href = '/signup';
+        else if (page === 'forgot-password') window.location.href = '/forgot-password';
+      },
+    });
+    return;
+  }
+
   await boot();
   await register();
   SwissApp.mount(Shell, container);
