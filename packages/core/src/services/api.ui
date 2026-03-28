@@ -2,12 +2,13 @@ const API_BASE = '/api/v1';
 const REQUEST_TIMEOUT_MS = 10_000;
 
 export async function request(url: string, options: RequestInit = {}) {
-  const tenantId = localStorage.getItem('alpine-active-org') || 'default-tenant';
+  const tenantId = localStorage.getItem('alpine-tenant-id') || '00000000-0000-0000-0000-000000000001';
   const token = localStorage.getItem('alpine-auth-token');
 
   const headers = {
     'Content-Type': 'application/json',
     'X-Tenant-ID': tenantId,
+    'X-Internal-Token': 'alpine_dev_internal_token_2026',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };

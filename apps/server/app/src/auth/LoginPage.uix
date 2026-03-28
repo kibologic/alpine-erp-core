@@ -6,30 +6,43 @@ component LoginPage {
     onNavigate: Function,
   };
 
+  state { let email: string = ''; }
+  state { let password: string = ''; }
   state { let loading: boolean = false; }
   state { let error: string = ''; }
 
-  handleSignIn(e: Event) {
-    const form = (e.currentTarget as HTMLElement).closest('form');
-    const email = (form?.querySelector('input[type="email"]') as HTMLInputElement)?.value || '';
-    const password = (form?.querySelector('input[type="password"]') as HTMLInputElement)?.value || '';
-
+  async login() {
     this.loading = true;
     this.error = '';
     this.scheduleUpdate?.();
-
-    setTimeout(() => {
-      if (email && password) {
-        localStorage.setItem('alpine-auth-token', 'mock-token');
+    try {
+      const response = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: this.email,
+          password: this.password
+        })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        this.error = err.detail || 'Invalid email or password';
         this.loading = false;
         this.scheduleUpdate?.();
-        this.props.onNavigate('org-select');
-      } else {
-        this.loading = false;
-        this.error = 'Please enter your email and password';
-        this.scheduleUpdate?.();
+        return;
       }
-    }, 800);
+      const data = await response.json();
+      localStorage.setItem('alpine-auth-token', data.token);
+      localStorage.setItem('alpine-user', JSON.stringify(data.user));
+      if (data.tenants && data.tenants.length > 0) {
+        localStorage.setItem('alpine-tenant-id', data.tenants[0].tenant_id);
+      }
+      window.location.href = '/';
+    } catch (e) {
+      this.error = 'Connection failed. Check your network.';
+      this.loading = false;
+      this.scheduleUpdate?.();
+    }
   }
 
   render() {
@@ -46,11 +59,21 @@ component LoginPage {
           <form class="auth-form">
             <div class="auth-field">
               <label>Email</label>
-              <input type="email" placeholder="you@company.com" />
+              <input
+                type="email"
+                placeholder="you@company.com"
+                value={this.email}
+                onInput={(e) => { this.email = e.target.value; }}
+              />
             </div>
             <div class="auth-field">
               <label>Password</label>
-              <input type="password" placeholder="••••••••" />
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={this.password}
+                onInput={(e) => { this.password = e.target.value; }}
+              />
             </div>
             <div class="auth-form-footer">
               <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('forgot-password'); }}>Forgot password?</a>
@@ -58,9 +81,10 @@ component LoginPage {
             <button
               type="button"
               class="auth-btn auth-btn--primary"
-              onClick={(e) => this.handleSignIn(e)}
+              disabled={this.loading}
+              onClick={() => this.login()}
             >
-              {this.loading ? <Spinner /> : 'Sign in'}
+              {this.loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
 
