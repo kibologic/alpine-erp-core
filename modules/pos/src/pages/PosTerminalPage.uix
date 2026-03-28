@@ -268,7 +268,9 @@ component PosTerminalPage {
                 <div class="pos-product-name">{p.name}</div>
                 <div class="pos-product-sku">{p.sku}</div>
                 <div class="pos-product-price">{fmt(p.price)}</div>
-                <div class="pos-product-stock">{p.stock_quantity} in stock</div>
+                <div class={`pos-product-stock ${(p.stock_quantity || 0) === 0 ? 'pos-product-stock--out' : (p.stock_quantity || 0) < 5 ? 'pos-product-stock--low' : 'pos-product-stock--ok'}`}>
+                  {(p.stock_quantity || 0) === 0 ? 'Out of stock' : `${p.stock_quantity} in stock`}
+                </div>
               </div>
             ))}
           </div>
