@@ -6,19 +6,69 @@ import '@alpine/module-settings';
 import '@alpine/module-pos';
 import '@alpine/module-inventory';
 
-// Import actual page components
+// Dashboard
 import { DashboardPage } from '../../../../modules/dashboard/src/pages/DashboardPage.uix';
+
+// Users
 import { UsersPage } from '../../../../modules/users/src/pages/UsersPage.uix';
+import { UsersListPage } from '../../../../modules/users/src/pages/UsersListPage.uix';
+import { UsersRolesPage } from '../../../../modules/users/src/pages/UsersRolesPage.uix';
+import { AuditLogPage } from '../../../../modules/users/src/pages/AuditLogPage.uix';
+
+// Settings
 import { SettingsGeneralPage } from '../../../../modules/settings/src/pages/SettingsGeneralPage.uix';
+import { AppearancePage } from '../../../../modules/settings/src/pages/AppearancePage.uix';
+import { SettingsBillingPage } from '../../../../modules/settings/src/pages/SettingsBillingPage.uix';
+
+// POS
 import { PosTerminalPage } from '../../../../modules/pos/src/pages/PosTerminalPage.uix';
+import { PosSalesPage } from '../../../../modules/pos/src/pages/PosSalesPage.uix';
+import { PosCustomersPage } from '../../../../modules/pos/src/pages/PosCustomersPage.uix';
+import { PosProductsPage } from '../../../../modules/pos/src/pages/PosProductsPage.uix';
+import { PosSessionsPage } from '../../../../modules/pos/src/pages/PosSessionsPage.uix';
+import { PosSettingsPage } from '../../../../modules/pos/src/pages/PosSettingsPage.uix';
+
+// Inventory
 import { InventoryItemsPage } from '../../../../modules/inventory/src/pages/InventoryItemsPage.uix';
+import { StockLevelsPage } from '../../../../modules/inventory/src/pages/StockLevelsPage.uix';
+import { StockTakePage } from '../../../../modules/inventory/src/pages/StockTakePage.uix';
+import { StockMovementsPage } from '../../../../modules/inventory/src/pages/StockMovementsPage.uix';
+import { CategoriesPage } from '../../../../modules/inventory/src/pages/CategoriesPage.uix';
+import { SuppliersPage } from '../../../../modules/inventory/src/pages/SuppliersPage.uix';
+import { InventorySettingsPage } from '../../../../modules/inventory/src/pages/InventorySettingsPage.uix';
 
 const PAGE_MAP = {
-  'dashboard': { 'dashboard': DashboardPage },
-  'users': { 'users': UsersPage },
-  'settings': { 'general': SettingsGeneralPage },
-  'pos': { 'terminal': PosTerminalPage },
-  'inventory': { 'items': InventoryItemsPage }
+  'dashboard': {
+    'dashboard': DashboardPage,
+    'overview':  DashboardPage,
+  },
+  'users': {
+    'users':  UsersListPage,
+    'roles':  UsersRolesPage,
+    'audit':  AuditLogPage,
+  },
+  'settings': {
+    'general':    SettingsGeneralPage,
+    'appearance': AppearancePage,
+    'billing':    SettingsBillingPage,
+  },
+  'pos': {
+    'terminal':  PosTerminalPage,
+    'sales':     PosSalesPage,
+    'customers': PosCustomersPage,
+    'products':  PosProductsPage,
+    'sessions':  PosSessionsPage,
+    'settings':  PosSettingsPage,
+  },
+  'inventory': {
+    'items':       InventoryItemsPage,
+    'stock-levels': StockLevelsPage,
+    'stock-take':  StockTakePage,
+    'movements':   StockMovementsPage,
+    'categories':  CategoriesPage,
+    'suppliers':   SuppliersPage,
+    'settings':    InventorySettingsPage,
+  },
 };
 
 export async function register() {
