@@ -1,4 +1,5 @@
 import { SwissComponent } from '@swissjs/core';
+import { PosService } from '@alpine/core';
 import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
 import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
 import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
@@ -6,21 +7,33 @@ import { TextField } from '@alpine/ui/src/form/TextField.uix';
 import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
 
 const columns = [
-  { key: 'id', label: 'Session #', width: '100px' },
+  { key: 'register_id', label: 'Register', width: '120px' },
   { key: 'status', label: 'Status', width: '120px' },
-  { key: 'startTime', label: 'Start Time', width: '160px' },
-  { key: 'endTime', label: 'End Time', width: '160px' },
-  { key: 'cashier', label: 'Cashier' },
-  { key: 'openingBalance', label: 'Opening', width: '120px' },
-  { key: 'closingBalance', label: 'Closing', width: '120px' }
+  { key: 'opened_at', label: 'Opened At', width: '180px' },
+  { key: 'closed_at', label: 'Closed At', width: '180px' },
+  { key: 'opening_float', label: 'Opening', width: '120px' },
+  { key: 'closing_balance', label: 'Closing', width: '120px' }
 ];
 
 component PosSessionsPage {
   props = {};
 
   state { let sessions: any[] = []; }
-  state { let loading: boolean = false; }
+  state { let loading: boolean = true; }
   state { let searchQuery: string = ''; }
+
+  async mounted() {
+    this.loading = true;
+    try {
+      const response = await PosService.getSessions();
+      this.sessions = response.data || response || [];
+    } catch (e) {
+      this.sessions = [];
+    } finally {
+      this.loading = false;
+      this.scheduleUpdate?.();
+    }
+  }
 
   getStatusType(status: string) {
     status = (status || '').toLowerCase();
@@ -31,6 +44,13 @@ component PosSessionsPage {
   }
 
   render() {
+    const filtered = this.sessions.filter(s => {
+      const q = this.searchQuery.toLowerCase();
+      return !q || 
+             (s.register_id || '').toLowerCase().includes(q) ||
+             (s.opened_at || '').toLowerCase().includes(q);
+    });
+
     const updatedColumns = columns.map(col => {
       if (col.key === 'status') {
         return {
@@ -38,23 +58,37 @@ component PosSessionsPage {
           render: (val: string) => <StatusBadge label={val} type={this.getStatusType(val)} />
         };
       }
+      if (col.key === 'closed_at') {
+        return {
+          ...col,
+          render: (val: string) => val ? new Date(val).toLocaleString() : <em style="color: var(--color-text-success)">Active</em>
+        };
+      }
+      if (col.key === 'opened_at') {
+        return {
+          ...col,
+          render: (val: string) => val ? new Date(val).toLocaleString() : ''
+        };
+      }
       return col;
     });
+
+    const openCount = this.sessions.filter(s => s.status === 'open').length;
 
     return (
       <div class="alp-page">
         <StatStrip 
           stats={[
-            { label: "Open Sessions", value: "0" },
-            { label: "Today's Sessions", value: "0" },
-            { label: "Cash Handled", value: "MWK 0.00" }
+            { label: "Open Sessions", value: String(openCount) },
+            { label: "Total History", value: String(this.sessions.length) },
+            { label: "Last Register", value: this.sessions[0]?.register_id || 'N/A' }
           ]}
         />
 
         <div class="alp-toolbar">
           <div class="alp-toolbar-left">
             <TextField 
-              placeholder="Search sessions..." 
+              placeholder="Search by register or date..." 
               value={this.searchQuery}
               onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
             />
@@ -63,13 +97,13 @@ component PosSessionsPage {
 
         <DataTable 
           columns={updatedColumns}
-          rows={this.sessions}
+          rows={filtered}
           loading={this.loading}
           searchable={true}
           exportable={true}
-          filename="sessions"
-          emptyTitle="No sessions yet"
-          emptyDescription="Open a POS terminal to start a cash session"
+          filename="pos_sessions"
+          emptyTitle="No sessions found"
+          emptyDescription={this.loading ? 'Fetching records...' : 'Open a POS terminal to start a cash session'}
         />
       </div>
     );

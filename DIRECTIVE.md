@@ -149,3 +149,4 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 - feat(inventory): wired inventory.stock.adjusted event with stateful previous_qty capture
 - feat(services): added 15+ missing methods to PosService and InventoryService to bridge backend gaps
 - feat(pos): wired PosTerminalPage to real backend — removed MOCK and DEV_BYPASS logic
+- feat(pos): wired PosSessionsPage, PosSalesPage, and PosCustomersPage to backend services
