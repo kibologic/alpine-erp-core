@@ -11,6 +11,12 @@ from core.auth_deps import get_current_user
 from core.db import get_session
 from core.models import JoinRequest, Tenant, User, UserTenant
 
+
+class TenantUpdateBody(BaseModel):
+    name: Optional[str] = None
+    industry: Optional[str] = None
+    country: Optional[str] = None
+
 router = APIRouter(prefix="/tenant", tags=["tenant"])
 
 # Tier → plan mapping (Tenant.tier is the source of truth)
@@ -48,11 +54,58 @@ async def get_tenant_config(
         "name": tenant.name,
         "plan": plan,
         "capabilities": _PLAN_CAPABILITIES.get(plan, _PLAN_CAPABILITIES["free"]),
+        "industry": tenant.industry,
+        "country": tenant.country,
         "config": {
             "currency": "USD",
             "locale": "en",
             "timezone": "UTC",
         },
+        "active": tenant.active,
+    }
+
+
+# ── Update tenant ─────────────────────────────────────────────────────────────
+
+@router.patch("/{tid}")
+async def update_tenant(
+    tid: str,
+    body: TenantUpdateBody,
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    # Verify caller belongs to this tenant and is admin
+    tenant_role = current_user.get("tenant_role")
+    if tenant_role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can update organisation details")
+
+    # Verify caller is operating on their own tenant
+    caller_tenants = [m["tenant_id"] for m in current_user.get("tenant_memberships", [])]
+    if tid not in caller_tenants:
+        raise HTTPException(status_code=403, detail="Cannot update another organisation")
+
+    result = await session.execute(
+        select(Tenant).where(Tenant.id == tid)
+    )
+    tenant = result.scalar_one_or_none()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Organisation not found")
+
+    if body.name is not None:
+        tenant.name = body.name
+    if body.industry is not None:
+        tenant.industry = body.industry
+    if body.country is not None:
+        tenant.country = body.country
+
+    await session.commit()
+    await session.refresh(tenant)
+    return {
+        "id": tenant.id,
+        "name": tenant.name,
+        "industry": tenant.industry,
+        "country": tenant.country,
+        "tier": tenant.tier,
         "active": tenant.active,
     }
 

@@ -54,6 +54,8 @@ class Tenant(Base):
     license_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
     tier: Mapped[str] = mapped_column(String(50), nullable=False, default="free")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    industry: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    country: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc)
 
     users: Mapped[list["User"]] = relationship(

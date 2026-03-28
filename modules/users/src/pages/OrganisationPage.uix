@@ -31,8 +31,8 @@ component OrganisationPage {
       this.memberCount = users.length;
 
       this.editName = this.org?.name || '';
-      this.editIndustry = this.org?.config?.industry || '';
-      this.editCountry = this.org?.config?.country || '';
+      this.editIndustry = this.org?.industry || '';
+      this.editCountry = this.org?.country || '';
 
       try {
         const stored = localStorage.getItem('alpine-user');
@@ -45,6 +45,32 @@ component OrganisationPage {
       this.notifications?.error('Failed to load organisation');
     } finally {
       this.loading = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  async saveOrg() {
+    this.saving = true;
+    this.scheduleUpdate?.();
+    try {
+      const tenantId = localStorage.getItem('alpine-tenant-id');
+      await api.patch(`/tenant/${tenantId}`, {
+        name: this.editName,
+        industry: this.editIndustry,
+        country: this.editCountry,
+      });
+      this.org = {
+        ...this.org,
+        name: this.editName,
+        industry: this.editIndustry,
+        country: this.editCountry,
+      };
+      this.editing = false;
+      this.notifications?.success('Organisation updated');
+    } catch (e) {
+      this.notifications?.error('Failed to update organisation');
+    } finally {
+      this.saving = false;
       this.scheduleUpdate?.();
     }
   }
@@ -153,11 +179,7 @@ component OrganisationPage {
                     <button
                       class="aui-btn aui-btn--primary"
                       disabled={this.saving}
-                      onclick={() => {
-                        this.notifications?.warning('Organisation updates not yet wired to backend');
-                        this.editing = false;
-                        this.scheduleUpdate?.();
-                      }}
+                      onclick={() => { this.saveOrg(); }}
                     >{this.saving ? 'Saving…' : 'Save Changes'}</button>
                   </div>
                 </div>
