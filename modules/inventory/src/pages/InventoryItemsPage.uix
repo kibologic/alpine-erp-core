@@ -1,107 +1,318 @@
 import { SwissComponent } from '@swissjs/core';
 import { InventoryService } from '@alpine/core';
-import { ListView, FormView, FormSection, TextField, StatusBadge } from '@alpine/ui';
+import { 
+  StatStrip, 
+  DataTable, 
+  TextField, 
+  SelectField, 
+  StatusBadge, 
+  Modal, 
+  FormGroup 
+} from '@alpine/ui';
 
 const columns = [
-  { key: 'sku', label: 'SKU', width: '120px' },
   { key: 'name', label: 'Name', sortable: true },
-  { key: 'category', label: 'Category', sortable: true, width: '140px' },
-  { key: 'price', label: 'Price (MWK)', sortable: true, width: '140px' },
-  { key: 'stock_quantity', label: 'Stock', sortable: true, width: '100px' },
-  { 
-    key: 'stock_status', 
-    label: 'Status', 
-    width: '120px',
-    render: (val, row) => {
-        const status = row.stock_quantity <= 0 ? { label: 'Out of Stock', type: 'danger' } : 
-                       row.stock_quantity < 10 ? { label: 'Low Stock', type: 'warning' } : 
-                       { label: 'In Stock', type: 'success' };
-        return <StatusBadge label={status.label} type={status.type} />;
-    }
-  }
+  { key: 'sku', label: 'SKU', width: '120px' },
+  { key: 'category_name', label: 'Category', width: '140px' },
+  { key: 'price', label: 'Price', width: '120px' },
+  { key: 'cost', label: 'Cost', width: '120px' },
+  { key: 'stock_quantity', label: 'Stock', width: '100px' },
+  { key: 'status', label: 'Status', width: '120px' },
+  { key: 'actions', label: '', width: '100px' }
 ];
 
 component InventoryItemsPage {
+  props = {};
+
   state { let products: any[] = []; }
+  state { let categories: any[] = []; }
   state { let loading: boolean = true; }
-  state { let workspaceOpen: boolean = false; }
-  state { let selectedItem: any = null; }
-  state { let activeTab: string = 'general'; }
   state { let searchQuery: string = ''; }
-  state { let selectedFilters: string[] = []; }
+  state { let selectedCategory: string = ''; }
+  state { let showAddModal: boolean = false; }
+  state { let showEditModal: boolean = false; }
+  state { let saving: boolean = false; }
+  state { let newProduct: any = {}; }
+  state { let editProduct: any = {}; }
 
   async mounted() {
+    this.loading = true;
     try {
-      const data = await InventoryService.getProducts();
-      this.products = data || [];
+      const [productsRes, categoriesRes] = await Promise.all([
+        InventoryService.getProducts(),
+        InventoryService.getCategories()
+      ]);
+      this.products = productsRes.data || productsRes || [];
+      this.categories = categoriesRes.data || categoriesRes || [];
     } catch (e) {
-      console.error('Failed to load products', e);
+      console.error('Failed to load inventory data', e);
+      this.products = [];
+      this.categories = [];
     } finally {
       this.loading = false;
       this.scheduleUpdate?.();
     }
   }
 
+  async createProduct() {
+    if (!this.newProduct.name || !this.newProduct.sku) {
+       alert('Name and SKU are required');
+       return;
+    }
+    this.saving = true;
+    this.scheduleUpdate?.();
+    try {
+      const response = await InventoryService.createProduct({
+        name: this.newProduct.name,
+        sku: this.newProduct.sku,
+        price: parseFloat(this.newProduct.price) || 0,
+        cost: parseFloat(this.newProduct.cost) || 0,
+        tax_rate: parseFloat(this.newProduct.tax_rate) || 16.5,
+        category_id: this.newProduct.category_id || null,
+        barcode: this.newProduct.barcode || null,
+      });
+      const created = response.data || response;
+      this.products = [created, ...this.products];
+      this.showAddModal = false;
+      this.newProduct = {};
+    } catch (e) {
+      console.error('Failed to create product', e);
+      alert('Failed to create product');
+    } finally {
+      this.saving = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  async saveEditProduct() {
+    if (!this.editProduct.id) return;
+    this.saving = true;
+    this.scheduleUpdate?.();
+    try {
+      const response = await InventoryService.updateProduct(
+        this.editProduct.id,
+        {
+          name: this.editProduct.name,
+          sku: this.editProduct.sku,
+          price: parseFloat(this.editProduct.price) || 0,
+          cost: parseFloat(this.editProduct.cost) || 0,
+          tax_rate: parseFloat(this.editProduct.tax_rate) || 16.5,
+          category_id: this.editProduct.category_id || null,
+          barcode: this.editProduct.barcode || null,
+        }
+      );
+      const updated = response.data || response;
+      this.products = this.products.map(p =>
+        p.id === updated.id ? updated : p
+      );
+      this.showEditModal = false;
+      this.editProduct = {};
+    } catch (e) {
+      console.error('Failed to update product', e);
+      alert('Failed to update product');
+    } finally {
+      this.saving = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  async deleteProduct(productId: string) {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    try {
+      await InventoryService.deleteProduct(productId);
+      this.products = this.products.filter(p => p.id !== productId);
+    } catch (e) {
+      console.error('Failed to delete product', e);
+      alert('Failed to delete product');
+    }
+  }
+
+  openEditModal(product: any) {
+    this.editProduct = { ...product };
+    this.showEditModal = true;
+    this.scheduleUpdate?.();
+  }
+
+  get filteredProducts() {
+    return this.products.filter(p => {
+      const matchesSearch = !this.searchQuery ||
+        p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        p.sku.toLowerCase().includes(this.searchQuery.toLowerCase());
+      const matchesCategory = !this.selectedCategory ||
+        p.category_id === this.selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }
+
   render() {
     const lowStockCount = this.products.filter(p => (p.stock_quantity || 0) < 10).length;
-    
+
+    const updatedColumns = columns.map(col => {
+      if (col.key === 'status') {
+        return {
+          ...col,
+          render: (val: any, row: any) => {
+            const qty = row.stock_quantity || 0;
+            const type = qty <= 0 ? 'danger' : qty < 10 ? 'warning' : 'success';
+            const label = qty <= 0 ? 'Out of Stock' : qty < 10 ? 'Low Stock' : 'Healthy';
+            return <StatusBadge label={label} type={type} />;
+          }
+        };
+      }
+      if (col.key === 'category_name') {
+          return {
+              ...col, 
+              render: (val: any, row: any) => row.category?.name || 'Uncategorized'
+          };
+      }
+      if (col.key === 'actions') {
+        return {
+          ...col,
+          render: (val: any, row: any) => (
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button class="aui-btn aui-btn--icon" onclick={() => this.openEditModal(row)} title="Edit">✎</button>
+              <button class="aui-btn aui-btn--icon aui-btn--danger" onclick={() => this.deleteProduct(row.id)} title="Delete">🗑</button>
+            </div>
+          )
+        };
+      }
+      return col;
+    });
+
     return (
       <div class="alp-page">
-        {!this.workspaceOpen ? (
-            <ListView
-                title="Inventory Products"
-                model="inventory.product"
-                columns={columns}
-                rows={this.products}
-                loading={this.loading}
-                stats={[
-                    { label: "Total Items", value: String(this.products.length) },
-                    { label: "Low Stock", value: String(lowStockCount), deltaType: lowStockCount > 0 ? "negative" : "positive" },
-                ]}
-                filters={[
-                    { value: 'low_stock', label: 'Low Stock' },
-                    { value: 'out_of_stock', label: 'Out of Stock' }
-                ]}
-                selectedFilters={this.selectedFilters}
-                searchQuery={this.searchQuery}
-                primaryAction={{ label: 'New Product', action: 'create' }}
-                onSearch={(val) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
-                onFilterChange={(next) => { this.selectedFilters = next; this.scheduleUpdate?.(); }}
-                onRowClick={(row) => { 
-                    this.selectedItem = this.products.find(p => p.sku === row.sku);
-                    this.workspaceOpen = true;
-                    this.scheduleUpdate?.();
-                }}
+        <StatStrip 
+          stats={[
+            { label: "Total Products", value: String(this.products.length) },
+            { label: "Low Stock Items", value: String(lowStockCount), deltaType: lowStockCount > 0 ? 'negative' : 'positive' },
+            { label: "Global Valuation", value: '...' }
+          ]}
+        />
+
+        <div class="alp-toolbar">
+          <div class="alp-toolbar-left" style="display: flex; gap: 1rem; flex: 1;">
+            <TextField 
+              placeholder="Search products..." 
+              value={this.searchQuery}
+              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
             />
-        ) : (
-            <FormView
-                title={this.selectedItem?.name}
-                subtitle={this.selectedItem?.sku}
-                status={this.selectedItem?.stock_quantity > 10 ? 'Healthy' : 'Low Stock'}
-                statusVariant={this.selectedItem?.stock_quantity > 10 ? 'success' : 'warning'}
-                isDirty={false}
-                onCancel={() => { this.workspaceOpen = false; this.scheduleUpdate?.(); }}
-                tabs={[
-                    { id: 'general', label: 'General' },
-                    { id: 'inventory', label: 'Inventory' }
-                ]}
-                activeTab={this.activeTab}
-                onTabChange={(id) => { this.activeTab = id; this.scheduleUpdate?.(); }}
-            >
-                <FormSection title="Basic Information" columns={2}>
-                    <TextField label="Product Name" value={this.selectedItem?.name} />
-                    <TextField label="SKU" value={this.selectedItem?.sku} />
-                    <TextField label="Category" value={this.selectedItem?.category} />
-                </FormSection>
+            <SelectField
+              placeholder="All Categories"
+              options={[
+                  { value: '', label: 'All Categories' },
+                  ...this.categories.map(c => ({ value: c.id, label: c.name }))
+              ]}
+              value={this.selectedCategory}
+              onchange={(val: string) => { this.selectedCategory = val; this.scheduleUpdate?.(); }}
+            />
+          </div>
+          <div class="alp-toolbar-right">
+             <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Product</button>
+          </div>
+        </div>
 
-                <div style="height: 2rem"></div>
+        <DataTable 
+          columns={updatedColumns}
+          rows={this.filteredProducts}
+          loading={this.loading}
+          searchable={true}
+          exportable={true}
+          filename="inventory_items"
+          emptyTitle="No products found"
+          emptyDescription={this.loading ? 'Fetching inventory...' : 'Add your first product to start tracking stock.'}
+        />
 
-                <FormSection title="Stock Management" columns={2}>
-                    <TextField type="number" label="Stock on Hand" value={String(this.selectedItem?.stock_quantity)} />
-                    <TextField type="number" label="Reorder Level" value="10" />
-                </FormSection>
-            </FormView>
-        )}
+        {/* Add Modal */}
+        {this.showAddModal ? (
+          <Modal 
+            open={true}
+            title="Create New Product"
+            onclose={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}
+            renderBody={() => (
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <FormGroup label="Product Name" required={true}>
+                  <TextField value={this.newProduct.name} onchange={(v: string) => { this.newProduct.name = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="SKU" required={true}>
+                  <TextField value={this.newProduct.sku} onchange={(v: string) => { this.newProduct.sku = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="Price (MWK)">
+                  <TextField type="number" value={this.newProduct.price} onchange={(v: string) => { this.newProduct.price = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="Cost (MWK)">
+                  <TextField type="number" value={this.newProduct.cost} onchange={(v: string) => { this.newProduct.cost = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="Category">
+                  <SelectField
+                    options={this.categories.map(c => ({ value: c.id, label: c.name }))}
+                    value={this.newProduct.category_id}
+                    onchange={(v: string) => { this.newProduct.category_id = v; this.scheduleUpdate?.(); }}
+                  />
+                </FormGroup>
+                <FormGroup label="Tax Rate (%)">
+                  <TextField type="number" value={this.newProduct.tax_rate || '16.5'} onchange={(v: string) => { this.newProduct.tax_rate = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="Barcode">
+                  <TextField value={this.newProduct.barcode} onchange={(v: string) => { this.newProduct.barcode = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+              </div>
+            )}
+            renderFooter={() => (
+              <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="aui-btn aui-btn--outline" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="aui-btn" disabled={this.saving} onclick={() => this.createProduct()}>
+                   {this.saving ? 'Creating...' : 'Create Product'}
+                </button>
+              </div>
+            )}
+          />
+        ) : null}
+
+        {/* Edit Modal */}
+        {this.showEditModal ? (
+          <Modal 
+            open={true}
+            title="Edit Product"
+            onclose={() => { this.showEditModal = false; this.scheduleUpdate?.(); }}
+            renderBody={() => (
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <FormGroup label="Product Name" required={true}>
+                  <TextField value={this.editProduct.name} onchange={(v: string) => { this.editProduct.name = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="SKU" required={true}>
+                  <TextField value={this.editProduct.sku} onchange={(v: string) => { this.editProduct.sku = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="Price (MWK)">
+                  <TextField type="number" value={this.editProduct.price} onchange={(v: string) => { this.editProduct.price = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="Cost (MWK)">
+                  <TextField type="number" value={this.editProduct.cost} onchange={(v: string) => { this.editProduct.cost = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="Category">
+                  <SelectField
+                    options={this.categories.map(c => ({ value: c.id, label: c.name }))}
+                    value={this.editProduct.category_id}
+                    onchange={(v: string) => { this.editProduct.category_id = v; this.scheduleUpdate?.(); }}
+                  />
+                </FormGroup>
+                <FormGroup label="Tax Rate (%)">
+                  <TextField type="number" value={this.editProduct.tax_rate} onchange={(v: string) => { this.editProduct.tax_rate = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+                <FormGroup label="Barcode">
+                  <TextField value={this.editProduct.barcode} onchange={(v: string) => { this.editProduct.barcode = v; this.scheduleUpdate?.(); }} />
+                </FormGroup>
+              </div>
+            )}
+            renderFooter={() => (
+              <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="aui-btn aui-btn--outline" onclick={() => { this.showEditModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="aui-btn" disabled={this.saving} onclick={() => this.saveEditProduct()}>
+                   {this.saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            )}
+          />
+        ) : null}
       </div>
     );
   }

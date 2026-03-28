@@ -150,3 +150,4 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 - feat(services): added 15+ missing methods to PosService and InventoryService to bridge backend gaps
 - feat(pos): wired PosTerminalPage to real backend — removed MOCK and DEV_BYPASS logic
 - feat(pos): wired PosSessionsPage, PosSalesPage, and PosCustomersPage to backend services
+- feat(inventory): wired InventoryItemsPage with full CRUD (Create, Read, Update, Delete)
