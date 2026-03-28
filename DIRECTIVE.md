@@ -147,3 +147,4 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 - feat(ws): added WebSocket heartbeat (ping) loop in main.py lifespan
 - feat(pos): wired pos.session.opened, pos.session.closed, and pos.sale.created events
 - feat(inventory): wired inventory.stock.adjusted event with stateful previous_qty capture
+- feat(services): added 15+ missing methods to PosService and InventoryService to bridge backend gaps

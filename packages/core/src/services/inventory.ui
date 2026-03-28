@@ -9,4 +9,48 @@ export const InventoryService = {
   getValuation: () => api.get('/inventory/valuation'),
   getCustomers: () => api.get('/inventory/customers'),
   getStockMovements: () => api.get('/inventory/movements'),
+
+  getStockLevels: () =>
+    api.get('/inventory/stock-levels'),
+
+  getStockLevel: (productId: string) =>
+    api.get(`/inventory/stock/${productId}`),
+
+  getSuppliers: () =>
+    api.get('/inventory/suppliers'),
+
+  createSupplier: (data: any) =>
+    api.post('/inventory/suppliers', data),
+
+  updateSupplier: (supplierId: string, data: any) =>
+    api.patch(`/inventory/suppliers/${supplierId}`, data),
+
+  createCategory: (data: any) =>
+    api.post('/inventory/categories', data),
+
+  updateCategory: (categoryId: string, data: any) =>
+    api.patch(`/inventory/categories/${categoryId}`, data),
+
+  deleteCategory: (categoryId: string) =>
+    api.delete(`/inventory/categories/${categoryId}`),
+
+  createProduct: (data: any) =>
+    api.post('/inventory/products', data),
+
+  updateProduct: (productId: string, data: any) =>
+    api.patch(`/inventory/products/${productId}`, data),
+
+  deleteProduct: (productId: string) =>
+    api.delete(`/inventory/products/${productId}`),
+
+  exportStockTake: () =>
+    api.get('/inventory/stock-take/export', {
+      responseType: 'blob'
+    }),
+
+  importStockTake: (file: any) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/inventory/stock-take/import', formData);
+  },
 };

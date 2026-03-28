@@ -10,5 +10,17 @@ export const PosService = {
   createSale: (saleData: any) => api.post('/pos/sales', saleData),
   getSale: (saleId: string) => api.get(`/pos/sales/${saleId}`),
   refundSale: (saleId: string) => api.post(`/pos/sales/${saleId}/refund`, {}),
+
+  getSales: (page: number = 1, pageSize: number = 50) =>
+    api.get(`/pos/sales?page=${page}&page_size=${pageSize}`),
+
+  getSaleById: (saleId: string) =>
+    api.get(`/pos/sales/${saleId}`),
+
+  getCustomers: () =>
+    api.get('/inventory/customers'),
+
+  createCustomer: (data: any) =>
+    api.post('/inventory/customers', data),
 };
 
