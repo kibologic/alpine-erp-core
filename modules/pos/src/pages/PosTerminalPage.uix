@@ -215,7 +215,8 @@ component PosTerminalPage {
     const total = subtotal + tax;
 
     return (
-      <div class="pos-terminal" style={this.appFullscreen ? 'position:fixed;inset:0;z-index:9999;background:var(--color-bg-base);' : ''}>
+      <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
+      <div class="pos-terminal" style={this.appFullscreen ? 'position:fixed;inset:0;z-index:9999;background:var(--color-bg-base);flex:1;min-height:0;' : 'flex:1;min-height:0;'}>
         {/* Left Panel — Products */}
         <div class="pos-products">
           <div class="pos-products-header">
@@ -343,6 +344,7 @@ component PosTerminalPage {
             </div>
           </div>
         : null}
+      </div>
       </div>
     );
   }
