@@ -9,6 +9,7 @@ component StockTakePage {
   props = {};
 
   state { let products: any[] = []; }
+  state { let categories: any[] = []; }
   state { let counts: any = {}; } // { [productId]: { qty: number, reason: string } }
   state { let searchQuery: string = ''; }
   state { let selectedCategory: string = 'all'; }
@@ -18,15 +19,18 @@ component StockTakePage {
   state { let sessionId: string = 'ST-' + Math.floor(1000 + Math.random() * 9000); }
 
   async mounted() {
+    this.loading = true;
     try {
-      if (InventoryService && InventoryService.getProducts) {
-        const data = await InventoryService.getProducts();
-        this.products = data || [];
-        // Initialize counts with system quantity or leave empty
-        // Usually, a stock take starts empty
-      }
+      const [productsRes, categoriesRes] = await Promise.all([
+        InventoryService.getProducts(),
+        InventoryService.getCategories()
+      ]);
+      this.products = productsRes.data || productsRes || [];
+      this.categories = categoriesRes.data || categoriesRes || [];
     } catch (e) {
-      console.error('Failed to load products', e);
+      console.error('Failed to load stock take data', e);
+      this.products = [];
+      this.categories = [];
     } finally {
       this.loading = false;
       this.scheduleUpdate?.();
@@ -36,7 +40,7 @@ component StockTakePage {
   handleCountChange(productId: string, val: string) {
     const qty = parseFloat(val);
     if (!this.counts[productId]) {
-      this.counts[productId] = { qty: isNaN(qty) ? null : qty, reason: '' };
+      this.counts[productId] = { qty: isNaN(qty) ? null : qty, reason: 'counting_error' };
     } else {
       this.counts[productId].qty = isNaN(qty) ? null : qty;
     }
@@ -69,7 +73,7 @@ component StockTakePage {
         if (sysQty !== countedQty) {
           variances++;
           const diff = countedQty - sysQty;
-          valueImpact += diff * (parseFloat(p.price) || 0);
+          valueImpact += diff * (parseFloat(p.cost) || 0); // Use cost for valuation impact
         }
       }
     });
@@ -81,54 +85,97 @@ component StockTakePage {
     this.saving = true;
     this.scheduleUpdate?.();
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    this.showSummary = false;
-    this.saving = false;
-    this.counts = {}; // Reset
-    this.scheduleUpdate?.();
-    
-    alert('Stock take completed and adjustments applied.');
+    try {
+        const countedIds = Object.keys(this.counts).filter(id => this.counts[id].qty !== null);
+        const tasks = countedIds.map(id => {
+            const count = this.counts[id];
+            // We use adjustStock to reach the target quantity
+            // diff = target - current
+            const p = this.products.find(prod => String(prod.id) === id || prod.sku === id);
+            if (!p) return Promise.resolve();
+            const diff = count.qty - (parseFloat(p.stock_quantity) || 0);
+            if (diff === 0) return Promise.resolve();
+            
+            return InventoryService.adjustStock(p.id, diff, count.reason || 'stock_take');
+        });
+        
+        await Promise.all(tasks);
+        
+        this.showSummary = false;
+        this.counts = {}; // Reset
+        alert('Stock take completed. All variances have been adjusted.');
+        await this.mounted(); // Reload products to get new stock levels
+    } catch (e) {
+        console.error('Failed to complete stock take', e);
+        alert('Error applying adjustments. Some changes might not have saved.');
+    } finally {
+        this.saving = false;
+        this.scheduleUpdate?.();
+    }
+  }
+
+  async exportTemplate() {
+      try {
+          const blob = await InventoryService.exportStockTake();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `stock_take_template_${new Date().toISOString().split('T')[0]}.xlsx`;
+          a.click();
+      } catch (e) {
+          alert('Failed to export template');
+      }
+  }
+
+  async handleImport(event: any) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      this.loading = true;
+      this.scheduleUpdate?.();
+      try {
+          await InventoryService.importStockTake(file);
+          alert('Import successful. Stock levels updated.');
+          await this.mounted();
+      } catch (e) {
+          alert('Failed to import stock take file');
+      } finally {
+          this.loading = false;
+          this.scheduleUpdate?.();
+      }
   }
 
   render() {
     if (this.loading) {
       return (
-        <div style="padding: 2rem; text-align: center; color: var(--dusty-denim);">
-          Loading products...
+        <div style="padding: 2rem; text-align: center; color: var(--dusty-denim); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+          <div class="aui-spinner"></div>
+          <div>Syncing inventory data...</div>
         </div>
       );
     }
 
     const filtered = this.products.filter(p => {
       const matchesSearch = !this.searchQuery || 
-        p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-        p.sku.toLowerCase().includes(this.searchQuery.toLowerCase());
+        (p.name || '').toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+        (p.sku || '').toLowerCase().includes(this.searchQuery.toLowerCase());
       
-      const matchesCat = this.selectedCategory === 'all' || p.category === this.selectedCategory;
-      
+      const matchesCat = this.selectedCategory === 'all' || p.category_id === this.selectedCategory;
       return matchesSearch && matchesCat;
     });
 
-    const categories = Array.from(new Set(this.products.map(p => p.category))).filter(Boolean);
-    const catOptions = [{ value: 'all', label: 'All Categories' }, ...categories.map(c => ({ value: c, label: c }))];
-
+    const catOptions = [{ value: 'all', label: 'All Categories' }, ...this.categories.map(c => ({ value: c.id, label: c.name }))];
     const stats = this.stats;
 
     return (
       <div class="alp-page" style="height: 100%; display: flex; flex-direction: column;">
-
-
         <div class="st-layout" style="flex: 1;">
           <div class="st-products">
-            <div class="st-filters">
-              <input 
-                type="text" 
-                class="st-search" 
+            <div class="st-filters" style="padding: 1rem; border-bottom: 1px solid var(--border-color); display: flex; gap: 1rem; align-items: center;">
+              <TextField 
                 placeholder="Search by SKU or name..." 
                 value={this.searchQuery}
-                oninput={(e: any) => { this.searchQuery = e.target.value; this.scheduleUpdate?.(); }}
+                onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
               />
               <div style="width: 200px;">
                 <SelectField 
@@ -139,106 +186,116 @@ component StockTakePage {
               </div>
             </div>
 
-            {filtered.length === 0 ? (
-              <div style="padding: 3rem; text-align: center; color: var(--dusty-denim);">
-                No products found matching your filters.
-              </div>
-            ) : (
-              filtered.map(p => {
-                const id = String(p.id) || p.sku;
-                const countData = this.counts[id] || { qty: null, reason: '' };
-                const sysQty = parseFloat(p.stock_quantity) || 0;
-                const isCounted = countData.qty !== null;
-                const hasVariance = isCounted && countData.qty !== sysQty;
-                
-                const rowClass = `st-product-card ${isCounted ? (hasVariance ? 'st-product-card--variance' : 'st-product-card--counted') : ''}`;
+            <div class="st-scroll-area" style="overflow-y: auto; flex: 1; padding: 1rem;">
+                {filtered.length === 0 ? (
+                <div style="padding: 3rem; text-align: center; color: var(--dusty-denim);">
+                    No products found matching your filters.
+                </div>
+                ) : (
+                filtered.map(p => {
+                    const id = String(p.id);
+                    const countData = this.counts[id] || { qty: null, reason: '' };
+                    const sysQty = parseFloat(p.stock_quantity) || 0;
+                    const isCounted = countData.qty !== null;
+                    const hasVariance = isCounted && countData.qty !== sysQty;
+                    
+                    const rowClass = `st-product-card ${isCounted ? (hasVariance ? 'st-product-card--variance' : 'st-product-card--counted') : ''}`;
 
-                return (
-                  <div class={rowClass} id={`p-${id}`}>
-                    <div class="st-sku">{p.sku}</div>
-                    <div class="st-name" title={p.name}>{p.name}</div>
-                    <div class="aui-text-muted" style="font-size: 0.75rem;">{p.zone || 'Default'}</div>
-                    <div class="st-system-qty">{sysQty}</div>
-                    <div>
-                      <input 
-                        type="number" 
-                        class="st-qty-input" 
-                        placeholder="--"
-                        value={countData.qty === null ? '' : countData.qty}
-                        oninput={(e: any) => this.handleCountChange(id, e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      {hasVariance ? (
-                        <SelectField 
-                          placeholder="Reason"
-                          options={[
-                            { value: 'damage', label: 'Damage' },
-                            { value: 'theft', label: 'Theft' },
-                            { value: 'counting_error', label: 'Count Error' },
-                            { value: 'received', label: 'Found' }
-                          ]}
-                          value={countData.reason}
-                          onchange={(val: string) => this.handleReasonChange(id, val)}
+                    return (
+                    <div class={rowClass} id={`p-${id}`}>
+                        <div class="st-sku">{p.sku}</div>
+                        <div class="st-name" title={p.name}>{p.name}</div>
+                        <div class="aui-text-muted" style="font-size: 0.75rem;">{p.category?.name || 'Uncategorized'}</div>
+                        <div class="st-system-qty">{sysQty}</div>
+                        <div>
+                        <input 
+                            type="number" 
+                            class="st-qty-input" 
+                            placeholder="--"
+                            value={countData.qty === null ? '' : countData.qty}
+                            oninput={(e: any) => this.handleCountChange(id, e.target.value)}
                         />
-                      ) : null}
+                        </div>
+                        <div>
+                        {hasVariance ? (
+                            <SelectField 
+                            placeholder="Reason"
+                            options={[
+                                { value: 'damage', label: 'Damage' },
+                                { value: 'theft', label: 'Theft' },
+                                { value: 'counting_error', label: 'Count Error' },
+                                { value: 'received', label: 'Found' }
+                            ]}
+                            value={countData.reason}
+                            onchange={(val: string) => this.handleReasonChange(id, val)}
+                            />
+                        ) : null}
+                        </div>
+                        <div class="st-status">
+                        {isCounted ? (hasVariance ? '⚠️' : '✓') : ''}
+                        </div>
                     </div>
-                    <div class="st-status">
-                      {isCounted ? (hasVariance ? '⚠️' : '✓') : ''}
-                    </div>
-                  </div>
-                );
-              })
-            )}
+                    );
+                })
+                )}
+            </div>
           </div>
 
-          <div class="st-sidebar">
-            <div class="st-sidebar-title">Stock Count Summary</div>
+          <div class="st-sidebar" style="width: 320px; border-left: 1px solid var(--border-color); background: var(--bg-alt); padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+            <div class="st-sidebar-title" style="font-weight: 600; font-size: 1.125rem;">Stock Count Summary</div>
             
-            <div style="margin: 1rem 0;">
-              <div class="st-sidebar-row">
+            <div>
+              <div class="st-sidebar-row" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                 <span>Session ID</span>
                 <strong>{this.sessionId}</strong>
               </div>
-              <div class="st-sidebar-row">
+              <div class="st-sidebar-row" style="display: flex; justify-content: space-between;">
                 <span>Started</span>
                 <strong>{new Date().toLocaleDateString()}</strong>
               </div>
             </div>
 
-            <div class="st-sidebar-row">
-              <span>Progress ({stats.totalCounted} / {stats.totalProducts})</span>
-              <strong>{stats.progress}%</strong>
-            </div>
-            <div class="st-progress-bar">
-              <div class="st-progress-fill" style={`width: ${stats.progress}%`}></div>
+            <div>
+                <div class="st-sidebar-row" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>Progress ({stats.totalCounted} / {stats.totalProducts})</span>
+                <strong>{stats.progress}%</strong>
+                </div>
+                <div class="st-progress-bar" style="height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
+                <div class="st-progress-fill" style={`width: ${stats.progress}%; height: 100%; background: var(--primary-color); transition: width 0.3s ease;`}></div>
+                </div>
             </div>
 
-            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-              <div class="st-sidebar-row">
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div class="st-sidebar-row" style="display: flex; justify-content: space-between;">
                 <span>Variances</span>
-                <strong style={stats.variances > 0 ? 'color: var(--ink-black);' : ''}>{stats.variances}</strong>
+                <strong style={stats.variances > 0 ? 'color: var(--danger-color);' : ''}>{stats.variances}</strong>
               </div>
-              <div class="st-sidebar-row">
+              <div class="st-sidebar-row" style="display: flex; justify-content: space-between;">
                 <span>Value Impact</span>
-                <strong style={stats.valueImpact < 0 ? 'color: #c0392b;' : (stats.valueImpact > 0 ? 'color: #27ae60;' : '')}>
+                <strong style={stats.valueImpact < 0 ? 'color: var(--danger-color);' : (stats.valueImpact > 0 ? 'color: var(--success-color);' : '')}>
                   MWK {new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(stats.valueImpact)}
                 </strong>
               </div>
             </div>
 
-            <button 
-              class="st-complete-btn" 
-              onclick={() => { this.showSummary = true; this.scheduleUpdate?.(); }}
-              disabled={stats.totalCounted === 0}
-              style={stats.totalCounted === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}
-            >
-              Complete Stock Take
-            </button>
-            
-            <button class="st-save-btn" onclick={() => alert('Session saved locally.')}>
-              Save & Exit
-            </button>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: auto;">
+                <button 
+                class="aui-btn" 
+                onclick={() => { this.showSummary = true; this.scheduleUpdate?.(); }}
+                disabled={stats.totalCounted === 0}
+                style="width: 100%;"
+                >
+                Complete Stock Take
+                </button>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <button class="aui-btn aui-btn--outline" style="font-size: 0.875rem;" onclick={() => this.exportTemplate()}>Export</button>
+                    <label class="aui-btn aui-btn--outline" style="font-size: 0.875rem; cursor: pointer; text-align: center;">
+                        Import
+                        <input type="file" style="display: none;" accept=".xlsx" onchange={(e: any) => this.handleImport(e)} />
+                    </label>
+                </div>
+            </div>
           </div>
         </div>
 
@@ -246,12 +303,11 @@ component StockTakePage {
           <Modal 
             open={true}
             title="Confirm Stock Take Completion"
-            draggable={true}
             onclose={() => { this.showSummary = false; this.scheduleUpdate?.(); }}
             renderBody={() => (
               <div style="display: flex; flex-direction: column; gap: 1rem;">
                 <p>You are about to complete the stock take session. This will create <strong>{stats.variances}</strong> adjustment records.</p>
-                <div style="background: var(--alabaster-grey); padding: 1rem; border-radius: 4px;">
+                <div style="background: var(--bg-alt); padding: 1rem; border-radius: 4px; border: 1px solid var(--border-color);">
                   <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                     <span>Products Counted:</span>
                     <strong>{stats.totalCounted}</strong>
@@ -260,33 +316,27 @@ component StockTakePage {
                     <span>Total Variances:</span>
                     <strong>{stats.variances}</strong>
                   </div>
-                  <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--dusty-denim); padding-top: 0.5rem;">
+                  <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
                     <span>Total Value Adjustment:</span>
                     <strong>MWK {new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(stats.valueImpact)}</strong>
                   </div>
                 </div>
-                <p style="font-size: 0.875rem; color: var(--prussian-blue);">These adjustments will be immediately reflected in the inventory stock levels and logged in movement history.</p>
+                <p style="font-size: 0.875rem; color: var(--text-muted);">These adjustments will be immediately reflected in the inventory stock levels and logged in movement history.</p>
               </div>
             )}
             renderFooter={() => (
-              <>
-                <button 
-                   class="aui-btn aui-btn--outline" 
-                   style="margin-right: 1rem; background: transparent; border: 1px solid var(--dusty-denim); color: var(--ink-black);"
-                   onclick={() => { this.showSummary = false; this.scheduleUpdate?.(); }}
-                >Cancel</button>
-                <button 
-                  class="aui-btn" 
-                  onclick={() => this.confirmStockTake()}
-                  disabled={this.saving}
-                >
+              <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="aui-btn aui-btn--outline" onclick={() => { this.showSummary = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="aui-btn" onclick={() => this.confirmStockTake()} disabled={this.saving}>
                   {this.saving ? 'Processing...' : 'Confirm & Apply'}
                 </button>
-              </>
+              </div>
             )}
           />
         ) : null}
       </div>
     );
+  }
+}
   }
 }

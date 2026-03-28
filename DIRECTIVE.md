@@ -151,3 +151,5 @@ Location: `modules/dashboard/src/pages/DashboardPage.uix`
 - feat(pos): wired PosTerminalPage to real backend — removed MOCK and DEV_BYPASS logic
 - feat(pos): wired PosSessionsPage, PosSalesPage, and PosCustomersPage to backend services
 - feat(inventory): wired InventoryItemsPage with full CRUD (Create, Read, Update, Delete)
+- feat(inventory): wired StockLevelsPage with real-time health status and valuation
+- feat(inventory): wired StockTakePage with variance detection, adjustment logic, and Export/Import excel flow

@@ -1,63 +1,104 @@
 import { SwissComponent } from '@swissjs/core';
+import { InventoryService } from '@alpine/core';
 import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
 import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
 import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
 import { TextField } from '@alpine/ui/src/form/TextField.uix';
+import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
 
 const columns = [
   { key: 'sku', label: 'SKU', width: '120px' },
   { key: 'name', label: 'Item', sortable: true },
   { key: 'category', label: 'Category', width: '140px' },
   { key: 'on_hand', label: 'On Hand', width: '100px' },
-  { key: 'reserved', label: 'Reserved', width: '100px' },
   { key: 'available', label: 'Available', width: '100px' },
   { key: 'reorder_level', label: 'Reorder', width: '100px' },
-  { key: 'statusHTML', label: 'Status', width: '120px' },
-  { key: 'valueHTML', label: 'Value', width: '140px' }
+  { 
+    key: 'status', 
+    label: 'Status', 
+    width: '120px',
+    render: (val: string, row: any) => {
+        const onHand = parseFloat(row.on_hand) || 0;
+        const reorder = parseFloat(row.reorder_level) || 0;
+        const type = onHand <= 0 ? 'danger' : onHand < reorder ? 'warning' : 'success';
+        const label = onHand <= 0 ? 'Out of Stock' : onHand < reorder ? 'Low Stock' : 'Healthy';
+        return <StatusBadge label={label} type={type} />;
+    }
+  },
+  { 
+    key: 'valuation', 
+    label: 'Valuation', 
+    width: '140px',
+    render: (val: string, row: any) => `MWK ${( (parseFloat(row.on_hand) || 0) * (parseFloat(row.cost) || 0) ).toLocaleString()}`
+  }
 ];
 
 component StockLevelsPage {
   props = {};
 
   state { let items: any[] = []; }
-  state { let loading: boolean = false; }
+  state { let loading: boolean = true; }
   state { let searchQuery: string = ''; }
 
+  async mounted() {
+    this.loading = true;
+    try {
+      const response = await InventoryService.getStockLevels();
+      this.items = response.data || response || [];
+    } catch (e) {
+      console.error('Failed to load stock levels', e);
+      this.items = [];
+    } finally {
+      this.loading = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
   render() {
+    const filtered = this.items.filter(i => 
+      !this.searchQuery || 
+      (i.name || '').toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+      (i.sku || '').toLowerCase().includes(this.searchQuery.toLowerCase())
+    );
+
+    const lowStock = this.items.filter(i => (parseFloat(i.on_hand) || 0) < (parseFloat(i.reorder_level) || 0)).length;
+    const outOfStock = this.items.filter(i => (parseFloat(i.on_hand) || 0) <= 0).length;
+    const totalValuation = this.items.reduce((acc, i) => acc + ( (parseFloat(i.on_hand) || 0) * (parseFloat(i.cost) || 0) ), 0);
+
     return (
       <div class="alp-page">
         <StatStrip 
           stats={[
-            { label: "Total SKUs", value: "0" },
-            { label: "Below Reorder", value: "0", deltaType: "negative" },
-            { label: "Out of Stock", value: "0", deltaType: "danger" },
-            { label: "Total Value", value: "MWK 0.00" }
+            { label: "Total SKUs", value: String(this.items.length) },
+            { label: "Below Reorder", value: String(lowStock), deltaType: lowStock > 0 ? "warning" : "positive" },
+            { label: "Out of Stock", value: String(outOfStock), deltaType: outOfStock > 0 ? "danger" : "positive" },
+            { label: "Total Value", value: `MWK ${totalValuation.toLocaleString()}` }
           ]}
         />
 
         <div class="alp-toolbar">
           <div class="alp-toolbar-left">
             <TextField 
-              placeholder="Search stock levels..." 
+              placeholder="Search by SKU or name..." 
               value={this.searchQuery}
               onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
             />
           </div>
           <div class="alp-toolbar-right">
-             <button class="aui-btn aui-btn--outline" style="margin-right: 0.5rem;">Filter</button>
+             <button class="aui-btn aui-btn--outline" style="margin-right: 0.5rem;" onclick={() => this.mounted()}>Refresh</button>
              <button class="aui-btn aui-btn--outline">Inventory Analytics</button>
           </div>
         </div>
 
         <DataTable 
           columns={columns}
-          rows={this.items}
+          rows={filtered}
           loading={this.loading}
           searchable={true}
           exportable={true}
           filename="stock_levels"
           emptyTitle="No stock records"
-          emptyDescription="Stock levels reflect your inventory availability and reorder indicators"
+          emptyDescription={this.loading ? 'Fetching stock status...' : 'Stock levels reflect your inventory availability and reorder indicators'}
         />
       </div>
     );
