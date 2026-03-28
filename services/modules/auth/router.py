@@ -1,6 +1,8 @@
 import os
+import re
 import uuid
 from datetime import datetime, timedelta
+from typing import Optional
 
 import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, Header
@@ -10,7 +12,7 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
-from core.models import AuthToken, User, UserTenant
+from core.models import AuthToken, JoinRequest, PasswordResetToken, Tenant, User, UserTenant
 
 _JWT_SECRET = os.getenv("JWT_SECRET", "alpine_dev_jwt_secret_2026")
 _JWT_ALGORITHM = "HS256"
@@ -229,3 +231,221 @@ async def mobile_refresh(data: MobileRefreshRequest):
         "access_token": access_token,
         "expires_in": 3600,
     }
+
+
+# ── Signup ──────────────────────────────────────────────────────────────────
+
+def _slugify(name: str) -> str:
+    slug = name.lower().strip()
+    slug = re.sub(r"[^a-z0-9\s-]", "", slug)
+    slug = re.sub(r"[\s]+", "-", slug)
+    slug = re.sub(r"-+", "-", slug).strip("-")
+    return slug
+
+
+class SignupRequest(BaseModel):
+    full_name: str
+    email: str
+    password: str
+    org_action: str  # "create" or "join"
+    org_name: Optional[str] = None
+    org_id: Optional[str] = None
+
+
+@router.post("/signup")
+async def signup(
+    data: SignupRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    # Check email not already taken
+    existing = await session.execute(
+        select(User).where(User.email == data.email)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Email already registered")
+
+    password_hash = bcrypt.hashpw(data.password.encode(), bcrypt.gensalt()).decode()
+
+    if data.org_action == "create":
+        if not data.org_name:
+            raise HTTPException(status_code=400, detail="org_name required when org_action is 'create'")
+
+        # Create tenant
+        slug = _slugify(data.org_name)
+        # Ensure slug uniqueness
+        base_slug = slug
+        suffix = 0
+        while True:
+            existing_tenant = await session.execute(
+                select(Tenant).where(Tenant.slug == slug)
+            )
+            if not existing_tenant.scalar_one_or_none():
+                break
+            suffix += 1
+            slug = f"{base_slug}-{suffix}"
+
+        tenant = Tenant(
+            name=data.org_name,
+            slug=slug,
+            tier="free",
+            active=True,
+        )
+        session.add(tenant)
+        await session.flush()
+
+        user = User(
+            tenant_id=tenant.id,
+            email=data.email,
+            password_hash=password_hash,
+            full_name=data.full_name,
+            role="admin",
+            active=True,
+            is_verified=True,
+        )
+        session.add(user)
+        await session.flush()
+
+        user_tenant = UserTenant(
+            user_id=user.id,
+            tenant_id=tenant.id,
+            role="admin",
+        )
+        session.add(user_tenant)
+        await session.flush()
+
+        token, expires_at = await _issue_token(session, user.id)
+
+        return {
+            "token": token,
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "role": user.role,
+                "full_name": user.full_name,
+            },
+            "tenants": [{"tenant_id": tenant.id, "role": "admin"}],
+            "expiresAt": expires_at.isoformat() + "Z",
+        }
+
+    elif data.org_action == "join":
+        if not data.org_id:
+            raise HTTPException(status_code=400, detail="org_id required when org_action is 'join'")
+
+        tenant_result = await session.execute(
+            select(Tenant).where(Tenant.id == data.org_id, Tenant.active == True)
+        )
+        tenant = tenant_result.scalar_one_or_none()
+        if not tenant:
+            raise HTTPException(status_code=404, detail="Organisation not found")
+
+        # Need a placeholder tenant_id for the user — use the target tenant
+        user = User(
+            tenant_id=tenant.id,
+            email=data.email,
+            password_hash=password_hash,
+            full_name=data.full_name,
+            role="cashier",
+            active=True,
+            is_verified=True,
+        )
+        session.add(user)
+        await session.flush()
+
+        # Check not already member
+        existing_membership = await session.execute(
+            select(UserTenant).where(
+                UserTenant.user_id == user.id,
+                UserTenant.tenant_id == tenant.id,
+            )
+        )
+        if existing_membership.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail="Already a member of this organisation")
+
+        join_request = JoinRequest(
+            user_id=user.id,
+            tenant_id=tenant.id,
+            status="pending",
+        )
+        session.add(join_request)
+        await session.commit()
+
+        return {"message": "Join request sent — awaiting admin approval"}
+
+    else:
+        raise HTTPException(status_code=400, detail="org_action must be 'create' or 'join'")
+
+
+# ── Forgot / Reset Password ──────────────────────────────────────────────────
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    data: ForgotPasswordRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    user_result = await session.execute(
+        select(User).where(User.email == data.email)
+    )
+    user = user_result.scalar_one_or_none()
+
+    if not user:
+        # Return 200 to avoid email enumeration
+        return {"message": "If this email exists, a reset token has been issued"}
+
+    token = str(uuid.uuid4())
+    expires_at = _now() + timedelta(hours=1)
+
+    reset_token = PasswordResetToken(
+        user_id=user.id,
+        token=token,
+        expires_at=expires_at,
+        used=False,
+    )
+    session.add(reset_token)
+    await session.commit()
+
+    return {
+        "reset_token": token,
+        "message": "Use this token to reset your password",
+    }
+
+
+@router.post("/reset-password")
+async def reset_password(
+    data: ResetPasswordRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    token_result = await session.execute(
+        select(PasswordResetToken).where(PasswordResetToken.token == data.token)
+    )
+    reset_token = token_result.scalar_one_or_none()
+
+    if not reset_token:
+        raise HTTPException(status_code=400, detail="Invalid reset token")
+
+    if reset_token.used:
+        raise HTTPException(status_code=400, detail="Reset token already used")
+
+    if _now() > reset_token.expires_at.replace(tzinfo=None):
+        raise HTTPException(status_code=400, detail="Reset token expired")
+
+    user_result = await session.execute(
+        select(User).where(User.id == reset_token.user_id)
+    )
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.password_hash = bcrypt.hashpw(data.new_password.encode(), bcrypt.gensalt()).decode()
+    reset_token.used = True
+    await session.commit()
+
+    return {"message": "Password reset successful"}

@@ -1,23 +1,73 @@
 import { SwissComponent } from '@swissjs/core';
-
-const MOCK_ORGS = [
-  { name: 'Alpine Corp', initial: 'A', role: 'Admin' },
-  { name: 'Kibologic', initial: 'K', role: 'Owner' },
-];
+import { Spinner } from '../components/Spinner.uix';
 
 component OrgSelectPage {
   props = {
     onNavigate: Function,
   };
 
-  selectOrg(orgName: string) {
-    localStorage.setItem('alpine-active-org', orgName);
-    this.props.onNavigate('app');
+  state { let orgs: any[] = []; }
+  state { let loading: boolean = true; }
+
+  async mounted() {
+    try {
+      const raw = localStorage.getItem('alpine-tenants');
+      const tenants = raw ? JSON.parse(raw) : [];
+
+      const resolved = [];
+      for (const t of tenants) {
+        try {
+          const token = localStorage.getItem('alpine-auth-token') || '';
+          const res = await fetch(`/api/v1/tenant/${t.tenant_id}/config`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'X-Internal-Token': '',
+            },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            resolved.push({
+              id: t.tenant_id,
+              name: data.name || t.tenant_id,
+              role: t.role,
+              initial: (data.name || 'O')[0].toUpperCase(),
+            });
+          } else {
+            resolved.push({
+              id: t.tenant_id,
+              name: t.tenant_id,
+              role: t.role,
+              initial: '?',
+            });
+          }
+        } catch {
+          resolved.push({
+            id: t.tenant_id,
+            name: t.tenant_id,
+            role: t.role,
+            initial: '?',
+          });
+        }
+      }
+
+      this.orgs = resolved;
+    } catch {
+      this.orgs = [];
+    }
+    this.loading = false;
+    this.scheduleUpdate?.();
+  }
+
+  selectOrg(tenantId: string) {
+    localStorage.setItem('alpine-tenant-id', tenantId);
+    window.location.href = '/';
   }
 
   signOut() {
     localStorage.removeItem('alpine-auth-token');
-    localStorage.removeItem('alpine-active-org');
+    localStorage.removeItem('alpine-tenant-id');
+    localStorage.removeItem('alpine-user');
+    localStorage.removeItem('alpine-tenants');
     this.props.onNavigate('login');
   }
 
@@ -32,28 +82,28 @@ component OrgSelectPage {
           <h1 class="auth-title">Select organisation</h1>
           <p class="auth-subtitle">Choose which org to open</p>
 
-          <div class="org-list">
-            {MOCK_ORGS.map((org) => (
-              <button class="org-item" type="button" onClick={() => this.selectOrg(org.name)}>
-                <div class="org-item-avatar">{org.initial}</div>
-                <div class="org-item-info">
-                  <div class="org-item-name">{org.name}</div>
-                  <div class="org-item-role">{org.role}</div>
-                </div>
-                <span class="org-item-arrow">→</span>
-              </button>
-            ))}
-          </div>
-
-          <div class="org-create">
-            <button
-              type="button"
-              class="auth-btn auth-btn--secondary"
-              onClick={() => this.props.onNavigate('create-org')}
-            >
-              + Create new organisation
-            </button>
-          </div>
+          {this.loading ? (
+            <div style="display:flex;justify-content:center;padding:24px;">
+              <Spinner />
+            </div>
+          ) : (
+            <div class="org-list">
+              {this.orgs.length === 0 ? (
+                <p class="auth-subtitle" style="text-align:center;">No organisations found.</p>
+              ) : (
+                this.orgs.map((org) => (
+                  <button class="org-item" type="button" onClick={() => this.selectOrg(org.id)}>
+                    <div class="org-item-avatar">{org.initial}</div>
+                    <div class="org-item-info">
+                      <div class="org-item-name">{org.name}</div>
+                      <div class="org-item-role">{org.role}</div>
+                    </div>
+                    <span class="org-item-arrow">→</span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
 
           <p class="auth-switch">
             <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.signOut(); }}>

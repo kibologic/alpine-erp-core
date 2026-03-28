@@ -6,34 +6,225 @@ component SignupPage {
     onNavigate: Function,
   };
 
+  state { let step: number = 1; }
+  state { let fullName: string = ''; }
+  state { let email: string = ''; }
+  state { let password: string = ''; }
+  state { let confirmPassword: string = ''; }
+  state { let orgAction: string = 'create'; }
+  state { let orgName: string = ''; }
+  state { let orgSearch: string = ''; }
+  state { let orgSearchResults: any[] = []; }
+  state { let selectedOrg: any = null; }
   state { let loading: boolean = false; }
   state { let error: string = ''; }
+  state { let successMessage: string = ''; }
 
-  handleCreate(e: Event) {
-    const form = (e.currentTarget as HTMLElement).closest('form');
-    const inputs = form?.querySelectorAll('input[type="password"]') as NodeListOf<HTMLInputElement>;
-    const password = inputs?.[0]?.value || '';
-    const confirm = inputs?.[1]?.value || '';
-
-    if (password !== confirm) {
+  nextStep() {
+    this.error = '';
+    if (!this.fullName.trim()) {
+      this.error = 'Full name is required';
+      this.scheduleUpdate?.();
+      return;
+    }
+    if (!this.email.trim()) {
+      this.error = 'Email is required';
+      this.scheduleUpdate?.();
+      return;
+    }
+    if (!this.password) {
+      this.error = 'Password is required';
+      this.scheduleUpdate?.();
+      return;
+    }
+    if (this.password !== this.confirmPassword) {
       this.error = 'Passwords do not match';
       this.scheduleUpdate?.();
       return;
     }
+    this.step = 2;
+    this.scheduleUpdate?.();
+  }
 
-    this.loading = true;
+  async searchOrgs() {
+    const q = this.orgSearch.trim();
+    if (!q) {
+      this.orgSearchResults = [];
+      this.scheduleUpdate?.();
+      return;
+    }
+    try {
+      const res = await fetch(`/api/v1/tenant/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      this.orgSearchResults = Array.isArray(data) ? data : [];
+    } catch (err) {
+      this.orgSearchResults = [];
+    }
+    this.scheduleUpdate?.();
+  }
+
+  async signup() {
     this.error = '';
+    this.loading = true;
     this.scheduleUpdate?.();
 
-    setTimeout(() => {
-      localStorage.setItem('alpine-auth-token', 'mock-token');
+    const body: any = {
+      full_name: this.fullName,
+      email: this.email,
+      password: this.password,
+      org_action: this.orgAction,
+    };
+
+    if (this.orgAction === 'create') {
+      if (!this.orgName.trim()) {
+        this.error = 'Organisation name is required';
+        this.loading = false;
+        this.scheduleUpdate?.();
+        return;
+      }
+      body.org_name = this.orgName;
+    } else {
+      if (!this.selectedOrg) {
+        this.error = 'Please select an organisation to join';
+        this.loading = false;
+        this.scheduleUpdate?.();
+        return;
+      }
+      body.org_id = this.selectedOrg.id;
+    }
+
+    try {
+      const res = await fetch('/api/v1/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        this.error = data.detail || 'Signup failed';
+        this.loading = false;
+        this.scheduleUpdate?.();
+        return;
+      }
+
+      if (this.orgAction === 'create') {
+        localStorage.setItem('alpine-auth-token', data.token);
+        localStorage.setItem('alpine-user', JSON.stringify(data.user));
+        localStorage.setItem('alpine-tenants', JSON.stringify(data.tenants));
+        if (data.tenants && data.tenants.length === 1) {
+          localStorage.setItem('alpine-tenant-id', data.tenants[0].tenant_id);
+        }
+        this.loading = false;
+        this.scheduleUpdate?.();
+        window.location.href = '/';
+      } else {
+        this.successMessage = data.message || 'Join request sent — awaiting admin approval';
+        this.loading = false;
+        this.scheduleUpdate?.();
+      }
+    } catch (err) {
+      this.error = 'Network error. Please try again.';
       this.loading = false;
       this.scheduleUpdate?.();
-      this.props.onNavigate('email-verification');
-    }, 800);
+    }
   }
 
   render() {
+    if (this.successMessage) {
+      return (
+        <div class="auth-page">
+          <div class="auth-card">
+            <div class="auth-logo">
+              <span class="auth-logo-icon">⛰</span>
+              <span class="auth-logo-text">Alpine ERP</span>
+            </div>
+            <div class="auth-success">
+              <div class="auth-success-icon">✓</div>
+              <h1 class="auth-title">Request sent</h1>
+              <p class="auth-subtitle">{this.successMessage}</p>
+            </div>
+            <p class="auth-switch">
+              <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('login'); }}>
+                Back to sign in
+              </a>
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (this.step === 1) {
+      return (
+        <div class="auth-page">
+          <div class="auth-card">
+            <div class="auth-logo">
+              <span class="auth-logo-icon">⛰</span>
+              <span class="auth-logo-text">Alpine ERP</span>
+            </div>
+            <h1 class="auth-title">Create your account</h1>
+            <p class="auth-subtitle">Get started with Alpine ERP</p>
+
+            <form class="auth-form">
+              <div class="auth-field">
+                <label>Full name</label>
+                <input
+                  type="text"
+                  placeholder="Themba Mzumara"
+                  value={this.fullName}
+                  onInput={(e) => { this.fullName = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+                />
+              </div>
+              <div class="auth-field">
+                <label>Work email</label>
+                <input
+                  type="email"
+                  placeholder="you@company.com"
+                  value={this.email}
+                  onInput={(e) => { this.email = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+                />
+              </div>
+              <div class="auth-field">
+                <label>Password</label>
+                <input
+                  type="password"
+                  placeholder="Min. 8 characters"
+                  value={this.password}
+                  onInput={(e) => { this.password = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+                />
+              </div>
+              <div class="auth-field">
+                <label>Confirm password</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={this.confirmPassword}
+                  onInput={(e) => { this.confirmPassword = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+                />
+              </div>
+              <button
+                type="button"
+                class="auth-btn auth-btn--primary"
+                onClick={() => this.nextStep()}
+              >
+                Continue
+              </button>
+            </form>
+
+            {this.error && <p class="auth-error">{this.error}</p>}
+
+            <p class="auth-switch">
+              Already have an account?{' '}
+              <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('login'); }}>
+                Sign in
+              </a>
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div class="auth-page">
         <div class="auth-card">
@@ -41,42 +232,92 @@ component SignupPage {
             <span class="auth-logo-icon">⛰</span>
             <span class="auth-logo-text">Alpine ERP</span>
           </div>
-          <h1 class="auth-title">Create your account</h1>
-          <p class="auth-subtitle">Get started with Alpine ERP</p>
+          <h1 class="auth-title">Set up your organisation</h1>
+          <p class="auth-subtitle">Create a new org or join an existing one</p>
 
-          <form class="auth-form">
-            <div class="auth-field">
-              <label>Full name</label>
-              <input type="text" placeholder="Themba Mzumara" />
+          <div class="auth-form">
+            <div class="auth-org-options">
+              <button
+                type="button"
+                class={`auth-org-option ${this.orgAction === 'create' ? 'auth-org-option--active' : ''}`}
+                onClick={() => { this.orgAction = 'create'; this.scheduleUpdate?.(); }}
+              >
+                <strong>Create organisation</strong>
+                <span>Start a new workspace</span>
+              </button>
+              <button
+                type="button"
+                class={`auth-org-option ${this.orgAction === 'join' ? 'auth-org-option--active' : ''}`}
+                onClick={() => { this.orgAction = 'join'; this.scheduleUpdate?.(); }}
+              >
+                <strong>Join organisation</strong>
+                <span>Request access to existing org</span>
+              </button>
             </div>
-            <div class="auth-field">
-              <label>Work email</label>
-              <input type="email" placeholder="you@company.com" />
-            </div>
-            <div class="auth-field">
-              <label>Password</label>
-              <input type="password" placeholder="Min. 8 characters" />
-            </div>
-            <div class="auth-field">
-              <label>Confirm password</label>
-              <input type="password" placeholder="••••••••" />
-            </div>
+
+            {this.orgAction === 'create' && (
+              <div class="auth-field">
+                <label>Organisation name</label>
+                <input
+                  type="text"
+                  placeholder="Acme Corp"
+                  value={this.orgName}
+                  onInput={(e) => { this.orgName = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+                />
+              </div>
+            )}
+
+            {this.orgAction === 'join' && (
+              <div>
+                <div class="auth-field">
+                  <label>Search organisation</label>
+                  <input
+                    type="text"
+                    placeholder="Type org name..."
+                    value={this.orgSearch}
+                    onInput={(e) => { this.orgSearch = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); this.searchOrgs(); }}
+                  />
+                </div>
+                {this.orgSearchResults.length > 0 && (
+                  <div class="org-search-results">
+                    {this.orgSearchResults.map((org) => (
+                      <button
+                        type="button"
+                        class={`org-search-item ${this.selectedOrg && this.selectedOrg.id === org.id ? 'org-search-item--selected' : ''}`}
+                        onClick={() => { this.selectedOrg = org; this.orgSearch = org.name; this.orgSearchResults = []; this.scheduleUpdate?.(); }}
+                      >
+                        <span>{org.name}</span>
+                        <span class="org-search-count">{org.member_count} member{org.member_count !== 1 ? 's' : ''}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {this.selectedOrg && (
+                  <p class="auth-selected-org">Selected: <strong>{this.selectedOrg.name}</strong></p>
+                )}
+              </div>
+            )}
+
             <button
               type="button"
               class="auth-btn auth-btn--primary"
-              onClick={(e) => this.handleCreate(e)}
+              onClick={() => this.signup()}
             >
-              {this.loading ? <Spinner /> : 'Create account'}
+              {this.loading ? <Spinner /> : (this.orgAction === 'create' ? 'Create account & org' : 'Send join request')}
             </button>
-          </form>
+            <button
+              type="button"
+              class="auth-btn auth-btn--ghost"
+              onClick={() => { this.step = 1; this.scheduleUpdate?.(); }}
+            >
+              Back
+            </button>
+          </div>
 
           {this.error && <p class="auth-error">{this.error}</p>}
 
           <p class="auth-switch">
-            Already have an account?{' '}
-            <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('login'); }}>
-              Sign in
-            </a>
+            <a href="/login" class="auth-link">Back to sign in</a>
           </p>
         </div>
       </div>

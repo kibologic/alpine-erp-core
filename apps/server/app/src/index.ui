@@ -3,6 +3,10 @@ import { Shell } from '@skltn/shell/host/src/Shell.uix';
 import { boot } from '@skltn/shell/host/src/boot.ui';
 import { register } from './register.ui';
 import { LoginPage } from './auth/LoginPage.uix';
+import { SignupPage } from './auth/SignupPage.uix';
+import { ForgotPasswordPage } from './auth/ForgotPasswordPage.uix';
+import { ResetPasswordPage } from './auth/ResetPasswordPage.uix';
+import { OrgSelectPage } from './auth/OrgSelectPage.uix';
 
 async function main() {
   const container = document.getElementById('shell-root');
@@ -11,12 +15,12 @@ async function main() {
     return;
   }
 
-  const isLoginRoute = window.location.pathname === '/login';
+  const path = window.location.pathname;
   const token = localStorage.getItem('alpine-auth-token');
 
-  if (isLoginRoute || !token) {
-    if (token && isLoginRoute) {
-      // Already authenticated — bounce back to app
+  // Public auth routes
+  if (path === '/login') {
+    if (token) {
       window.location.href = '/';
       return;
     }
@@ -27,6 +31,68 @@ async function main() {
       },
     });
     return;
+  }
+
+  if (path === '/signup') {
+    if (token) {
+      window.location.href = '/';
+      return;
+    }
+    SwissApp.mount(SignupPage, container, {
+      onNavigate: (page: string) => {
+        if (page === 'login') window.location.href = '/login';
+      },
+    });
+    return;
+  }
+
+  if (path === '/forgot-password') {
+    SwissApp.mount(ForgotPasswordPage, container, {
+      onNavigate: (page: string) => {
+        if (page === 'login') window.location.href = '/login';
+      },
+    });
+    return;
+  }
+
+  if (path === '/reset-password') {
+    SwissApp.mount(ResetPasswordPage, container, {
+      onNavigate: (page: string) => {
+        if (page === 'login') window.location.href = '/login';
+      },
+    });
+    return;
+  }
+
+  // App routes — require auth
+  if (!token) {
+    window.location.href = '/login';
+    return;
+  }
+
+  // Check tenant selection
+  const tenantId = localStorage.getItem('alpine-tenant-id');
+
+  if (!tenantId) {
+    const tenantsRaw = localStorage.getItem('alpine-tenants');
+    const tenants = tenantsRaw ? JSON.parse(tenantsRaw) : [];
+
+    if (tenants.length === 1) {
+      // Auto-select the only tenant
+      localStorage.setItem('alpine-tenant-id', tenants[0].tenant_id);
+    } else if (tenants.length > 1) {
+      // Show org selection page
+      SwissApp.mount(OrgSelectPage, container, {
+        onNavigate: (page: string) => {
+          if (page === 'login') window.location.href = '/login';
+        },
+      });
+      return;
+    } else {
+      // No tenants — go to login
+      window.location.href = '/login';
+      return;
+    }
   }
 
   await boot();
