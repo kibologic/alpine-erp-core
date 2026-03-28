@@ -1,0 +1,103 @@
+/* ==========================================================================
+   Dashboard Module Styles
+   ========================================================================== */
+
+.alp-page {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* ── Stat Strip ── */
+.dash-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ── Card ── */
+.dash-card {
+  background: var(--skltn-surface-1);
+  border: 1px solid var(--skltn-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dash-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--skltn-text-primary);
+  letter-spacing: -0.03em;
+}
+
+.dash-stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--skltn-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--skltn-text-primary);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--skltn-border);
+}
+
+/* ── Charts row ── */
+.dash-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* ── Bottom row ── */
+.dash-bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* ── Quick Actions ── */
+.dash-quick-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.dash-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--skltn-surface-1);
+  border: 1px solid var(--skltn-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--skltn-text-primary);
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+
+.dash-quick-btn:hover {
+  background: var(--skltn-surface-2);
+  border-color: var(--skltn-accent);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .dash-charts-row,
+  .dash-bottom-row {
+    grid-template-columns: 1fr;
+  }
+}

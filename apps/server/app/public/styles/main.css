@@ -108,17 +108,7 @@ html {
   scrollbar-gutter: stable;
 }
 
-body {
-  margin: 0;
-  font-family: var(--font-family);
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
-  background: var(--color-bg-base);
-  color: var(--color-text-primary);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+/* body reset is owned by shell.css — remove duplicate to avoid overflow conflict */
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-family);
