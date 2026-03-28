@@ -7,38 +7,109 @@ import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
 import { TextField } from '@alpine/ui/src/form/TextField.uix';
 import { SelectField } from '@alpine/ui/src/form/SelectField.uix';
 import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
+import { api } from '@alpine/core/src/services/api.ui';
 
 const columns = [
   { key: 'name', label: 'Name', sortable: true },
   { key: 'email', label: 'Email' },
   { key: 'role', label: 'Role', width: '120px' },
+  { key: 'last_login', label: 'Last Login', width: '180px' },
   { key: 'status', label: 'Status', width: '120px' },
-  { key: 'last_login', label: 'Last Login', width: '160px' },
-  { key: 'actionsHTML', label: '', width: '100px' }
 ];
 
 component UsersPage {
   props = {};
 
   state { let users: any[] = []; }
-  state { let showAddModal: boolean = false; }
-  state { let searchQuery: string = ''; }
+  state { let loading: boolean = true; }
+  state { let showInviteModal: boolean = false; }
+  state { let inviteEmail: string = ''; }
+  state { let inviteName: string = ''; }
+  state { let inviteRole: string = 'cashier'; }
+  state { let saving: boolean = false; }
+  state { let notifications: any = null; }
 
-  getStatusType(status: string) {
-    status = (status || '').toLowerCase();
-    if (status === 'active' || status === 'online') return 'success';
-    if (status === 'inactive' || status === 'offline') return 'neutral';
-    if (status === 'suspended' || status === 'locked') return 'danger';
-    if (status === 'invited') return 'info';
-    return 'neutral';
+  async mounted() {
+    this.notifications = window.__skltn?.registry?.get('notifications');
+    this.loading = true;
+    try {
+      const res = await api.get('/users');
+      this.users = Array.isArray(res) ? res : (res.data || []);
+    } catch (e) {
+      this.notifications?.error('Failed to load users');
+    } finally {
+      this.loading = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  async inviteUser() {
+    if (!this.inviteEmail || !this.inviteRole) {
+      this.notifications?.warning('Email and role are required');
+      return;
+    }
+    this.saving = true;
+    this.scheduleUpdate?.();
+    try {
+      await api.post('/users/invite', {
+        email: this.inviteEmail,
+        full_name: this.inviteName,
+        role: this.inviteRole,
+      });
+      this.notifications?.success('User invited successfully');
+      this.showInviteModal = false;
+      this.inviteEmail = '';
+      this.inviteName = '';
+      this.inviteRole = 'cashier';
+      const res = await api.get('/users');
+      this.users = Array.isArray(res) ? res : (res.data || []);
+    } catch (e) {
+      this.notifications?.error('Failed to invite user');
+    } finally {
+      this.saving = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  getRoleBadgeClass(role: string) {
+    if (role === 'admin') return 'aui-badge aui-badge--accent';
+    if (role === 'manager') return 'aui-badge aui-badge--warning';
+    return 'aui-badge aui-badge--muted';
+  }
+
+  getStatusType(active: boolean) {
+    return active ? 'success' : 'neutral';
   }
 
   render() {
-    const updatedColumns = columns.map(col => {
+    const total = this.users.length;
+    const admins = this.users.filter((u: any) => u.role === 'admin').length;
+    const active = this.users.filter((u: any) => u.active).length;
+
+    const rows = this.users.map((u: any) => ({
+      name: u.full_name || u.email,
+      email: u.email,
+      role: u.role,
+      last_login: u.last_login ? new Date(u.last_login).toLocaleString() : '—',
+      status: u.active ? 'Active' : 'Inactive',
+      _active: u.active,
+    }));
+
+    const updatedColumns = columns.map((col: any) => {
+      if (col.key === 'role') {
+        return {
+          ...col,
+          render: (val: string) => (
+            <span class={this.getRoleBadgeClass(val)}>{val}</span>
+          ),
+        };
+      }
       if (col.key === 'status') {
         return {
           ...col,
-          render: (val: string) => <StatusBadge label={val} type={this.getStatusType(val)} />
+          render: (val: string, row: any) => (
+            <StatusBadge label={val} type={this.getStatusType(row._active)} />
+          ),
         };
       }
       return col;
@@ -46,56 +117,97 @@ component UsersPage {
 
     return (
       <div class="alp-page">
-        <StatStrip 
+        <StatStrip
           stats={[
-            { label: "Total Users", value: "0" },
-            { label: "Active", value: "0", deltaType: "positive" },
-            { label: "Admins", value: "0", deltaType: "neutral" },
-            { label: "Last Login Today", value: "0" }
+            { label: 'Total Users', value: String(total) },
+            { label: 'Admins', value: String(admins), deltaType: 'neutral' },
+            { label: 'Active', value: String(active), deltaType: 'positive' },
           ]}
         />
 
         <div class="alp-toolbar">
-          <div class="alp-toolbar-left">
-            <TextField 
-              placeholder="Search users..." 
-              value={this.searchQuery}
-              onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
-            />
-          </div>
+          <div class="alp-toolbar-left" />
           <div class="alp-toolbar-right">
-             <button class="aui-btn aui-btn--outline">Filters</button>
+            <button
+              class="aui-btn aui-btn--primary"
+              onclick={() => { this.showInviteModal = true; this.scheduleUpdate?.(); }}
+            >
+              + Invite User
+            </button>
           </div>
         </div>
 
-        <DataTable 
+        <DataTable
           columns={updatedColumns}
-          rows={this.users}
-          loading={false}
+          rows={rows}
+          loading={this.loading}
           searchable={true}
           filename="users"
           emptyTitle="No users yet"
-          emptyDescription="Add users to manage your team and permissions"
+          emptyDescription="Invite users to manage your team and permissions"
         />
 
-        {this.showAddModal ? (
-          <Modal 
+        {this.showInviteModal ? (
+          <Modal
             open={true}
-            title="Add User"
-            onclose={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}
+            title="Invite User"
+            onclose={() => { this.showInviteModal = false; this.scheduleUpdate?.(); }}
             renderBody={() => (
               <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <FormGroup label="Full Name" required={true} renderField={() => <TextField placeholder="e.g. Alice Mzumara" onchange={() => {}} />} />
-                <FormGroup label="Email" required={true} renderField={() => <TextField type="email" placeholder="alice@example.com" onchange={() => {}} />} />
-                <FormGroup label="Role" renderField={() => (
-                  <SelectField options={[{value:'admin', label:'Admin'}, {value:'cashier', label:'Cashier'}]} value="cashier" onchange={() => {}} />
-                )} />
+                <FormGroup
+                  label="Full Name"
+                  renderField={() => (
+                    <TextField
+                      placeholder="e.g. Alice Mzumara"
+                      value={this.inviteName}
+                      onchange={(val: string) => { this.inviteName = val; this.scheduleUpdate?.(); }}
+                    />
+                  )}
+                />
+                <FormGroup
+                  label="Email"
+                  required={true}
+                  renderField={() => (
+                    <TextField
+                      type="email"
+                      placeholder="alice@example.com"
+                      value={this.inviteEmail}
+                      onchange={(val: string) => { this.inviteEmail = val; this.scheduleUpdate?.(); }}
+                    />
+                  )}
+                />
+                <FormGroup
+                  label="Role"
+                  required={true}
+                  renderField={() => (
+                    <SelectField
+                      options={[
+                        { value: 'admin', label: 'Admin' },
+                        { value: 'manager', label: 'Manager' },
+                        { value: 'cashier', label: 'Cashier' },
+                      ]}
+                      value={this.inviteRole}
+                      onchange={(val: string) => { this.inviteRole = val; this.scheduleUpdate?.(); }}
+                    />
+                  )}
+                />
               </div>
             )}
             renderFooter={() => (
               <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn">Invite User</button>
+                <button
+                  class="aui-btn aui-btn--outline"
+                  onclick={() => { this.showInviteModal = false; this.scheduleUpdate?.(); }}
+                >
+                  Cancel
+                </button>
+                <button
+                  class="aui-btn aui-btn--primary"
+                  disabled={this.saving}
+                  onclick={() => { this.inviteUser(); }}
+                >
+                  {this.saving ? 'Inviting…' : 'Invite User'}
+                </button>
               </div>
             )}
           />

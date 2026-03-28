@@ -1,27 +1,93 @@
 import { SwissComponent } from '@swissjs/core';
 import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
 
-const columns = [
-  { key: 'name', label: 'Role Name', sortable: true },
-  { key: 'permissions_count', label: 'Permissions', width: '120px' },
-  { key: 'users_count', label: 'Users Attached', width: '140px' },
-  { key: 'actionsHTML', label: '', width: '120px' }
+const ROLES = [
+  {
+    name: 'Admin',
+    key: 'admin',
+    description: 'Full system access — can manage all settings, users, inventory, and POS.',
+    permissions: [
+      'pos.sell',
+      'pos.refund',
+      'pos.open_session',
+      'pos.close_session',
+      'inventory.view',
+      'inventory.adjust',
+      'inventory.manage',
+      'users.view',
+      'users.manage',
+      'settings.view',
+      'settings.manage',
+    ],
+  },
+  {
+    name: 'Manager',
+    key: 'manager',
+    description: 'Operational access — can run POS, manage inventory, view users and settings.',
+    permissions: [
+      'pos.sell',
+      'pos.refund',
+      'pos.open_session',
+      'pos.close_session',
+      'inventory.view',
+      'inventory.adjust',
+      'users.view',
+      'settings.view',
+    ],
+  },
+  {
+    name: 'Cashier',
+    key: 'cashier',
+    description: 'Frontline access — can sell and open sessions, view inventory.',
+    permissions: [
+      'pos.sell',
+      'pos.open_session',
+      'inventory.view',
+    ],
+  },
 ];
 
 component RolesPage {
   props = {};
 
+  getRoleHeaderClass(key: string) {
+    if (key === 'admin') return 'alp-role-card__header alp-role-card__header--accent';
+    if (key === 'manager') return 'alp-role-card__header alp-role-card__header--warning';
+    return 'alp-role-card__header alp-role-card__header--muted';
+  }
+
   render() {
     return (
       <div class="alp-page">
-        <DataTable 
-          columns={columns}
-          rows={[]}
-          loading={false}
-          searchable={true}
-          filename="roles"
-        />
+        <div class="alp-role-cards" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 640px;">
+          {ROLES.map((role: any) => (
+            <div class="alp-role-card" style="border: 1px solid var(--aui-border, #e2e8f0); border-radius: 8px; overflow: hidden;">
+              <div
+                class={this.getRoleHeaderClass(role.key)}
+                style="padding: 0.75rem 1rem; background: var(--aui-surface-2, #f8fafc); border-bottom: 1px solid var(--aui-border, #e2e8f0);"
+              >
+                <span style="font-weight: 600; font-size: 1rem;">{role.name}</span>
+                <span style="margin-left: 0.5rem; color: var(--aui-text-muted, #64748b); font-size: 0.875rem;">
+                  {role.permissions.length} permissions
+                </span>
+              </div>
+              <div style="padding: 1rem;">
+                <p style="margin: 0 0 0.75rem; color: var(--aui-text-muted, #64748b); font-size: 0.875rem;">
+                  {role.description}
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.375rem;">
+                  {role.permissions.map((perm: string) => (
+                    <span
+                      style="background: var(--aui-surface-2, #f1f5f9); border: 1px solid var(--aui-border, #e2e8f0); border-radius: 4px; padding: 0.125rem 0.5rem; font-size: 0.75rem; font-family: monospace; color: var(--aui-text, #1e293b);"
+                    >
+                      {perm}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

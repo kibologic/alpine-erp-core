@@ -1,15 +1,22 @@
 import os
+import sys
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+
+# Ensure the services directory is on the path so models can be imported
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from core.db import Base  # noqa: E402
+import core.models  # noqa: F401, E402 — registers all models with Base
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = None
+target_metadata = Base.metadata
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:

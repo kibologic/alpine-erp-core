@@ -75,6 +75,9 @@ async def login(
 
     token, expires_at = await _issue_token(session, user.id)
 
+    user.last_login = datetime.utcnow()
+    await session.commit()
+
     return {
         "token": token,
         "user": {"id": user.id, "email": user.email, "role": user.role},

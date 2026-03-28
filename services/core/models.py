@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import datetime, date
+from typing import Optional
 
 from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Index, String, Text, Numeric, Integer, JSON, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, JSONB
@@ -81,6 +82,8 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(50), nullable=False, default="staff")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc)
+    full_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     tenant: Mapped["Tenant"] = relationship(back_populates="users")
     audit_logs: Mapped[list["AuditLog"]] = relationship(back_populates="user")

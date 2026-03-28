@@ -50,9 +50,11 @@ async def list_users(
         {
             "id": str(u.id),
             "email": u.email,
+            "full_name": u.full_name,
             "role": u.role,
             "active": u.active,
             "created_at": u.created_at.isoformat(),
+            "last_login": u.last_login.isoformat() if u.last_login else None,
         }
         for u in users
     ]
@@ -80,16 +82,19 @@ def _user_dict(u: User) -> dict:
     return {
         "id": str(u.id),
         "email": u.email,
+        "full_name": u.full_name,
         "role": u.role,
         "active": u.active,
         "created_at": u.created_at.isoformat(),
+        "last_login": u.last_login.isoformat() if u.last_login else None,
     }
 
 
 class InviteRequest(BaseModel):
     email: str
     role: str
-    name: str | None = None  # No name column on User — accepted but ignored
+    full_name: str | None = None
+    name: str | None = None  # legacy alias — ignored in favour of full_name
 
 
 class RoleUpdateRequest(BaseModel):
@@ -111,7 +116,7 @@ async def invite_user(
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="User already exists")
 
-    user = User(tenant_id=tenant_id, email=data.email, role=data.role, active=True)
+    user = User(tenant_id=tenant_id, email=data.email, role=data.role, active=True, full_name=data.full_name)
     session.add(user)
     await session.commit()
     await session.refresh(user)

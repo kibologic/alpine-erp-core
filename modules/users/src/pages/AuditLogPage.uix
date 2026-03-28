@@ -3,6 +3,7 @@ import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
 import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
 import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
 import { TextField } from '@alpine/ui/src/form/TextField.uix';
+import { api } from '@alpine/core/src/services/api.ui';
 
 const columns = [
   { key: 'timestamp', label: 'Timestamp', width: '180px', sortable: true },
@@ -10,38 +11,72 @@ const columns = [
   { key: 'action', label: 'Action', width: '140px' },
   { key: 'entity', label: 'Entity', width: '120px' },
   { key: 'entity_id', label: 'Entity ID', width: '140px' },
-  { key: 'details', label: 'Details' }
+  { key: 'details', label: 'Details' },
 ];
 
 component AuditLogPage {
   props = {};
+
+  state { let logs: any[] = []; }
+  state { let loading: boolean = true; }
   state { let searchQuery: string = ''; }
+  state { let notifications: any = null; }
+
+  async mounted() {
+    this.notifications = window.__skltn?.registry?.get('notifications');
+    this.loading = true;
+    try {
+      const res = await api.get('/audit-log');
+      this.logs = Array.isArray(res) ? res : (res.data || []);
+    } catch (e) {
+      this.notifications?.error('Failed to load audit log');
+    } finally {
+      this.loading = false;
+      this.scheduleUpdate?.();
+    }
+  }
 
   render() {
+    const today = new Date().toDateString();
+    const totalActions = this.logs.length;
+    const todayActions = this.logs.filter((l: any) => {
+      return l.timestamp && new Date(l.timestamp).toDateString() === today;
+    }).length;
+    const uniqueUsers = new Set(this.logs.map((l: any) => l.user_id).filter(Boolean)).size;
+
+    const rows = this.logs.map((l: any) => ({
+      timestamp: l.timestamp ? new Date(l.timestamp).toLocaleString() : '—',
+      user: l.user_id || '—',
+      action: l.action || '—',
+      entity: l.entity || '—',
+      entity_id: l.entity_id || '—',
+      details: l.detail || '—',
+    }));
+
     return (
       <div class="alp-page">
-        <StatStrip 
+        <StatStrip
           stats={[
-            { label: "Total Actions", value: "0" },
-            { label: "Today's Actions", value: "0" },
-            { label: "Unique Users", value: "0" }
+            { label: 'Total Actions', value: String(totalActions) },
+            { label: "Today's Actions", value: String(todayActions) },
+            { label: 'Unique Users', value: String(uniqueUsers) },
           ]}
         />
 
         <div class="alp-toolbar">
           <div class="alp-toolbar-left">
-            <TextField 
-              placeholder="Search audit log..." 
+            <TextField
+              placeholder="Search audit log..."
               value={this.searchQuery}
               onchange={(val: string) => { this.searchQuery = val; this.scheduleUpdate?.(); }}
             />
           </div>
         </div>
 
-        <DataTable 
+        <DataTable
           columns={columns}
-          rows={[]}
-          loading={false}
+          rows={rows}
+          loading={this.loading}
           searchable={true}
           exportable={true}
           filename="audit_log"
