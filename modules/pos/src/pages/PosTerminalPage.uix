@@ -3,30 +3,6 @@ import { PosService, InventoryService } from '@alpine/core';
 
 const TAX_RATE = 0.16;
 const REGISTER_ID = 'REG-001';
-const DEV_BYPASS_BACKEND = false;
-
-const MOCK_PRODUCTS = [
-  { id: '1', name: 'Coffee', sku: 'BEV-001', price: 500, category: { name: 'Beverages' }, stock_quantity: 50 },
-  { id: '2', name: 'Sandwich', sku: 'FOOD-001', price: 1200, category: { name: 'Food' }, stock_quantity: 30 },
-  { id: '3', name: 'Water 500ml', sku: 'BEV-002', price: 200, category: { name: 'Beverages' }, stock_quantity: 100 },
-  { id: '4', name: 'Chips', sku: 'FOOD-002', price: 350, category: { name: 'Food' }, stock_quantity: 45 },
-  { id: '5', name: 'Juice', sku: 'BEV-003', price: 800, category: { name: 'Beverages' }, stock_quantity: 25 },
-  { id: '6', name: 'Muffin', sku: 'FOOD-003', price: 600, category: { name: 'Food' }, stock_quantity: 20 },
-  { id: '7', name: 'Tea', sku: 'BEV-004', price: 400, category: { name: 'Beverages' }, stock_quantity: 60 },
-  { id: '8', name: 'Burger', sku: 'FOOD-004', price: 2500, category: { name: 'Food' }, stock_quantity: 15 },
-  { id: '9', name: 'Smoothie', sku: 'BEV-005', price: 1500, category: { name: 'Beverages' }, stock_quantity: 18 },
-  { id: '10', name: 'Salad', sku: 'FOOD-005', price: 1800, category: { name: 'Food' }, stock_quantity: 12 },
-  { id: '11', name: 'Espresso', sku: 'BEV-006', price: 600, category: { name: 'Beverages' }, stock_quantity: 40 },
-  { id: '12', name: 'Pizza Slice', sku: 'FOOD-006', price: 3000, category: { name: 'Food' }, stock_quantity: 8 },
-];
-
-const MOCK_SESSION = {
-  id: 'mock-session-001',
-  register_id: 'REG-001',
-  status: 'open',
-  opening_float: 50000,
-  opened_at: new Date().toISOString()
-};
 
 function fmt(n: number): string {
   return `MWK ${(n || 0).toLocaleString()}`;
@@ -49,7 +25,7 @@ component PosTerminalPage {
   state { let appFullscreen: boolean = false; }
   state { let browserFullscreen: boolean = false; }
 
-  async mount() {
+  async mounted() {
     await this.refreshData();
     
     if (typeof document !== 'undefined') {
@@ -90,13 +66,6 @@ component PosTerminalPage {
   }
 
   async refreshData() {
-    if (DEV_BYPASS_BACKEND) {
-      this.products = MOCK_PRODUCTS;
-      this.session = MOCK_SESSION;
-      this.loading = false;
-      return;
-    }
-
     this.loading = true;
     try {
       const [sess, prods] = await Promise.all([
@@ -104,7 +73,7 @@ component PosTerminalPage {
         InventoryService.getProducts()
       ]);
       this.session = sess;
-      this.products = prods;
+      this.products = prods || [];
     } catch (err) {
       console.error('[POS] Refresh failed:', err);
     } finally {
@@ -118,6 +87,22 @@ component PosTerminalPage {
       this.session = await PosService.openSession(REGISTER_ID, this.openingFloat);
     } catch (err) {
       alert(`Failed to open session: ${err.message}`);
+    } finally {
+      this.processing = false;
+    }
+  }
+
+  async closeSession() {
+    if (!this.session) return;
+    if (!confirm('Are you sure you want to close this session?')) return;
+    
+    this.processing = true;
+    try {
+      await PosService.closeSession(this.session.id, 0); // Assuming 0 for now as closing balance
+      this.session = null;
+      this.cartItems = [];
+    } catch (err) {
+      alert(`Failed to close session: ${err.message}`);
     } finally {
       this.processing = false;
     }
@@ -178,17 +163,9 @@ component PosTerminalPage {
     const tax = subtotal * TAX_RATE;
     const total = subtotal + tax;
 
-    if (DEV_BYPASS_BACKEND) {
-      this.lastSaleTotal = total;
-      await new Promise(r => setTimeout(r, 800));
-      this.cartItems = [];
-      this.processing = false;
-      this.showSuccessModal = true;
-      return;
-    }
-
     const saleData = {
       session_id: this.session.id,
+      register_id: REGISTER_ID,
       subtotal,
       tax,
       discount: 0,
@@ -198,14 +175,14 @@ component PosTerminalPage {
         quantity: i.qty,
         unit_price: i.product.price,
         discount: 0,
-        tax: 0,
+        tax: i.product.price * i.qty * 0.165, // Using 16.5% for line tax logic
         line_total: i.lineTotal
       })),
       payments: [{ method: this.paymentMethod, amount: total }]
     };
 
     try {
-      await PosService.createSale(saleData);
+      const res = await PosService.createSale(saleData);
       this.lastSaleTotal = total;
       this.cartItems = [];
       this.showSuccessModal = true;
@@ -220,7 +197,7 @@ component PosTerminalPage {
   render() {
     if (this.loading) return <div class="pos-loading-state"><div class="pos-loading-ring"></div>Loading POS...</div>;
 
-    if (!this.session && !DEV_BYPASS_BACKEND) {
+    if (!this.session) {
       return (
         <div class="pos-gate-state">
           <div class="pos-state-card">
@@ -246,12 +223,6 @@ component PosTerminalPage {
       <div class="pos-terminal">
         {/* Left Panel — Products */}
         <div class="pos-products">
-          {DEV_BYPASS_BACKEND && (
-            <div class="pos-dev-banner">
-              ⚠️ DEV MODE — Backend bypass active. Remove DEV_BYPASS_BACKEND before production.
-            </div>
-          )}
-
           <div class="pos-products-header">
             <div class="pos-fullscreen-controls">
               <button 
@@ -366,7 +337,7 @@ component PosTerminalPage {
 
           <div class="pos-session-bar">
             <div class="pos-session-info">Open: {new Date(this.session?.opened_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-            <button class="pos-close-session-btn">Close Session</button>
+            <button class="pos-close-session-btn" onclick={() => this.closeSession()} disabled={this.processing}>Close Session</button>
           </div>
         </div>
 
