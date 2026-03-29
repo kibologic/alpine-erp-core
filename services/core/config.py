@@ -9,7 +9,12 @@ from gbil.config import GbilConfig
 from pydantic import Field
 
 
+from pydantic_settings import SettingsConfigDict
+
+
 class AppConfig(GbilConfig):
+    model_config = SettingsConfigDict(env_file='.env', extra='ignore')
+
     SERVICE_NAME: str = Field(default="alpine-erp-core")
     ENVIRONMENT: str = Field(default="development")
     LOG_LEVEL: str = Field(default="INFO")

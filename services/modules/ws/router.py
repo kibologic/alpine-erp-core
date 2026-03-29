@@ -8,7 +8,7 @@ from typing import Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 from jose import JWTError, jwt
 
-_JWT_SECRET = os.getenv("JWT_SECRET", "alpine_dev_jwt_secret_2026")
+_JWT_SECRET = os.getenv("JWT_SECRET", os.getenv("JWT_SECRET"))
 _JWT_ALGORITHM = "HS256"
 _HEARTBEAT_TIMEOUT = 35  # seconds — expect ping every 30s
 

@@ -1,6 +1,6 @@
 """
 Seed script for Alpine ERP — idempotent (ON CONFLICT DO NOTHING).
-Uses asyncpg directly against postgresql://alpine:alpine_dev_2026@localhost:5432/alpine_erp
+Uses asyncpg directly against postgresql+asyncpg://user:pass@host/dbname
 """
 
 import asyncio
@@ -8,9 +8,9 @@ import uuid
 import bcrypt
 from datetime import datetime
 
-import asyncpg
+import os
 
-DSN = "postgresql://alpine:alpine_dev_2026@localhost:5432/alpine_erp"
+DSN = os.environ.get("DATABASE_URL")
 
 
 def now_utc() -> datetime:

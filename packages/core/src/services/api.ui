@@ -8,7 +8,7 @@ export async function request(url: string, options: RequestInit = {}) {
   const headers = {
     'Content-Type': 'application/json',
     'X-Tenant-ID': tenantId,
-    'X-Internal-Token': 'alpine_dev_internal_token_2026',
+    'X-Internal-Token': localStorage.getItem('alpine-internal-token') || '',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };

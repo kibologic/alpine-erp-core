@@ -50,7 +50,7 @@ async def upload_media(
         try:
             import os as _os
             from jose import jwt as _jwt
-            secret = _os.getenv("JWT_SECRET", "alpine_dev_jwt_secret_2026")
+            secret = _os.getenv("JWT_SECRET", os.getenv("JWT_SECRET"))
             payload = _jwt.decode(authorization.removeprefix("Bearer "), secret, algorithms=["HS256"])
             uploaded_by = payload.get("user_id", tenant_id)
         except Exception:

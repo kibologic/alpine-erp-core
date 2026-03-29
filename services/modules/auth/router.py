@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_session
 from core.models import AuthToken, CustomRole, JoinRequest, PasswordResetToken, RoleAtom, Tenant, User, UserTenant
 
-_JWT_SECRET = os.getenv("JWT_SECRET", "alpine_dev_jwt_secret_2026")
+_JWT_SECRET = os.getenv("JWT_SECRET", os.getenv("JWT_SECRET"))
 _JWT_ALGORITHM = "HS256"
 
 router = APIRouter(prefix="/auth", tags=["auth"])
