@@ -34,6 +34,7 @@ component LoginPage {
       const data = await response.json();
       localStorage.setItem('alpine-auth-token', data.token);
       localStorage.setItem('alpine-user', JSON.stringify(data.user));
+      localStorage.setItem('alpine-user-atoms', JSON.stringify(data.atoms || []));
       if (data.tenants && data.tenants.length > 0) {
         localStorage.setItem('alpine-tenant-id', data.tenants[0].tenant_id);
       }

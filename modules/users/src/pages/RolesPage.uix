@@ -187,6 +187,7 @@ component RolesPage {
 
         {/* Toolbar */}
         <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+          <div>canManageRoles: {String(this.canDo('users.manage_roles'))}</div>
           {canManageRoles && (
             <button
               class="aui-btn aui-btn--primary"
