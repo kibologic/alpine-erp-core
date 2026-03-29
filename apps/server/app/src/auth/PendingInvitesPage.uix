@@ -1,0 +1,123 @@
+import { SwissComponent } from '@swissjs/core';
+
+component PendingInvitesPage {
+  state { let invites: any[] = []; }
+  state { let loading: boolean = false; }
+  state { let notifications: any = null; }
+
+  async mounted() {
+    this.notifications = window.__skltn?.registry?.get('notifications');
+    const stored = localStorage.getItem('alpine-pending-invites');
+    this.invites = stored ? JSON.parse(stored) : [];
+    this.scheduleUpdate?.();
+  }
+
+  async acceptInvite(inviteId: string) {
+    this.loading = true;
+    this.scheduleUpdate?.();
+    try {
+      const response = await fetch(`/api/v1/tenant/invite/${inviteId}/accept`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('alpine-auth-token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to accept');
+      }
+
+      this.invites = this.invites.filter((i: any) => i.invite_id !== inviteId);
+      localStorage.setItem('alpine-pending-invites', JSON.stringify(this.invites));
+      
+      if (this.invites.length === 0) {
+        // Refresh login to get new token with atoms
+        localStorage.removeItem('alpine-auth-token');
+        window.location.href = '/login';
+      } else {
+        this.scheduleUpdate?.();
+      }
+    } catch (e) {
+      this.notifications?.error('Failed to accept invite');
+    } finally {
+      this.loading = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  async declineInvite(inviteId: string) {
+    try {
+      const response = await fetch(`/api/v1/tenant/invite/${inviteId}/decline`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('alpine-auth-token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to decline');
+      }
+
+      this.invites = this.invites.filter((i: any) => i.invite_id !== inviteId);
+      localStorage.setItem('alpine-pending-invites', JSON.stringify(this.invites));
+      
+      if (this.invites.length === 0) {
+        window.location.href = '/';
+      } else {
+        this.scheduleUpdate?.();
+      }
+    } catch (e) {
+      this.notifications?.error('Failed to decline invite');
+    }
+  }
+
+  render() {
+    return (
+      <div style="min-height:100vh;display:flex; align-items:center;justify-content:center; background:var(--color-bg-base);">
+        <div style="width:480px;padding:40px;">
+          <div style="font-size:22px;font-weight:700; color:var(--color-text-primary); margin-bottom:8px;">
+            You have been invited
+          </div>
+          <div style="font-size:14px; color:var(--color-text-muted); margin-bottom:32px;">
+            Review and respond to your organisation invites
+          </div>
+          
+          {this.invites.map((invite: any) => (
+            <div style="background:var(--color-bg-surface); border:1px solid var(--color-bg-border); border-radius:12px;padding:20px; margin-bottom:16px;">
+              <div style="font-size:16px;font-weight:600; color:var(--color-text-primary); margin-bottom:4px;">
+                {invite.org_name}
+              </div>
+              <div style="font-size:13px; color:var(--color-text-muted); margin-bottom:16px;">
+                Role: <strong>{invite.role_name}</strong>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button
+                  onclick={() => this.acceptInvite(invite.invite_id)}
+                  disabled={this.loading}
+                  style="flex:1;padding:10px;border-radius:8px; border:none; background:var(--color-text-primary); color:var(--color-bg-base); font-size:13px;font-weight:600; cursor:pointer;"
+                >
+                  {this.loading ? 'Joining...' : 'Accept & Join'}
+                </button>
+                <button
+                  onclick={() => this.declineInvite(invite.invite_id)}
+                  disabled={this.loading}
+                  style="padding:10px 20px;border-radius:8px; border:1px solid var(--color-bg-border); background:transparent; color:var(--color-text-secondary); font-size:13px;cursor:pointer;"
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          ))}
+          
+          <button
+            onclick={() => { window.location.href = '/'; }}
+            style="width:100%;margin-top:8px;padding:10px; border-radius:8px; border:1px solid var(--color-bg-border); background:transparent; color:var(--color-text-muted); font-size:13px;cursor:pointer;"
+          >
+            Skip for now
+          </button>
+        </div>
+      </div>
+    );
+  }
+}

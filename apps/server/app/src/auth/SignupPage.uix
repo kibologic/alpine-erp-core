@@ -19,6 +19,7 @@ component SignupPage {
   state { let loading: boolean = false; }
   state { let error: string = ''; }
   state { let successMessage: string = ''; }
+  state { let pendingOrgName: string = ''; }
 
   nextStep() {
     this.error = '';
@@ -109,12 +110,22 @@ component SignupPage {
         return;
       }
 
-      if (this.orgAction === 'create') {
+      if (data.pending) {
+        this.step = 3;
+        this.pendingOrgName = this.selectedOrg?.name || 'the organisation';
+        this.loading = false;
+        this.scheduleUpdate?.();
+        return;
+      }
+
+      if (this.orgAction === 'create' || data.token) {
         localStorage.setItem('alpine-auth-token', data.token);
         localStorage.setItem('alpine-user', JSON.stringify(data.user));
-        localStorage.setItem('alpine-tenants', JSON.stringify(data.tenants));
-        if (data.tenants && data.tenants.length === 1) {
-          localStorage.setItem('alpine-tenant-id', data.tenants[0].tenant_id);
+        if (data.tenants) {
+          localStorage.setItem('alpine-tenants', JSON.stringify(data.tenants));
+          if (data.tenants.length === 1) {
+            localStorage.setItem('alpine-tenant-id', data.tenants[0].tenant_id);
+          }
         }
         this.loading = false;
         this.scheduleUpdate?.();
@@ -150,6 +161,37 @@ component SignupPage {
                 Back to sign in
               </a>
             </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (this.step === 3) {
+      return (
+        <div class="auth-page">
+          <div class="auth-card">
+            <div class="auth-logo">
+              <span class="auth-logo-icon">⛰</span>
+              <span class="auth-logo-text">Alpine ERP</span>
+            </div>
+            <div style="text-align:center;padding:40px 32px;">
+              <div style="font-size:48px;margin-bottom:16px;">
+                📬
+              </div>
+              <div style="font-size:20px;font-weight:700; color:var(--color-text-primary); margin-bottom:12px;">
+                Request Sent!
+              </div>
+              <div style="font-size:14px; color:var(--color-text-secondary); line-height:1.6;max-width:320px;margin:0 auto;">
+                Your request to join <strong>{this.pendingOrgName}</strong> has been sent.
+                You will be able to log in once an admin approves your request and assigns you a role.
+              </div>
+              <div style="margin-top:24px;font-size:13px; color:var(--color-text-muted);">
+                Already approved?{' '}
+                <a href="/login" style="color:var(--color-accent); text-decoration:none;">
+                  Sign in
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       );

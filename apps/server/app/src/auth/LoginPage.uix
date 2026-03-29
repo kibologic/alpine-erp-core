@@ -10,6 +10,8 @@ component LoginPage {
   state { let password: string = ''; }
   state { let loading: boolean = false; }
   state { let error: string = ''; }
+  state { let showPending: boolean = false; }
+  state { let pendingMessage: string = ''; }
 
   async login() {
     this.loading = true;
@@ -24,19 +26,43 @@ component LoginPage {
           password: this.password
         })
       });
+
       if (!response.ok) {
         const err = await response.json();
-        this.error = err.detail || 'Invalid email or password';
+        const detail = err.detail;
+
+        if (typeof detail === 'object') {
+          if (detail.code === 'ACCOUNT_PENDING') {
+            this.error = '';
+            this.pendingMessage = detail.message;
+            this.showPending = true;
+            this.loading = false;
+            this.scheduleUpdate?.();
+            return;
+          }
+          if (detail.code === 'ACCOUNT_SUSPENDED') {
+            this.error = detail.message;
+            this.loading = false;
+            this.scheduleUpdate?.();
+            return;
+          }
+        }
+        this.error = typeof detail === 'string'
+          ? detail : 'Invalid email or password';
         this.loading = false;
         this.scheduleUpdate?.();
         return;
       }
+
       const data = await response.json();
       localStorage.setItem('alpine-auth-token', data.token);
       localStorage.setItem('alpine-user', JSON.stringify(data.user));
       localStorage.setItem('alpine-user-atoms', JSON.stringify(data.atoms || []));
-      if (data.tenants && data.tenants.length > 0) {
+      if (data.tenants?.length > 0) {
         localStorage.setItem('alpine-tenant-id', data.tenants[0].tenant_id);
+      }
+      if (data.pending_invites?.length > 0) {
+        localStorage.setItem('alpine-pending-invites', JSON.stringify(data.pending_invites));
       }
       window.location.href = '/';
     } catch (e) {
@@ -54,49 +80,72 @@ component LoginPage {
             <span class="auth-logo-icon">⛰</span>
             <span class="auth-logo-text">Alpine ERP</span>
           </div>
-          <h1 class="auth-title">Welcome back</h1>
-          <p class="auth-subtitle">Sign in to your account</p>
 
-          <form class="auth-form">
-            <div class="auth-field">
-              <label>Email</label>
-              <input
-                type="email"
-                placeholder="you@company.com"
-                value={this.email}
-                onInput={(e) => { this.email = e.target.value; }}
-              />
+          {this.showPending ? (
+            <div style="text-align:center;padding:40px 32px; max-width:400px;margin:0 auto;">
+              <div style="font-size:48px;margin-bottom:16px;">
+                ⏳
+              </div>
+              <div style="font-size:18px;font-weight:700; color:var(--color-text-primary); margin-bottom:12px;">
+                Account Pending
+              </div>
+              <div style="font-size:14px; color:var(--color-text-secondary); line-height:1.6;">
+                {this.pendingMessage}
+              </div>
+              <button
+                onclick={() => { this.showPending = false; this.scheduleUpdate?.(); }}
+                style="margin-top:24px;padding:10px 24px; border-radius:8px;border:1px solid var(--color-bg-border);background:transparent; color:var(--color-text-primary); font-size:13px;cursor:pointer;"
+              >
+                Back to Login
+              </button>
             </div>
-            <div class="auth-field">
-              <label>Password</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={this.password}
-                onInput={(e) => { this.password = e.target.value; }}
-              />
-            </div>
-            <div class="auth-form-footer">
-              <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('forgot-password'); }}>Forgot password?</a>
-            </div>
-            <button
-              type="button"
-              class="auth-btn auth-btn--primary"
-              disabled={this.loading}
-              onClick={() => this.login()}
-            >
-              {this.loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </form>
+          ) : (
+            <div>
+              <h1 class="auth-title">Welcome back</h1>
+              <p class="auth-subtitle">Sign in to your account</p>
 
-          {this.error && <p class="auth-error">{this.error}</p>}
+              <form class="auth-form">
+                <div class="auth-field">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="you@company.com"
+                    value={this.email}
+                    onInput={(e) => { this.email = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+                  />
+                </div>
+                <div class="auth-field">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={this.password}
+                    onInput={(e) => { this.password = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+                  />
+                </div>
+                <div class="auth-form-footer">
+                  <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('forgot-password'); }}>Forgot password?</a>
+                </div>
+                <button
+                  type="button"
+                  class="auth-btn auth-btn--primary"
+                  disabled={this.loading}
+                  onClick={() => this.login()}
+                >
+                  {this.loading ? 'Signing in...' : 'Sign in'}
+                </button>
+              </form>
 
-          <p class="auth-switch">
-            No account?{' '}
-            <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('signup'); }}>
-              Create one
-            </a>
-          </p>
+              {this.error && <p class="auth-error">{this.error}</p>}
+
+              <p class="auth-switch">
+                No account?{' '}
+                <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('signup'); }}>
+                  Create one
+                </a>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );
