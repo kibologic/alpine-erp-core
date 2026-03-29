@@ -168,72 +168,77 @@ component RolesPage {
     const atomCount = Object.keys(this.allAtoms).length;
 
     return (
-      <div class="alp-page">
-        {/* Stats */}
-        <div style="display:flex;gap:12px;margin-bottom:20px;">
-          <div style="flex:1;padding:16px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:8px;">
-            <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Total Roles</div>
-            <div style="font-size:24px;font-weight:600;color:var(--color-text-primary);">{this.roles.length}</div>
+      <div class="alp-page" style="padding: 24px; max-width: 1200px; margin: 0 auto;">
+        {/* Stats Strip */}
+        <div style="display:flex;gap:16px;margin-bottom:24px;">
+          <div style="flex:1;padding:20px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:12px;box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;font-weight:600;">Total Roles</div>
+            <div style="font-size:28px;font-weight:700;color:var(--color-text-primary);">{this.roles.length}</div>
           </div>
-          <div style="flex:1;padding:16px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:8px;">
-            <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Custom Roles</div>
-            <div style="font-size:24px;font-weight:600;color:var(--color-text-primary);">{customRoles.length}</div>
+          <div style="flex:1;padding:20px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:12px;box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;font-weight:600;">Custom Roles</div>
+            <div style="font-size:28px;font-weight:700;color:var(--color-text-primary);">{customRoles.length}</div>
           </div>
-          <div style="flex:1;padding:16px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:8px;">
-            <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">Permission Atoms</div>
-            <div style="font-size:24px;font-weight:600;color:var(--color-text-primary);">{atomCount}</div>
+          <div style="flex:1;padding:20px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:12px;box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;font-weight:600;">Permission Atoms</div>
+            <div style="font-size:28px;font-weight:700;color:var(--color-text-primary);">{atomCount}</div>
           </div>
         </div>
 
         {/* Toolbar */}
-        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-          <div>canManageRoles: {String(this.canDo('users.manage_roles'))}</div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;align-items:center;">
           {canManageRoles && (
             <button
               class="aui-btn aui-btn--primary"
+              style="border-radius:8px;padding:8px 16px;font-weight:500;"
               onclick={() => this.openCreateModal()}
             >+ Create Role</button>
           )}
         </div>
 
-        {/* Roles List */}
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          {this.roles.length === 0 ? (
-            <div style="text-align:center;padding:3rem;color:var(--color-text-muted);">
-              No roles yet. Create your first custom role.
-            </div>
-          ) : (
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          {this.roles.length === 0 ? null : (
             this.roles.map((role: any) => {
               const visibleAtoms = (role.atoms || []).slice(0, 5);
               const extraCount = (role.atoms || []).length - 5;
+              const isSystem = !!role.is_system;
+
               return (
-                <div style="padding:16px 20px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:8px;display:flex;align-items:flex-start;gap:16px;">
+                <div 
+                  class="alp-role-card"
+                  style={`padding:16px 24px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-left:4px solid ${isSystem ? '#6366F1' : 'var(--color-text-muted)'};border-radius:10px;display:flex;align-items:center;gap:20px;transition:all 0.2s ease;`}
+                >
                   <div style="flex:1;min-width:0;">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                      <span style="font-size:14px;font-weight:600;color:var(--color-text-primary);">{role.name}</span>
-                      {role.is_system && (
-                        <span style="font-size:11px;padding:1px 7px;border-radius:10px;background:rgba(99,102,241,0.15);color:#818CF8;font-weight:500;">System</span>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                      <span style="font-size:15px;font-weight:700;color:var(--color-text-primary);">{role.name}</span>
+                      {isSystem && (
+                        <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:rgba(99,102,241,0.1);color:#6366F1;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;">System</span>
                       )}
-                      <span style="font-size:11px;padding:1px 7px;border-radius:10px;background:var(--color-bg-elevated);color:var(--color-text-muted);">{(role.atoms || []).length} atoms</span>
+                      <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:var(--color-bg-base);border:1px solid var(--color-bg-border);color:var(--color-text-muted);font-weight:500;">{(role.atoms || []).length} atoms</span>
                     </div>
-                    <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
                       {visibleAtoms.map((atom: string) => (
-                        <span style="font-size:11px;padding:2px 7px;border-radius:4px;background:var(--color-bg-elevated);color:var(--color-text-secondary);font-family:var(--font-mono,monospace);">{atom}</span>
+                        <span style="font-size:10px;padding:3px 8px;border-radius:6px;background:var(--color-bg-base);border:1px solid var(--color-bg-border);color:var(--color-text-secondary);font-family:var(--font-mono,monospace);font-weight:500;">{atom}</span>
                       ))}
                       {extraCount > 0 && (
-                        <span style="font-size:11px;padding:2px 7px;border-radius:4px;background:var(--color-bg-elevated);color:var(--color-text-muted);">+{extraCount} more</span>
+                        <span style="font-size:10px;padding:3px 8px;border-radius:6px;background:transparent;color:var(--color-text-muted);font-style:italic;">+{extraCount} more</span>
                       )}
                     </div>
                   </div>
-                  {canManageRoles && !role.is_system && (
-                    <div style="display:flex;gap:6px;flex-shrink:0;">
+                  
+                  {!isSystem && canManageRoles && (
+                    <div style="display:flex;gap:8px;flex-shrink:0;">
                       <button
                         class="aui-btn aui-btn--icon"
+                        style="width:34px;height:34px;background:var(--color-bg-base);border:1px solid var(--color-bg-border);border-radius:8px;color:var(--color-text-muted);"
                         onclick={() => this.openEditModal(role)}
                         title="Edit role"
                       >✎</button>
                       <button
-                        class="aui-btn aui-btn--icon aui-btn--danger"
+                        class="aui-btn aui-btn--icon"
+                        style="width:34px;height:34px;background:var(--color-bg-base);border:1px solid var(--color-bg-border);border-radius:8px;color:var(--color-text-muted);"
+                        onmouseover={(e: any) => { e.target.style.color = '#EF4444'; e.target.style.borderColor = '#FCA5A5'; }}
+                        onmouseout={(e: any) => { e.target.style.color = 'var(--color-text-muted)'; e.target.style.borderColor = 'var(--color-bg-border)'; }}
                         onclick={() => this.deleteRole(role.id)}
                         title="Delete role"
                       >🗑</button>
@@ -244,71 +249,90 @@ component RolesPage {
             })
           )}
         </div>
+        
+        {this.roles.length === 0 && (
+          <div style="text-align:center;padding:4rem 2rem;color:var(--color-text-muted);background:var(--color-bg-surface);border:1px dashed var(--color-bg-border);border-radius:12px;margin-top:20px;">
+            <div style="font-size:48px;margin-bottom:16px;opacity:0.3;">🛡️</div>
+            <div style="font-size:16px;font-weight:600;color:var(--color-text-primary);margin-bottom:4px;">No Roles Created</div>
+            <div style="font-size:13px;">Create custom roles to manage user permissions.</div>
+          </div>
+        )}
 
         {/* Create / Edit Modal */}
         {this.showModal ? (
-          <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;">
-            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:12px;width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;">
+          <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:100%;max-width:640px;height:90vh;display:flex;flex-direction:column;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
               {/* Modal header */}
-              <div style="padding:20px 24px 16px;border-bottom:1px solid var(--color-bg-border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-                <span style="font-size:15px;font-weight:600;color:var(--color-text-primary);">
-                  {this.editingRole ? 'Edit Role' : 'Create Role'}
+              <div style="padding:24px 28px;border-bottom:1px solid var(--color-bg-border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+                <span style="font-size:18px;font-weight:700;color:var(--color-text-primary);">
+                  {this.editingRole ? 'Edit Role' : 'Create New Role'}
                 </span>
                 <button
                   onclick={() => this.closeModal()}
-                  style="width:28px;height:28px;border-radius:6px;border:none;background:transparent;color:var(--color-text-muted);font-size:16px;cursor:pointer;"
+                  style="width:32px;height:32px;border-radius:50%;border:none;background:var(--color-bg-base);color:var(--color-text-muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                  onmouseover={(e: any) => { e.target.style.background = 'var(--color-bg-elevated)'; e.target.style.color = 'var(--color-text-primary)'; }}
                 >✕</button>
               </div>
 
               {/* Modal body */}
-              <div style="padding:20px 24px;overflow-y:auto;flex:1;min-height:0;">
+              <div style="padding:24px 28px;overflow-y:auto;flex:1;min-height:0;scrollbar-width:thin;">
                 {/* Role name */}
-                <div style="margin-bottom:20px;">
-                  <label style="display:block;font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px;">Role Name</label>
+                <div style="margin-bottom:32px;">
+                  <label style="display:block;font-size:12px;font-weight:600;color:var(--color-text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">Role Name</label>
                   <input
                     type="text"
                     value={this.newRoleName}
                     oninput={(e: any) => { this.newRoleName = e.target.value; this.scheduleUpdate?.(); }}
                     placeholder="e.g. Senior Cashier"
-                    style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid var(--color-bg-border);background:var(--color-bg-base);color:var(--color-text-primary);font-size:13px;box-sizing:border-box;"
+                    autofocus
+                    style="width:100%;padding:12px 16px;border-radius:10px;border:2px solid var(--color-bg-border);background:var(--color-bg-base);color:var(--color-text-primary);font-size:15px;box-sizing:border-box;transition:all 0.2s;"
+                    onfocus={(e: any) => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.boxShadow = '0 0 0 4px rgba(99,102,241,0.1)'; }}
+                    onblur={(e: any) => { e.target.style.borderColor = 'var(--color-bg-border)'; e.target.style.boxShadow = 'none'; }}
                   />
                 </div>
 
                 {/* Atom picker grouped by module */}
-                <div style="font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:12px;">Permissions</div>
-                <div style="display:flex;flex-direction:column;gap:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                  <span style="font-size:12px;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.04em;">Permissions</span>
+                  <span style="font-size:11px;color:var(--color-text-muted);">{this.selectedAtoms.length} selected</span>
+                </div>
+                
+                <div style="display:flex;flex-direction:column;gap:24px;">
                   {MODULE_GROUPS.map((group: any) => {
                     const allSelected = group.atoms.every((a: string) => this.selectedAtoms.includes(a));
-                    const someSelected = group.atoms.some((a: string) => this.selectedAtoms.includes(a));
                     return (
-                      <div style="border:1px solid var(--color-bg-border);border-radius:8px;overflow:hidden;">
-                        <div
-                          style="padding:10px 14px;background:var(--color-bg-elevated);display:flex;align-items:center;justify-content:space-between;cursor:pointer;"
-                          onclick={() => this.toggleGroupAtoms(group.atoms)}
-                        >
-                          <span style="font-size:12px;font-weight:600;color:var(--color-text-primary);text-transform:uppercase;letter-spacing:0.05em;">{group.name}</span>
-                          <span style="font-size:11px;color:var(--color-text-muted);">
-                            {allSelected ? 'Deselect all' : 'Select all'}
-                          </span>
+                      <div>
+                        <div style="padding:0 0 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-bg-border);margin-bottom:12px;">
+                          <span style="font-size:11px;font-weight:800;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.08em;">{group.name}</span>
+                          <button
+                            onclick={(e: any) => { e.preventDefault(); this.toggleGroupAtoms(group.atoms); }}
+                            style="background:none;border:none;color:var(--color-accent);font-size:11px;font-weight:600;cursor:pointer;padding:4px 0;"
+                          >
+                            {allSelected ? 'Deselect All' : 'Select All'}
+                          </button>
                         </div>
-                        <div style="padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                           {group.atoms.map((atom: string) => {
                             const checked = this.selectedAtoms.includes(atom);
                             const desc = this.allAtoms[atom] || atom;
                             return (
                               <label
-                                style={`display:flex;align-items:flex-start;gap:8px;cursor:pointer;padding:6px 8px;border-radius:6px;border:1px solid ${checked ? 'var(--color-accent)' : 'var(--color-bg-border)'};background:${checked ? 'rgba(99,102,241,0.06)' : 'transparent'};`}
+                                style={`display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:12px;border-radius:10px;border:1px solid ${checked ? 'var(--color-accent)' : 'var(--color-bg-border)'};background:${checked ? 'rgba(99,102,241,0.04)' : 'var(--color-bg-surface)'};transition:all 0.2s;`}
+                                onmouseover={(e: any) => { if(!checked) e.currentTarget.style.borderColor = 'var(--color-text-muted)'; }}
+                                onmouseout={(e: any) => { if(!checked) e.currentTarget.style.borderColor = 'var(--color-bg-border)'; }}
                                 onclick={() => this.toggleAtom(atom)}
                               >
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  style="margin-top:2px;flex-shrink:0;accent-color:var(--color-accent);"
-                                  onclick={(e: any) => e.stopPropagation()}
-                                />
-                                <div>
-                                  <div style="font-size:11px;font-weight:500;color:var(--color-text-primary);font-family:var(--font-mono,monospace);">{atom}</div>
-                                  <div style="font-size:11px;color:var(--color-text-muted);margin-top:1px;">{desc}</div>
+                                <div style="padding-top:2px;">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    style="width:16px;height:16px;accent-color:var(--color-accent);cursor:pointer;"
+                                    onclick={(e: any) => e.stopPropagation()}
+                                  />
+                                </div>
+                                <div style="flex:1;">
+                                  <div style="font-size:12px;font-weight:700;color:var(--color-text-primary);font-family:var(--font-mono,monospace);word-break:break-all;">{atom}</div>
+                                  <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;line-height:1.4;">{desc}</div>
                                 </div>
                               </label>
                             );
@@ -321,13 +345,15 @@ component RolesPage {
               </div>
 
               {/* Modal footer */}
-              <div style="padding:16px 24px;border-top:1px solid var(--color-bg-border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;">
+              <div style="padding:20px 28px;border-top:1px solid var(--color-bg-border);display:flex;justify-content:flex-end;gap:12px;flex-shrink:0;background:var(--color-bg-base);border-bottom-left-radius:16px;border-bottom-right-radius:16px;">
                 <button
                   class="aui-btn aui-btn--outline"
+                  style="border-radius:8px;padding:10px 20px;font-weight:600;"
                   onclick={() => this.closeModal()}
                 >Cancel</button>
                 <button
                   class="aui-btn aui-btn--primary"
+                  style="border-radius:8px;padding:10px 24px;font-weight:600;min-width:120px;"
                   disabled={this.saving}
                   onclick={() => this.saveRole()}
                 >{this.saving ? 'Saving...' : (this.editingRole ? 'Update Role' : 'Create Role')}</button>
