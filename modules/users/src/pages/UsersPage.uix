@@ -31,6 +31,13 @@ component UsersPage {
   state { let approveRoleId: string = ''; }
   state { let selectedUser: any = null; }
   state { let selectedUserRoleId: string = ''; }
+  state { let showSuspendConfirm: boolean = false; }
+  state { let showRemoveConfirm: boolean = false; }
+  state { let showFindUserModal: boolean = false; }
+  state { let userSearchQuery: string = ''; }
+  state { let userSearchResults: any[] = []; }
+  state { let findUserRoleId: string = ''; }
+  state { let searching: boolean = false; }
 
   async mounted() {
     this.notifications = window.__skltn?.registry?.get('notifications');
@@ -185,6 +192,79 @@ component UsersPage {
     }
   }
 
+  async suspendMember() {
+    if (!this.selectedUser) return;
+    try {
+      await api.patch(`/users/${this.selectedUser.id}/suspend`, {});
+      this.notifications?.success('Member suspended');
+      this.selectedUser = null;
+      this.showSuspendConfirm = false;
+      const res = await api.get('/users');
+      this.users = Array.isArray(res) ? res : (res.data || []);
+    } catch (e) {
+      this.notifications?.error(e?.response?.data?.detail || 'Cannot suspend this user');
+    } finally {
+      this.scheduleUpdate?.();
+    }
+  }
+
+  async removeFromOrg() {
+    if (!this.selectedUser) return;
+    try {
+      await api.delete(`/users/${this.selectedUser.id}/from-org`);
+      this.notifications?.success('Member removed from organisation');
+      this.selectedUser = null;
+      this.showRemoveConfirm = false;
+      const res = await api.get('/users');
+      this.users = Array.isArray(res) ? res : (res.data || []);
+    } catch (e) {
+      this.notifications?.error(e?.response?.data?.detail || 'Cannot remove this user');
+    } finally {
+      this.scheduleUpdate?.();
+    }
+  }
+
+  async searchUsers() {
+    if (!this.userSearchQuery || this.userSearchQuery.length < 2) {
+      this.userSearchResults = [];
+      this.scheduleUpdate?.();
+      return;
+    }
+    this.searching = true;
+    this.scheduleUpdate?.();
+    try {
+      const res = await api.get(`/users/search?q=${this.userSearchQuery}`);
+      this.userSearchResults = Array.isArray(res) ? res : (res.data || []);
+    } catch (e) {
+      this.userSearchResults = [];
+    } finally {
+      this.searching = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  async inviteExistingUser(userId: string) {
+    if (!this.findUserRoleId) {
+      this.notifications?.warning('Select a role first');
+      return;
+    }
+    try {
+      await api.post('/tenant/invite-by-email', {
+        user_id: userId,
+        role_id: this.findUserRoleId
+      });
+      this.notifications?.success('User invited successfully');
+      this.showFindUserModal = false;
+      this.userSearchQuery = '';
+      this.userSearchResults = [];
+      this.findUserRoleId = '';
+    } catch (e) {
+      this.notifications?.error('Failed to invite user');
+    } finally {
+      this.scheduleUpdate?.();
+    }
+  }
+
 
 
   render() {
@@ -292,7 +372,7 @@ component UsersPage {
                 {window.__skltn?.can('users.manage') && (
                   <button
                     class="aui-btn aui-btn--outline"
-                    onclick={() => { this.showInviteModal = true; this.scheduleUpdate?.(); }}
+                    onclick={() => { this.showFindUserModal = true; this.scheduleUpdate?.(); }}
                   >
                     Find User
                   </button>
@@ -520,11 +600,11 @@ component UsersPage {
                   <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:0.25rem;">Actions</div>
                   <button
                     style="width:100%;padding:8px 16px;background:transparent;color:var(--color-warning);border:1px solid var(--color-warning);border-radius:6px;cursor:pointer;font-size:0.875rem;font-weight:500;"
-                    onclick={() => this.notifications?.warning('Suspend flow coming soon')}
+                    onclick={() => { this.showSuspendConfirm = true; this.scheduleUpdate?.(); }}
                   >Suspend Member</button>
                   <button
                     style="width:100%;padding:8px 16px;background:transparent;color:var(--color-danger);border:1px solid var(--color-danger);border-radius:6px;cursor:pointer;font-size:0.875rem;font-weight:500;"
-                    onclick={() => this.notifications?.warning('Remove from org flow coming soon')}
+                    onclick={() => { this.showRemoveConfirm = true; this.scheduleUpdate?.(); }}
                   >Remove from Org</button>
                 </div>
               )}
@@ -532,55 +612,105 @@ component UsersPage {
           </div>
         ) : null}
 
-        {this.showInviteModal ? (
+        {this.showFindUserModal ? (
           <Modal
             open={true}
-            title="Find User"
-            onclose={() => { this.showInviteModal = false; this.scheduleUpdate?.(); }}
+            title="Find Existing User"
+            onclose={() => { this.showFindUserModal = false; this.userSearchQuery = ''; this.userSearchResults = []; this.scheduleUpdate?.(); }}
             renderBody={() => (
-              <div style="display:flex;flex-direction:column;gap:1rem;">
-                <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">
-                  Search for an existing Alpine user to add to this organisation.
+              <div style="display:flex;flex-direction:column;gap:1rem;min-height:300px;">
+                <p style="font-size:13px;color:var(--color-text-secondary);">
+                  Search by name or email to find and invite users already on the platform.
                 </p>
-                <FormGroup
-                  label="Email"
-                  required={true}
-                  renderField={() => (
-                    <TextField
-                      type="email"
-                      placeholder="user@example.com"
-                      value={this.inviteEmail}
-                      onchange={(val: string) => { this.inviteEmail = val; this.scheduleUpdate?.(); }}
-                    />
+                <div style="position:relative;">
+                  <TextField
+                    placeholder="Search name or email..."
+                    value={this.userSearchQuery}
+                    oninput={(e: any) => { 
+                      this.userSearchQuery = e.target.value; 
+                      if (this.userSearchQuery.length >= 2) this.searchUsers();
+                      else { this.userSearchResults = []; this.scheduleUpdate?.(); }
+                    }}
+                  />
+                  {this.searching && (
+                    <div style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--color-text-muted);">
+                      Searching...
+                    </div>
                   )}
-                />
-                <FormGroup
-                  label="Initial Role"
-                  required={true}
-                  renderField={() => (
-                    <SelectField
-                      options={this.availableRoles.map((r: any) => ({ value: r.id, label: r.name }))}
-                      value={this.inviteRoleId}
-                      onchange={(val: string) => { this.inviteRoleId = val; this.scheduleUpdate?.(); }}
-                    />
+                </div>
+
+                <div style="flex:1;overflow-y:auto;max-height:240px;border:1px solid var(--color-bg-border);border-radius:8px;background:var(--color-bg-elevated);">
+                  {this.userSearchResults.length === 0 ? (
+                    <div style="padding:2rem;text-align:center;color:var(--color-text-muted);font-size:14px;">
+                      {this.userSearchQuery.length < 2 ? 'Type at least 2 characters to search' : 'No users found'}
+                    </div>
+                  ) : (
+                    this.userSearchResults.map((u: any) => (
+                      <div style="padding:12px;border-bottom:1px solid var(--color-bg-border);display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                          <div style="font-weight:600;font-size:14px;color:var(--color-text-primary);">{u.full_name || 'No Name'}</div>
+                          <div style="font-size:12px;color:var(--color-text-muted);">{u.email}</div>
+                        </div>
+                        <button
+                          class="aui-btn aui-btn--ghost"
+                          style="font-size:12px;padding:4px 8px;"
+                          onclick={() => this.inviteExistingUser(u.id)}
+                        >Invite</button>
+                      </div>
+                    ))
                   )}
-                />
+                </div>
+
+                <FormGroup label="Initial Role for Invitation">
+                  <SelectField
+                    options={this.availableRoles.map((r: any) => ({ value: r.id, label: r.name }))}
+                    value={this.findUserRoleId}
+                    onchange={(val: string) => { this.findUserRoleId = val; this.scheduleUpdate?.(); }}
+                  />
+                </FormGroup>
               </div>
             )}
             renderFooter={() => (
-              <div style="display:flex;justify-content:flex-end;gap:1rem;">
+              <div style="display:flex;justify-content:flex-end;">
                 <button
                   class="aui-btn aui-btn--outline"
-                  onclick={() => { this.showInviteModal = false; this.scheduleUpdate?.(); }}
-                >Cancel</button>
-                <button
-                  class="aui-btn aui-btn--primary"
-                  disabled={this.saving}
-                  onclick={() => { this.inviteUser(); }}
-                >{this.saving ? 'Sending…' : 'Add User'}</button>
+                  onclick={() => { this.showFindUserModal = false; this.userSearchQuery = ''; this.userSearchResults = []; this.scheduleUpdate?.(); }}
+                >Close</button>
               </div>
             )}
           />
+        ) : null}
+
+        {/* Suspend Confirmation Modal */}
+        {this.showSuspendConfirm ? (
+          <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:10001;display:flex;align-items:center;justify-content:center;padding:24px;">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:100%;max-width:400px;padding:28px;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);">
+              <h3 style="margin:0 0 12px;font-size:18px;font-weight:700;color:var(--color-text-primary);">Suspend Member</h3>
+              <p style="margin:0 0 24px;font-size:14px;color:var(--color-text-secondary);line-height:1.5;">
+                Are you sure you want to suspend <strong>{this.selectedUser?.full_name || this.selectedUser?.email}</strong>? They will be unable to log in until reinstated.
+              </p>
+              <div style="display:flex;justify-content:flex-end;gap:12px;">
+                <button class="aui-btn aui-btn--outline" onclick={() => { this.showSuspendConfirm = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="aui-btn" style="background:var(--color-warning);color:black;border:none;" onclick={() => this.suspendMember()}>Confirm Suspend</button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Remove Confirmation Modal */}
+        {this.showRemoveConfirm ? (
+          <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:10001;display:flex;align-items:center;justify-content:center;padding:24px;">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:100%;max-width:400px;padding:28px;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);">
+              <h3 style="margin:0 0 12px;font-size:18px;font-weight:700;color:var(--color-text-primary);">Remove User</h3>
+              <p style="margin:0 0 24px;font-size:14px;color:var(--color-text-secondary);line-height:1.5;">
+                Are you sure you want to remove <strong>{this.selectedUser?.full_name || this.selectedUser?.email}</strong> from this organisation?
+              </p>
+              <div style="display:flex;justify-content:flex-end;gap:12px;">
+                <button class="aui-btn aui-btn--outline" onclick={() => { this.showRemoveConfirm = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="aui-btn aui-btn--danger" onclick={() => this.removeFromOrg()}>Confirm Remove</button>
+              </div>
+            </div>
+          </div>
         ) : null}
 
         {this.showEmailInviteModal ? (

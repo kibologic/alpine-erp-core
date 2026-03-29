@@ -35,6 +35,8 @@ component RolesPage {
   state { let newRoleName: string = ''; }
   state { let selectedAtoms: string[] = []; }
   state { let saving: boolean = false; }
+  state { let showDeleteConfirm: boolean = false; }
+  state { let deletingRoleId: string | null = null; }
   state { let notifications: any = null; }
 
   async mounted() {
@@ -42,8 +44,8 @@ component RolesPage {
     this.loading = true;
     try {
       const [rolesRes, atomsRes] = await Promise.all([
-        api.get('/users/roles'),
-        api.get('/users/atoms'),
+        api.get('/roles'),
+        api.get('/atoms'),
       ]);
       this.roles = Array.isArray(rolesRes) ? rolesRes : (rolesRes.data || []);
       const rawAtoms = atomsRes?.data ?? atomsRes;
@@ -109,19 +111,19 @@ component RolesPage {
     this.scheduleUpdate?.();
     try {
       if (this.editingRole) {
-        await api.patch(`/users/roles/${this.editingRole.id}`, {
+        await api.patch(`/roles/${this.editingRole.id}`, {
           name: this.newRoleName.trim(),
           atoms: this.selectedAtoms,
         });
         this.notifications?.success('Role updated');
       } else {
-        await api.post('/users/roles', {
+        await api.post('/roles', {
           name: this.newRoleName.trim(),
           atoms: this.selectedAtoms,
         });
         this.notifications?.success('Role created');
       }
-      const res = await api.get('/users/roles');
+      const res = await api.get('/roles');
       this.roles = Array.isArray(res) ? res : (res.data || []);
       this.closeModal();
     } catch (e) {
@@ -143,11 +145,19 @@ component RolesPage {
   }
 
   async deleteRole(roleId: string) {
-    if (!confirm('Delete this role? Users assigned to it will become unassigned.')) return;
+    this.deletingRoleId = roleId;
+    this.showDeleteConfirm = true;
+    this.scheduleUpdate?.();
+  }
+
+  async confirmDeleteRole() {
+    if (!this.deletingRoleId) return;
     try {
-      await api.delete(`/users/roles/${roleId}`);
-      this.roles = this.roles.filter((r: any) => r.id !== roleId);
+      await api.delete(`/roles/${this.deletingRoleId}`);
+      this.roles = this.roles.filter((r: any) => r.id !== this.deletingRoleId);
       this.notifications?.success('Role deleted');
+      this.showDeleteConfirm = false;
+      this.deletingRoleId = null;
       this.scheduleUpdate?.();
     } catch (e) {
       this.notifications?.error('Cannot delete this role');
@@ -357,6 +367,30 @@ component RolesPage {
                   disabled={this.saving}
                   onclick={() => this.saveRole()}
                 >{this.saving ? 'Saving...' : (this.editingRole ? 'Update Role' : 'Create Role')}</button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Delete Confirmation Modal */}
+        {this.showDeleteConfirm ? (
+          <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1001;display:flex;align-items:center;justify-content:center;padding:24px;">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:100%;max-width:400px;padding:28px;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+              <h3 style="margin:0 0 12px;font-size:18px;font-weight:700;color:var(--color-text-primary);">Delete Role</h3>
+              <p style="margin:0 0 24px;font-size:14px;color:var(--color-text-secondary);line-height:1.5;">
+                Are you sure you want to delete this role? Users assigned to it will become unassigned.
+              </p>
+              <div style="display:flex;justify-content:flex-end;gap:12px;">
+                <button
+                  class="aui-btn aui-btn--outline"
+                  style="border-radius:8px;padding:10px 20px;font-weight:600;"
+                  onclick={() => { this.showDeleteConfirm = false; this.deletingRoleId = null; }}
+                >Cancel</button>
+                <button
+                  class="aui-btn"
+                  style="background:#EF4444;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:600;"
+                  onclick={() => this.confirmDeleteRole()}
+                >Delete Role</button>
               </div>
             </div>
           </div>

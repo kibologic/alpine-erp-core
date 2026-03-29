@@ -33,6 +33,8 @@ component InventoryItemsPage {
   state { let saving: boolean = false; }
   state { let newProduct: any = {}; }
   state { let editProduct: any = {}; }
+  state { let showDeleteConfirm: boolean = false; }
+  state { let deletingProduct: any = null; }
   state { let notifications: any = null; }
 
   async mounted() {
@@ -115,13 +117,24 @@ component InventoryItemsPage {
     }
   }
 
-  async deleteProduct(productId: string) {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+  async deleteProduct(product: any) {
+    this.deletingProduct = product;
+    this.showDeleteConfirm = true;
+    this.scheduleUpdate?.();
+  }
+
+  async confirmDeleteProduct() {
+    if (!this.deletingProduct) return;
     try {
-      await InventoryService.deleteProduct(productId);
-      this.products = this.products.filter(p => p.id !== productId);
+      await InventoryService.deleteProduct(this.deletingProduct.id);
+      this.products = this.products.filter(p => p.id !== this.deletingProduct.id);
+      this.notifications?.success('Product deleted');
+      this.showDeleteConfirm = false;
+      this.deletingProduct = null;
     } catch (e) {
       this.notifications?.error('Failed to delete product');
+    } finally {
+      this.scheduleUpdate?.();
     }
   }
 
@@ -169,7 +182,7 @@ component InventoryItemsPage {
                 <button class="aui-btn aui-btn--icon" onclick={() => this.openEditModal(row)} title="Edit">✎</button>
               )}
               {window.__skltn?.can('inventory.manage') && (
-                <button class="aui-btn aui-btn--icon aui-btn--danger" onclick={() => this.deleteProduct(row.id)} title="Delete">🗑</button>
+                <button class="aui-btn aui-btn--icon aui-btn--danger" onclick={() => this.deleteProduct(row)} title="Delete">🗑</button>
               )}
             </div>
           )
@@ -300,6 +313,29 @@ component InventoryItemsPage {
                 <button class="aui-btn aui-btn--outline" onclick={() => { this.showEditModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
                 <button class="aui-btn" disabled={this.saving} onclick={() => this.saveEditProduct()}>
                    {this.saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            )}
+          />
+        ) : null}
+
+        {/* Delete Modal */}
+        {this.showDeleteConfirm ? (
+          <Modal 
+            open={true}
+            title="Delete Product"
+            onclose={() => { this.showDeleteConfirm = false; this.deletingProduct = null; this.scheduleUpdate?.(); }}
+            renderBody={() => (
+              <div style="padding: 1rem 0;">
+                <p>Are you sure you want to delete <strong>{this.deletingProduct?.name}</strong>?</p>
+                <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-top: 0.5rem;">This action cannot be undone and may affect historical reports.</p>
+              </div>
+            )}
+            renderFooter={() => (
+              <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="aui-btn aui-btn--outline" onclick={() => { this.showDeleteConfirm = false; this.deletingProduct = null; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="aui-btn aui-btn--danger" onclick={() => this.confirmDeleteProduct()}>
+                   Delete Product
                 </button>
               </div>
             )}

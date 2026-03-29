@@ -30,7 +30,8 @@ component StockMovementsPage {
     this.loading = true;
     try {
       const response = await InventoryService.getStockMovements();
-      this.movements = response.data || response || [];
+      const data = response?.data || response;
+      this.movements = Array.isArray(data) ? data : (data?.items || data?.results || data?.movements || []);
     } catch (e) {
       console.error('Failed to load stock movements', e);
       this.movements = [];

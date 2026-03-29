@@ -3,13 +3,13 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, delete, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
 from core.auth import get_current_tenant, verify_internal_token
 from core.auth_deps import get_current_user
-from core.models import CustomRole, RoleAtom, User
+from core.models import CustomRole, RoleAtom, User, UserTenant
 from core.atoms import ALL_ATOMS, SUPER_USER_ATOMS
 
 VALID_ROLES = {"admin", "manager", "cashier"}
@@ -291,66 +291,89 @@ class AssignRoleBody(BaseModel):
     role_id: Optional[str] = None  # None to unassign
 
 
-@router.post("/users/{user_id}/assign-role")
-async def assign_role(
-    user_id: str,
-    body: AssignRoleBody,
-    current_user: dict = Depends(get_current_user),
+@router.patch("/users/{user_id}/suspend")
+async def suspend_user(
+    user_id: uuid.UUID,
     session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
 ):
-    await _check_atom("users.manage_roles", current_user["user_id"], session)
     tenant_id = current_user["tenant_memberships"][0]["tenant_id"] if current_user.get("tenant_memberships") else None
-    
+    await _check_atom("users.manage", current_user["user_id"], session)
     await check_super_user_protection(session, tenant_id, str(user_id))
-
+    
     result = await session.execute(select(User).where(User.id == str(user_id)))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(404, "User not found")
         
-    user.custom_role_id = body.role_id if body.role_id else None
+    user.account_status = "suspended"
     await session.commit()
-    return {"ok": True}
+    return {"message": "User suspended"}
 
 
 @router.delete("/users/{user_id}/from-org")
-async def remove_user_from_org(
-    user_id: str,
-    current_user: dict = Depends(get_current_user),
+async def remove_from_org(
+    user_id: uuid.UUID,
     session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
 ):
-    # Depending on how frontend expects this... wait, spec says FLOW 6 User removed from org
-    # Check atoms if necessary.
     tenant_id = current_user["tenant_memberships"][0]["tenant_id"] if current_user.get("tenant_memberships") else None
-    if not tenant_id:
-        raise HTTPException(status_code=400, detail="Tenant ID missing")
-
+    await _check_atom("users.manage", current_user["user_id"], session)
     await check_super_user_protection(session, tenant_id, str(user_id))
-
-    result = await session.execute(
-        select(User).where(User.id == str(user_id), User.tenant_id == tenant_id)
-    )
-    user = result.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
     
     # Remove from user_tenants
     await session.execute(
         delete(UserTenant).where(
-            UserTenant.user_id == user.id,
+            UserTenant.user_id == str(user_id),
             UserTenant.tenant_id == tenant_id
         )
     )
     
-    user.custom_role_id = None
+    # Clear custom_role_id and handle account status
+    result = await session.execute(select(User).where(User.id == str(user_id)))
+    user = result.scalar_one_or_none()
+    if user:
+        user.custom_role_id = None
+        # Check for other memberships
+        res = await session.execute(
+            select(UserTenant).where(UserTenant.user_id == str(user_id))
+        )
+        if not res.scalars().all():
+            user.account_status = "pending"
     
-    other_orgs = await session.execute(
-        select(func.count(UserTenant.id)).where(UserTenant.user_id == user.id)
-    )
-    if other_orgs.scalar() == 0:
-        user.account_status = "pending"
-    else:
-        user.account_status = "active"
-
     await session.commit()
     return {"message": "User removed from organisation"}
+
+
+@router.get("/users/search")
+async def search_users(
+    q: str,
+    session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
+):
+    await _check_atom("users.manage", current_user["user_id"], session)
+    tenant_id = current_user["tenant_memberships"][0]["tenant_id"] if current_user.get("tenant_memberships") else None
+    
+    # Identify users already in this tenant
+    subquery = select(UserTenant.user_id).where(UserTenant.tenant_id == tenant_id)
+    
+    result = await session.execute(
+        select(User).where(
+            or_(
+                User.email.ilike(f"%{q}%"),
+                User.full_name.ilike(f"%{q}%")
+            ),
+            User.id.notin_(subquery),
+            User.account_status != "suspended"
+        ).limit(10)
+    )
+    users = result.scalars().all()
+    return [
+        {
+            "id": str(u.id),
+            "email": u.email,
+            "full_name": u.full_name,
+            "account_status": u.account_status
+        }
+        for u in users
+    ]

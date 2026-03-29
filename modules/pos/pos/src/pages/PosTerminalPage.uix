@@ -23,8 +23,10 @@ component PosTerminalPage {
   state { let processing: boolean = false; }
   state { let showCloseModal: boolean = false; }
   state { let paymentMethod: string = 'cash'; }
+  state { let notifications: any = null; }
 
   async mount() {
+    this.notifications = window.__skltn?.registry?.get('notifications');
     await this.refreshData();
   }
 
@@ -59,7 +61,7 @@ component PosTerminalPage {
     try {
       this.session = await PosService.openSession(REGISTER_ID, this.openingFloat);
     } catch (err) {
-      alert(`Failed to open session: ${err.message}`);
+      this.notifications?.error(`Failed to open session: ${err.message}`);
     } finally {
       this.processing = false;
     }
@@ -107,7 +109,7 @@ component PosTerminalPage {
       this.showCloseModal = false;
       this.closingFloat = 0;
     } catch (err) {
-      alert(`Failed to close session: ${err.message}`);
+      this.notifications?.error(`Failed to close session: ${err.message}`);
     } finally {
       this.processing = false;
     }
@@ -136,9 +138,9 @@ component PosTerminalPage {
       await PosService.createSale(saleData);
       this.cartItems = [];
       await this.refreshData();
-      alert('Sale completed!');
+      this.notifications?.success('Sale completed!');
     } catch (err) {
-      alert(`Checkout failed: ${err.message}`);
+      this.notifications?.error(`Checkout failed: ${err.message}`);
     } finally {
       this.processing = false;
     }

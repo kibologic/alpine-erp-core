@@ -24,6 +24,8 @@ component PosTerminalPage {
   state { let lastSaleTotal: number = 0; }
   state { let appFullscreen: boolean = false; }
   state { let browserFullscreen: boolean = false; }
+  state { let showCloseConfirm: boolean = false; }
+  state { let closingFloat: number = 0; }
   state { let notifications: any = null; }
 
   async mounted() {
@@ -88,14 +90,19 @@ component PosTerminalPage {
   }
 
   async closeSession() {
+    this.showCloseConfirm = true;
+    this.scheduleUpdate?.();
+  }
+
+  async confirmCloseSession() {
     if (!this.session) return;
-    if (!confirm('Are you sure you want to close this session?')) return;
     
     this.processing = true;
     try {
-      await PosService.closeSession(this.session.id, 0); // Assuming 0 for now as closing balance
+      await PosService.closeSession(this.session.id, this.closingFloat);
       this.session = null;
       this.cartItems = [];
+      this.showCloseConfirm = false;
     } catch (err) {
       this.notifications?.error(`Failed to close session: ${err.message}`);
     } finally {
@@ -353,6 +360,35 @@ component PosTerminalPage {
             </div>
           </div>
         : null}
+
+        {/* Close Confirmation Modal */}
+        {this.showCloseConfirm ? (
+          <div class="pos-success-overlay" style="z-index: 10001;">
+            <div class="pos-state-card" style="width: 400px; padding: 2rem;">
+              <h3 style="margin: 0 0 1rem; color: var(--color-text-primary);">Close Session</h3>
+              <p style="margin-bottom: 2rem; color: var(--color-text-secondary); font-size: 14px;">
+                Are you sure you want to close this register session? This will finalize all sales.
+              </p>
+              
+              <div class="pos-float-row" style="margin-bottom: 24px; text-align: left;">
+                <label class="pos-float-label">Closing Balance (MWK)</label>
+                <input 
+                  type="number" 
+                  class="pos-float-input" 
+                  value={this.closingFloat} 
+                  oninput={(e: any) => this.closingFloat = Number(e.target.value)} 
+                />
+              </div>
+
+              <div style="display: flex; gap: 12px; justify-content: flex-end; width: 100%;">
+                <button class="pos-fs-btn" style="background: var(--color-bg-base); border: 1px solid var(--color-bg-border);" onclick={() => this.showCloseConfirm = false}>Cancel</button>
+                <button class="pos-state-btn" style="margin-top: 0; width: auto; padding: 0.5rem 1.5rem;" onclick={() => this.confirmCloseSession()} disabled={this.processing}>
+                  {this.processing ? 'Closing...' : 'Confirm Close'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     );
   }
