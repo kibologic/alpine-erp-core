@@ -37,7 +37,7 @@ _ROLE_MAP = {
     },
 }
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(tags=["Users"])
 
 
 async def _check_atom(atom: str, user_id: str, session: AsyncSession):
@@ -51,7 +51,7 @@ async def _check_atom(atom: str, user_id: str, session: AsyncSession):
         raise HTTPException(status_code=403, detail=f"Missing permission: {atom}")
 
 
-@router.get("")
+@router.get("/users")
 async def list_users(
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
@@ -138,7 +138,7 @@ class InviteRequest(BaseModel):
     full_name: str | None = None
     name: str | None = None  # legacy alias
 
-@router.post("/invite", dependencies=[Depends(verify_internal_token)])
+@router.post("/users/invite", dependencies=[Depends(verify_internal_token)])
 async def invite_user(
     data: InviteRequest,
     session: AsyncSession = Depends(get_session),
@@ -291,7 +291,7 @@ class AssignRoleBody(BaseModel):
     role_id: Optional[str] = None  # None to unassign
 
 
-@router.post("/{user_id}/assign-role")
+@router.post("/users/{user_id}/assign-role")
 async def assign_role(
     user_id: str,
     body: AssignRoleBody,
@@ -313,7 +313,7 @@ async def assign_role(
     return {"ok": True}
 
 
-@router.delete("/{user_id}/from-org")
+@router.delete("/users/{user_id}/from-org")
 async def remove_user_from_org(
     user_id: str,
     current_user: dict = Depends(get_current_user),

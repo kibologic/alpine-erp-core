@@ -82,6 +82,7 @@ async def get_current_user(
     if tenant_id:
         tenant_role = await _check_tenant(user, tenant_id, session)
         result["tenant_role"] = tenant_role
+        result["tenant_id"] = tenant_id
 
     return result
 
