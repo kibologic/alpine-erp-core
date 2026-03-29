@@ -148,14 +148,123 @@ async def me(
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
-    tenants = await _get_tenants(session, user.id)
+    memberships_result = await session.execute(
+        select(UserTenant, Tenant)
+        .join(Tenant, UserTenant.tenant_id == Tenant.id)
+        .where(UserTenant.user_id == user.id)
+    )
+    memberships = memberships_result.all()
 
     return {
         "id": user.id,
         "email": user.email,
+        "full_name": user.full_name,
+        "phone": user.phone,
         "role": user.role,
-        "tenants": tenants,
+        "active": user.active,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "last_login": user.last_login.isoformat() if user.last_login else None,
+        "organisations": [
+            {
+                "tenant_id": str(ut.tenant_id),
+                "name": t.name,
+                "industry": t.industry,
+                "country": t.country,
+                "role": ut.role,
+            }
+            for ut, t in memberships
+        ],
     }
+
+
+class UpdateMeBody(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+
+
+@router.patch("/me")
+async def update_me(
+    body: UpdateMeBody,
+    authorization: str | None = Header(None),
+    session: AsyncSession = Depends(get_session),
+):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    token = authorization.removeprefix("Bearer ")
+    token_result = await session.execute(
+        select(AuthToken).where(AuthToken.token == token)
+    )
+    auth_token = token_result.scalar_one_or_none()
+    if not auth_token:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if _now() > auth_token.expires_at:
+        raise HTTPException(status_code=401, detail="Token expired")
+
+    user_result = await session.execute(
+        select(User).where(User.id == auth_token.user_id)
+    )
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if body.full_name is not None:
+        user.full_name = body.full_name
+    if body.phone is not None:
+        user.phone = body.phone
+
+    await session.commit()
+    await session.refresh(user)
+    return {
+        "id": str(user.id),
+        "email": user.email,
+        "full_name": user.full_name,
+        "phone": user.phone,
+        "role": user.role,
+    }
+
+
+class ChangePasswordBody(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/change-password")
+async def change_password(
+    body: ChangePasswordBody,
+    authorization: str | None = Header(None),
+    session: AsyncSession = Depends(get_session),
+):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    token = authorization.removeprefix("Bearer ")
+    token_result = await session.execute(
+        select(AuthToken).where(AuthToken.token == token)
+    )
+    auth_token = token_result.scalar_one_or_none()
+    if not auth_token:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    if _now() > auth_token.expires_at:
+        raise HTTPException(status_code=401, detail="Token expired")
+
+    user_result = await session.execute(
+        select(User).where(User.id == auth_token.user_id)
+    )
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.password_hash or not bcrypt.checkpw(
+        body.current_password.encode(), user.password_hash.encode()
+    ):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    user.password_hash = bcrypt.hashpw(
+        body.new_password.encode(), bcrypt.gensalt()
+    ).decode()
+    await session.commit()
+    return {"message": "Password changed successfully"}
 
 
 # ── Mobile JWT endpoints ────────────────────────────────────────────────────
