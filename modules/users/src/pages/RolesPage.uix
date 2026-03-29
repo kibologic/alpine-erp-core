@@ -46,7 +46,8 @@ component RolesPage {
         api.get('/users/atoms'),
       ]);
       this.roles = Array.isArray(rolesRes) ? rolesRes : (rolesRes.data || []);
-      this.allAtoms = (atomsRes && typeof atomsRes === 'object' && !Array.isArray(atomsRes)) ? atomsRes : (atomsRes?.data || {});
+      const rawAtoms = atomsRes?.data ?? atomsRes;
+      this.allAtoms = (rawAtoms && typeof rawAtoms === 'object' && !Array.isArray(rawAtoms)) ? rawAtoms : {};
     } catch (e) {
       this.notifications?.error('Failed to load roles');
     } finally {
@@ -131,6 +132,16 @@ component RolesPage {
     }
   }
 
+  canDo(atom: string): boolean {
+    try {
+      if (window.__skltn?.can) return window.__skltn.can(atom);
+      const atoms = JSON.parse(localStorage.getItem('alpine-user-atoms') || '[]');
+      return Array.isArray(atoms) && atoms.includes(atom);
+    } catch {
+      return false;
+    }
+  }
+
   async deleteRole(roleId: string) {
     if (!confirm('Delete this role? Users assigned to it will become unassigned.')) return;
     try {
@@ -152,7 +163,7 @@ component RolesPage {
       );
     }
 
-    const canManageRoles = window.__skltn?.can('users.manage_roles');
+    const canManageRoles = this.canDo('users.manage_roles');
     const customRoles = this.roles.filter((r: any) => !r.is_system);
     const atomCount = Object.keys(this.allAtoms).length;
 
