@@ -128,7 +128,7 @@ component UsersPage {
         label: 'Role',
         width: '180px',
         render: (val: string, row: any) => {
-          if (this.editingUserId === row._id) {
+          if (window.__skltn?.can('users.manage_roles') && this.editingUserId === row._id) {
             return (
               <div style="display:flex;gap:6px;align-items:center;">
                 <select
@@ -155,10 +155,15 @@ component UsersPage {
           }
           return (
             <span
-              style={this.getRoleBadgeStyle(val) + 'cursor:pointer;'}
-              title="Click to edit role"
-              onclick={() => { this.editingUserId = row._id; this.editingRole = val; this.scheduleUpdate?.(); }}
-            >{val}</span>
+              style={this.getRoleBadgeStyle(val) + (window.__skltn?.can('users.manage_roles') ? 'cursor:pointer;' : '')}
+              title={window.__skltn?.can('users.manage_roles') ? 'Click to edit role' : ''}
+              onclick={() => {
+                if (!window.__skltn?.can('users.manage_roles')) return;
+                this.editingUserId = row._id;
+                this.editingRole = val;
+                this.scheduleUpdate?.();
+              }}
+            >{val || <span style="color:var(--color-text-muted);font-style:italic;">No role assigned</span>}</span>
           );
         },
       },
@@ -216,12 +221,14 @@ component UsersPage {
             <div class="alp-toolbar">
               <div class="alp-toolbar-left" />
               <div class="alp-toolbar-right">
-                <button
-                  class="aui-btn aui-btn--primary"
-                  onclick={() => { this.showInviteModal = true; this.scheduleUpdate?.(); }}
-                >
-                  + Invite User
-                </button>
+                {window.__skltn?.can('users.manage') && (
+                  <button
+                    class="aui-btn aui-btn--primary"
+                    onclick={() => { this.showInviteModal = true; this.scheduleUpdate?.(); }}
+                  >
+                    + Invite User
+                  </button>
+                )}
               </div>
             </div>
 
@@ -257,16 +264,18 @@ component UsersPage {
                         Requested {r.requested_at ? new Date(r.requested_at).toLocaleDateString() : '—'}
                       </div>
                     </div>
-                    <div style="display:flex;gap:0.5rem;">
-                      <button
-                        style="padding:6px 14px;background:rgba(34,197,94,0.15);color:#22C55E;border:1px solid rgba(34,197,94,0.3);border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:500;"
-                        onclick={() => this.approveRequest(r.id)}
-                      >Approve</button>
-                      <button
-                        style="padding:6px 14px;background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:500;"
-                        onclick={() => this.rejectRequest(r.id)}
-                      >Reject</button>
-                    </div>
+                    {window.__skltn?.can('users.manage') && (
+                      <div style="display:flex;gap:0.5rem;">
+                        <button
+                          style="padding:6px 14px;background:rgba(34,197,94,0.15);color:#22C55E;border:1px solid rgba(34,197,94,0.3);border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:500;"
+                          onclick={() => this.approveRequest(r.id)}
+                        >Approve</button>
+                        <button
+                          style="padding:6px 14px;background:rgba(239,68,68,0.15);color:#EF4444;border:1px solid rgba(239,68,68,0.3);border-radius:6px;cursor:pointer;font-size:0.85rem;font-weight:500;"
+                          onclick={() => this.rejectRequest(r.id)}
+                        >Reject</button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

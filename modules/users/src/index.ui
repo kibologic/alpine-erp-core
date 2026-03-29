@@ -11,6 +11,11 @@ registerModule({
     { id: 'organisation', label: 'Organisation', page: 'OrganisationPage' },
     { id: 'audit-log',    label: 'Audit Log',    page: 'AuditLogPage' },
   ],
+  actions: [
+    { atom: 'users.view', label: 'View Team', description: 'View team members' },
+    { atom: 'users.manage', label: 'Manage Users', description: 'Invite and manage users' },
+    { atom: 'users.manage_roles', label: 'Manage Roles', description: 'Create and assign custom roles' },
+  ],
   async register(app) {
     console.log('[Alpine] Users module registered')
   },

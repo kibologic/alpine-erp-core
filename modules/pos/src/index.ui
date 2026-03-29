@@ -15,6 +15,15 @@ registerModule({
     { id: 'sessions', label: 'Sessions', page: 'PosSessionsPage' },
     { id: 'settings', label: 'Settings', page: 'PosSettingsPage' },
   ],
+  actions: [
+    { atom: 'pos.sell', label: 'Process Sales', description: 'Process sales at terminal' },
+    { atom: 'pos.refund', label: 'Issue Refunds', description: 'Issue refunds on sales' },
+    { atom: 'pos.open_session', label: 'Open Sessions', description: 'Open cash register sessions' },
+    { atom: 'pos.close_session', label: 'Close Sessions', description: 'Close cash register sessions' },
+    { atom: 'pos.view_sales', label: 'View Sales', description: 'View sales history' },
+    { atom: 'pos.view_sessions', label: 'View Sessions', description: 'View session history' },
+    { atom: 'pos.manage_customers', label: 'Manage Customers', description: 'Create and manage customers' },
+  ],
   constraints: {
     maxProducts: 500,
     maxTerminals: 1,

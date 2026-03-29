@@ -165,8 +165,12 @@ component InventoryItemsPage {
           ...col,
           render: (val: any, row: any) => (
             <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-              <button class="aui-btn aui-btn--icon" onclick={() => this.openEditModal(row)} title="Edit">✎</button>
-              <button class="aui-btn aui-btn--icon aui-btn--danger" onclick={() => this.deleteProduct(row.id)} title="Delete">🗑</button>
+              {window.__skltn?.can('inventory.manage') && (
+                <button class="aui-btn aui-btn--icon" onclick={() => this.openEditModal(row)} title="Edit">✎</button>
+              )}
+              {window.__skltn?.can('inventory.manage') && (
+                <button class="aui-btn aui-btn--icon aui-btn--danger" onclick={() => this.deleteProduct(row.id)} title="Delete">🗑</button>
+              )}
             </div>
           )
         };
@@ -194,7 +198,9 @@ component InventoryItemsPage {
             value={this.selectedCategory}
             onchange={(val: string) => { this.selectedCategory = val; this.scheduleUpdate?.(); }}
           />
-          <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Product</button>
+          {window.__skltn?.can('inventory.manage') && (
+            <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Product</button>
+          )}
         </div>
 
         <DataTable 

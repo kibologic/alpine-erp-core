@@ -198,13 +198,19 @@ component PosTerminalPage {
           <div class="pos-state-card">
             <h2 class="pos-state-title">Open Cash Session</h2>
             <p class="pos-state-desc">Register: {REGISTER_ID}</p>
-            <div class="pos-float-row">
-              <label class="pos-float-label">Opening Float (MWK)</label>
-              <input type="number" class="pos-float-input" value={this.openingFloat} oninput={(e: any) => this.openingFloat = Number(e.target.value)} />
-            </div>
-            <button class="pos-state-btn" onclick={() => this.openSession()} disabled={this.processing}>
-              {this.processing ? 'Opening...' : 'Start Session'}
-            </button>
+            {window.__skltn?.can('pos.open_session') ? (
+              <div>
+                <div class="pos-float-row">
+                  <label class="pos-float-label">Opening Float (MWK)</label>
+                  <input type="number" class="pos-float-input" value={this.openingFloat} oninput={(e: any) => this.openingFloat = Number(e.target.value)} />
+                </div>
+                <button class="pos-state-btn" onclick={() => this.openSession()} disabled={this.processing}>
+                  {this.processing ? 'Opening...' : 'Start Session'}
+                </button>
+              </div>
+            ) : (
+              <p style="color:var(--color-text-muted);font-size:13px;margin-top:12px;">You don't have permission to open sessions.</p>
+            )}
           </div>
         </div>
       );
@@ -316,17 +322,21 @@ component PosTerminalPage {
             ))}
           </div>
 
-          <button 
-            class="pos-charge-btn" 
-            disabled={this.cartItems.length === 0 || this.processing}
-            onclick={() => this.checkout()}
-          >
-            {this.processing ? 'PROCESSING...' : `CHARGE ${fmt(total)}`}
-          </button>
+          {window.__skltn?.can('pos.sell') && (
+            <button
+              class="pos-charge-btn"
+              disabled={this.cartItems.length === 0 || this.processing}
+              onclick={() => this.checkout()}
+            >
+              {this.processing ? 'PROCESSING...' : `CHARGE ${fmt(total)}`}
+            </button>
+          )}
 
           <div class="pos-session-bar">
             <div class="pos-session-info">Open: {new Date(this.session?.opened_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-            <button class="pos-close-session-btn" onclick={() => this.closeSession()} disabled={this.processing}>Close Session</button>
+            {window.__skltn?.can('pos.close_session') && (
+              <button class="pos-close-session-btn" onclick={() => this.closeSession()} disabled={this.processing}>Close Session</button>
+            )}
           </div>
         </div>
 

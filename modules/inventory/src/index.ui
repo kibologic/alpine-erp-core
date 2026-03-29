@@ -17,6 +17,14 @@ registerModule({
     { id: 'reports', label: 'Reports', page: 'InventoryReportsPage' },
     { id: 'settings', label: 'Settings', page: 'InventorySettingsPage' },
   ],
+  actions: [
+    { atom: 'inventory.view', label: 'View Inventory', description: 'View products and stock levels' },
+    { atom: 'inventory.adjust', label: 'Adjust Stock', description: 'Adjust stock quantities' },
+    { atom: 'inventory.manage', label: 'Manage Products', description: 'Create, edit, delete products' },
+    { atom: 'inventory.export', label: 'Export Data', description: 'Export inventory data' },
+    { atom: 'inventory.stock_take', label: 'Stock Take', description: 'Perform stock take operations' },
+    { atom: 'inventory.view_movements', label: 'View Movements', description: 'View stock movement history' },
+  ],
   async register(app) {
     console.log('[Alpine] Inventory module registered');
   },

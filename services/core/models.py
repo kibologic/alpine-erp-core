@@ -88,6 +88,9 @@ class User(Base):
     full_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    custom_role_id: Mapped[Optional[str]] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("custom_roles.id", ondelete="SET NULL"), nullable=True
+    )
 
     tenant: Mapped["Tenant"] = relationship(back_populates="users")
     audit_logs: Mapped[list["AuditLog"]] = relationship(back_populates="user")
@@ -605,3 +608,35 @@ class JoinRequest(Base):
     requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     reviewed_by: Mapped[Optional[str]] = mapped_column(UUID(as_uuid=False), nullable=True)
+
+
+class CustomRole(Base):
+    __tablename__ = "custom_roles"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("tenants.id"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    is_system: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_by: Mapped[Optional[str]] = mapped_column(UUID(as_uuid=False), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    tenant: Mapped["Tenant"] = relationship()
+    atoms: Mapped[list["RoleAtom"]] = relationship(back_populates="role", cascade="all, delete-orphan")
+
+
+class RoleAtom(Base):
+    __tablename__ = "role_atoms"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    role_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("custom_roles.id", ondelete="CASCADE"), nullable=False
+    )
+    atom: Mapped[str] = mapped_column(String, nullable=False)
+
+    role: Mapped["CustomRole"] = relationship(back_populates="atoms")

@@ -12,7 +12,7 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
-from core.models import AuthToken, JoinRequest, PasswordResetToken, Tenant, User, UserTenant
+from core.models import AuthToken, CustomRole, JoinRequest, PasswordResetToken, RoleAtom, Tenant, User, UserTenant
 
 _JWT_SECRET = os.getenv("JWT_SECRET", "alpine_dev_jwt_secret_2026")
 _JWT_ALGORITHM = "HS256"
@@ -34,6 +34,16 @@ async def _issue_token(session: AsyncSession, user_id: str) -> tuple[str, dateti
     session.add(AuthToken(user_id=user_id, token=token, expires_at=expires_at))
     await session.commit()
     return token, expires_at
+
+
+async def get_user_atoms(session: AsyncSession, user_id: str) -> list[str]:
+    result = await session.execute(
+        select(RoleAtom)
+        .join(CustomRole, RoleAtom.role_id == CustomRole.id)
+        .join(User, User.custom_role_id == CustomRole.id)
+        .where(User.id == user_id)
+    )
+    return [a.atom for a in result.scalars().all()]
 
 
 async def _get_tenants(session: AsyncSession, user_id: str) -> list[dict]:
@@ -80,10 +90,13 @@ async def login(
     user.last_login = datetime.utcnow()
     await session.commit()
 
+    atoms = await get_user_atoms(session, user.id)
+
     return {
         "token": token,
-        "user": {"id": user.id, "email": user.email, "role": user.role},
+        "user": {"id": user.id, "email": user.email, "role": user.role, "full_name": user.full_name},
         "tenants": tenants,
+        "atoms": atoms,
         "expiresAt": expires_at.isoformat() + "Z",
     }
 
@@ -155,6 +168,8 @@ async def me(
     )
     memberships = memberships_result.all()
 
+    atoms = await get_user_atoms(session, user.id)
+
     return {
         "id": user.id,
         "email": user.email,
@@ -162,6 +177,7 @@ async def me(
         "phone": user.phone,
         "role": user.role,
         "active": user.active,
+        "atoms": atoms,
         "created_at": user.created_at.isoformat() if user.created_at else None,
         "last_login": user.last_login.isoformat() if user.last_login else None,
         "organisations": [
