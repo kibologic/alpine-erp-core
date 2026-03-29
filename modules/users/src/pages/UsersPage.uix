@@ -29,6 +29,8 @@ component UsersPage {
   state { let availableRoles: any[] = []; }
   state { let approvingRequestId: string = ''; }
   state { let approveRoleId: string = ''; }
+  state { let selectedUser: any = null; }
+  state { let selectedUserRoleId: string = ''; }
 
   async mounted() {
     this.notifications = window.__skltn?.registry?.get('notifications');
@@ -118,6 +120,25 @@ component UsersPage {
     } finally {
       this.saving = false;
       this.scheduleUpdate?.();
+    }
+  }
+
+  async assignRole(userId: string, roleId: string) {
+    try {
+      await api.post(`/users/${userId}/assign-role`, { role_id: roleId });
+      this.notifications?.success('Role assigned');
+      const matchedRole = this.availableRoles.find((r: any) => r.id === roleId);
+      this.selectedUser = {
+        ...this.selectedUser,
+        role_id: roleId,
+        role_name: matchedRole ? matchedRole.name : this.selectedUser.role_name,
+      };
+      const res = await api.get('/users');
+      this.users = Array.isArray(res) ? res : (res.data || []);
+      this.selectedUserRoleId = '';
+      this.scheduleUpdate?.();
+    } catch (e) {
+      this.notifications?.error('Failed to assign role');
     }
   }
 
@@ -295,6 +316,12 @@ component UsersPage {
               filename="users"
               emptyTitle="No users yet"
               emptyDescription="Invite your first team member."
+              onRowClick={(row: any) => {
+                const full = this.users.find((u: any) => u.id === row._id);
+                this.selectedUser = full || null;
+                this.selectedUserRoleId = full?.role_id || '';
+                this.scheduleUpdate?.();
+              }}
             />
           </div>
         ) : this.activeTab === 'join-requests' ? (
@@ -401,6 +428,100 @@ component UsersPage {
             )}
           </div>
         )}
+
+        {this.selectedUser ? (
+          <div
+            style="position:fixed;inset:0;z-index:1000;"
+            onclick={(e: Event) => {
+              if ((e.target as HTMLElement).dataset.overlay) {
+                this.selectedUser = null; this.scheduleUpdate?.();
+              }
+            }}
+          >
+            <div data-overlay="true" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);" />
+            <div style="position:absolute;right:0;top:0;bottom:0;width:380px;background:var(--color-surface-1);border-left:1px solid var(--color-border);display:flex;flex-direction:column;overflow-y:auto;animation:slideInRight 0.25s ease;">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--color-border);">
+                <div style="font-weight:600;font-size:1rem;color:var(--color-text);">Member Details</div>
+                <button
+                  style="background:none;border:none;cursor:pointer;color:var(--color-text-muted);font-size:1.25rem;line-height:1;"
+                  onclick={() => { this.selectedUser = null; this.scheduleUpdate?.(); }}
+                >✕</button>
+              </div>
+
+              <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem;flex:1;">
+                <div style="display:flex;align-items:center;gap:1rem;">
+                  <div style="width:52px;height:52px;border-radius:50%;background:var(--color-primary,#6366f1);display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:700;color:#fff;flex-shrink:0;">
+                    {(this.selectedUser.full_name || this.selectedUser.email || '?').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style="font-weight:600;font-size:1rem;color:var(--color-text);">{this.selectedUser.full_name || '—'}</div>
+                    <div style="font-size:0.85rem;color:var(--color-text-muted);">{this.selectedUser.email}</div>
+                  </div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:0.75rem;padding:1rem;background:var(--color-surface-2);border-radius:8px;border:1px solid var(--color-border);">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.8rem;color:var(--color-text-muted);">Status</span>
+                    <span style={`font-size:0.75rem;font-weight:500;padding:2px 10px;border-radius:10px;background:${
+                      this.selectedUser.account_status === 'active' ? '#22C55E1A' :
+                      this.selectedUser.account_status === 'pending' ? '#F59E0B1A' : '#EF44441A'
+                    };color:${
+                      this.selectedUser.account_status === 'active' ? '#22C55E' :
+                      this.selectedUser.account_status === 'pending' ? '#F59E0B' : '#EF4444'
+                    };text-transform:capitalize;`}>
+                      {this.selectedUser.account_status || 'unknown'}
+                    </span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.8rem;color:var(--color-text-muted);">Role</span>
+                    <span style="font-size:0.8rem;color:var(--color-text);font-weight:500;">
+                      {this.selectedUser.role_name || 'No role assigned'}
+                    </span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.8rem;color:var(--color-text-muted);">Last Login</span>
+                    <span style="font-size:0.8rem;color:var(--color-text);">{
+                      this.selectedUser.last_login ? new Date(this.selectedUser.last_login).toLocaleString() : 'Never'
+                    }</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.8rem;color:var(--color-text-muted);">Member Since</span>
+                    <span style="font-size:0.8rem;color:var(--color-text);">{
+                      this.selectedUser.created_at ? new Date(this.selectedUser.created_at).toLocaleDateString() : '—'
+                    }</span>
+                  </div>
+                </div>
+
+                {window.__skltn?.can('users.manage_roles') && (
+                  <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <label style="font-size:0.8rem;font-weight:500;color:var(--color-text-muted);">{
+                      this.selectedUser.role_name ? 'Change Role' : 'Assign Role'
+                    }</label>
+                    <select
+                      style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);font-size:0.875rem;"
+                      onchange={(e: Event) => {
+                        this.selectedUserRoleId = (e.target as HTMLSelectElement).value;
+                        this.scheduleUpdate?.();
+                      }}
+                    >
+                      <option value="">Select role…</option>
+                      {this.availableRoles.map((r: any) => (
+                        <option value={r.id} selected={r.id === this.selectedUserRoleId}>{r.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      style="padding:8px 16px;background:var(--color-primary,#6366f1);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.875rem;font-weight:500;"
+                      onclick={() => {
+                        if (this.selectedUserRoleId) this.assignRole(this.selectedUser.id, this.selectedUserRoleId);
+                        else this.notifications?.warning('Select a role first');
+                      }}
+                    >Save Role</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {this.showInviteModal ? (
           <Modal

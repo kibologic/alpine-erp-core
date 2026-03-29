@@ -195,17 +195,39 @@ async def list_join_requests(
 ):
     user_id = current_user["user_id"]
 
-    # Get tenants where current user is admin
+    # Get tenants where current user is admin/super user
+    # UserTenant.role stores either legacy "admin" string or a custom_role UUID
+    # We need to handle both cases
     admin_tenants_result = await session.execute(
-        select(UserTenant).where(
-            UserTenant.user_id == user_id,
-            UserTenant.role == "admin",
-        )
+        select(UserTenant.tenant_id)
+        .where(UserTenant.user_id == user_id)
     )
-    admin_tenant_ids = [ut.tenant_id for ut in admin_tenants_result.scalars().all()]
-
-    if not admin_tenant_ids:
-        return []
+    all_memberships = admin_tenants_result.all()
+    
+    admin_tenant_ids = []
+    for (tid,) in all_memberships:
+        # Check if this membership's role is admin (legacy) or a Super User/Admin custom role
+        ut_result = await session.execute(
+            select(UserTenant).where(
+                UserTenant.user_id == user_id,
+                UserTenant.tenant_id == tid
+            )
+        )
+        ut = ut_result.scalar_one_or_none()
+        if not ut:
+            continue
+        if ut.role == "admin":
+            admin_tenant_ids.append(tid)
+            continue
+        # Check if the role UUID maps to Admin or Super User custom role
+        role_result = await session.execute(
+            select(CustomRole).where(
+                CustomRole.id == ut.role,
+                CustomRole.name.in_(["Admin", "Super User"])
+            )
+        )
+        if role_result.scalar_one_or_none():
+            admin_tenant_ids.append(tid)
 
     requests_result = await session.execute(
         select(JoinRequest).where(
