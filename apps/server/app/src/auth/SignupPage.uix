@@ -178,16 +178,24 @@ component SignupPage {
               <div style="font-size:48px;margin-bottom:16px;">
                 📬
               </div>
-              <div style="font-size:20px;font-weight:700; color:var(--color-text-primary); margin-bottom:12px;">
+              <div style="font-size:20px;font-weight:700;
+                color:var(--color-text-primary);
+                margin-bottom:12px;">
                 Request Sent!
               </div>
-              <div style="font-size:14px; color:var(--color-text-secondary); line-height:1.6;max-width:320px;margin:0 auto;">
-                Your request to join <strong>{this.pendingOrgName}</strong> has been sent.
-                You will be able to log in once an admin approves your request and assigns you a role.
+              <div style="font-size:14px;
+                color:var(--color-text-secondary);
+                line-height:1.6;max-width:320px;margin:0 auto;">
+                Your request to join <strong>
+                {this.pendingOrgName}</strong> has been sent.
+                You will be able to log in once an admin
+                approves your request and assigns you a role.
               </div>
-              <div style="margin-top:24px;font-size:13px; color:var(--color-text-muted);">
+              <div style="margin-top:24px;font-size:13px;
+                color:var(--color-text-muted);">
                 Already approved?{' '}
-                <a href="/login" style="color:var(--color-accent); text-decoration:none;">
+                <a href="/login" style="color:var(--color-accent);
+                  text-decoration:none;">
                   Sign in
                 </a>
               </div>

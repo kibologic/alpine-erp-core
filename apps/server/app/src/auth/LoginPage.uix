@@ -30,7 +30,7 @@ component LoginPage {
       if (!response.ok) {
         const err = await response.json();
         const detail = err.detail;
-
+        
         if (typeof detail === 'object') {
           if (detail.code === 'ACCOUNT_PENDING') {
             this.error = '';
@@ -47,7 +47,7 @@ component LoginPage {
             return;
           }
         }
-        this.error = typeof detail === 'string'
+        this.error = typeof detail === 'string' 
           ? detail : 'Invalid email or password';
         this.loading = false;
         this.scheduleUpdate?.();
@@ -56,13 +56,17 @@ component LoginPage {
 
       const data = await response.json();
       localStorage.setItem('alpine-auth-token', data.token);
-      localStorage.setItem('alpine-user', JSON.stringify(data.user));
-      localStorage.setItem('alpine-user-atoms', JSON.stringify(data.atoms || []));
+      localStorage.setItem('alpine-user',
+        JSON.stringify(data.user));
+      localStorage.setItem('alpine-user-atoms',
+        JSON.stringify(data.atoms || []));
       if (data.tenants?.length > 0) {
-        localStorage.setItem('alpine-tenant-id', data.tenants[0].tenant_id);
+        localStorage.setItem('alpine-tenant-id',
+          data.tenants[0].tenant_id);
       }
       if (data.pending_invites?.length > 0) {
-        localStorage.setItem('alpine-pending-invites', JSON.stringify(data.pending_invites));
+        localStorage.setItem('alpine-pending-invites',
+          JSON.stringify(data.pending_invites));
       }
       window.location.href = '/';
     } catch (e) {

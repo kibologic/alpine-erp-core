@@ -164,15 +164,11 @@ component UsersPage {
     }
   }
 
-  getRoleBadgeStyle(role: string) {
-    if (role === 'admin') return 'background:rgba(99,102,241,0.15);color:#818CF8;border-radius:4px;padding:2px 8px;font-size:0.75rem;font-weight:500;';
-    if (role === 'manager') return 'background:rgba(245,158,11,0.15);color:#F59E0B;border-radius:4px;padding:2px 8px;font-size:0.75rem;font-weight:500;';
-    return 'background:rgba(107,114,128,0.15);color:#9CA3AF;border-radius:4px;padding:2px 8px;font-size:0.75rem;font-weight:500;';
-  }
+
 
   render() {
     const total = this.users.length;
-    const admins = this.users.filter((u: any) => u.role === 'admin').length;
+    const admins = this.users.filter((u: any) => u.role_name === 'Admin' || u.role_name === 'Super User').length;
     const pending = this.joinRequests.filter((r: any) => r.status === 'pending').length;
 
     const columns = [
@@ -183,44 +179,19 @@ component UsersPage {
         label: 'Role',
         width: '180px',
         render: (val: string, row: any) => {
-          if (window.__skltn?.can('users.manage_roles') && this.editingUserId === row._id) {
-            return (
-              <div style="display:flex;gap:6px;align-items:center;">
-                <select
-                  style="padding:2px 6px;border-radius:4px;border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);font-size:0.8rem;"
-                  onchange={(e: Event) => {
-                    this.editingRole = (e.target as HTMLSelectElement).value;
-                    this.scheduleUpdate?.();
-                  }}
-                >
-                  <option value="" disabled selected={!this.editingRole}>Select role</option>
-                  {this.availableRoles.map((role: any) => (
-                    <option value={role.id} selected={this.editingRole === role.id}>{role.name}</option>
-                  ))}
-                </select>
-                <button
-                  style="padding:2px 8px;background:var(--color-accent);color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:0.75rem;"
-                  onclick={() => this.assignRole(row._id, this.editingRole)}
-                >Save</button>
-                <button
-                  style="padding:2px 8px;background:transparent;color:var(--color-text-muted);border:1px solid var(--color-border);border-radius:4px;cursor:pointer;font-size:0.75rem;"
-                  onclick={() => { this.editingUserId = ''; this.editingRole = ''; this.scheduleUpdate?.(); }}
-                >Cancel</button>
-              </div>
-            );
-          }
-          return (
-            <span
-              style={"background:rgba(99,102,241,0.1);color:var(--color-accent);border-radius:10px;padding:2px 10px;font-size:12px;font-weight:500;" + (window.__skltn?.can('users.manage_roles') ? 'cursor:pointer;' : '')}
-              title={window.__skltn?.can('users.manage_roles') ? 'Click to edit role' : ''}
-              onclick={() => {
-                if (!window.__skltn?.can('users.manage_roles')) return;
-                this.editingUserId = row._id;
-                this.editingRole = row.role_id;
-                this.scheduleUpdate?.();
-              }}
-            >
-              {row.role_name || <span style="color:#EF4444;">No role assigned</span>}
+          return row.role_name ? (
+            <span style="font-size:12px;font-weight:500;
+              padding:2px 10px;border-radius:10px;
+              background:var(--color-bg-elevated);
+              color:var(--color-text-secondary);">
+              {row.role_name}
+            </span>
+          ) : (
+            <span style="font-size:12px;font-weight:500;
+              padding:2px 10px;border-radius:10px;
+              background:rgba(239,68,68,0.1);
+              color:#EF4444;">
+              No role assigned
             </span>
           );
         },
@@ -236,10 +207,9 @@ component UsersPage {
           if (row.account_status === 'suspended') color = '#EF4444';
           
           return (
-            <StatusBadge 
-              label={row.account_status || 'unknown'} 
-              style={`background:${color}1A;color:${color};text-transform:capitalize;`} 
-            />
+            <span style={`font-size:12px;font-weight:500;padding:2px 10px;border-radius:10px;background:${color}1A;color:${color};text-transform:capitalize;`}>
+              {row.account_status || 'unknown'}
+            </span>
           );
         },
       },
