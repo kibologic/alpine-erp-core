@@ -37,6 +37,12 @@ class ProductQualityTier(str, enum.Enum):
     CERTIFIED = "CERTIFIED"
 
 
+class AccountStatus(str, enum.Enum):
+    pending = "pending"
+    active = "active"
+    suspended = "suspended"
+
+
 def now_utc() -> datetime:
     return datetime.utcnow()
 
@@ -81,7 +87,7 @@ class User(Base):
     )
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     password_hash: Mapped[str | None] = mapped_column(String(), nullable=True)
-    role: Mapped[str] = mapped_column(String(50), nullable=False, default="staff")
+    account_status: Mapped[str] = mapped_column(String(50), default="pending", server_default="pending")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=True, server_default='true')
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc)
@@ -605,9 +611,34 @@ class JoinRequest(Base):
         UUID(as_uuid=False), ForeignKey("tenants.id"), nullable=False
     )
     status: Mapped[str] = mapped_column(String, default="pending")
+    role_id: Mapped[Optional[str]] = mapped_column(UUID(as_uuid=False), ForeignKey("custom_roles.id", ondelete="SET NULL"), nullable=True)
     requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     reviewed_by: Mapped[Optional[str]] = mapped_column(UUID(as_uuid=False), nullable=True)
+
+
+class OrgInvite(Base):
+    __tablename__ = "org_invites"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
+    )
+    invited_by: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    user_id: Mapped[Optional[str]] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    role_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("custom_roles.id", ondelete="CASCADE"), nullable=False
+    )
+    status: Mapped[str] = mapped_column(String(50), default="pending")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
 class CustomRole(Base):

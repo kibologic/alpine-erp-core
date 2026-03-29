@@ -1,12 +1,10 @@
-INFO:     Started server process [22061]
+nohup: ignoring input
+INFO:     Started server process [65101]
 INFO:     Waiting for application startup.
-[2m2026-03-29T08:51:21.671617Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+[2m2026-03-29T10:42:27.068813Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:36500 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:48666 - "POST /api/v1/auth/login HTTP/1.1" 403 Forbidden
-INFO:     127.0.0.1:47178 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52230 - "GET /api/v1/atoms HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:52242 - "GET /api/v1/roles HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:53440 - "GET /api/v1/users/atoms HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53452 - "GET /api/v1/users/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33276 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33280 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56802 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:48846 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized

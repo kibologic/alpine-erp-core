@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
-from core.models import AuthToken, User, UserTenant
+from core.models import AuthToken, User, UserTenant, CustomRole, RoleAtom
 
 
 async def _resolve_token(token: str, session: AsyncSession) -> User:
@@ -76,7 +76,6 @@ async def get_current_user(
     result: dict = {
         "user_id": user.id,
         "email": user.email,
-        "role": user.role,
         "tenant_memberships": tenants,
     }
 
@@ -106,3 +105,20 @@ async def get_current_user_optional(
         )
     except HTTPException:
         return None
+
+def require_atom(atom_name: str):
+    async def atom_dependency(
+        current_user: dict = Depends(get_current_user),
+        session: AsyncSession = Depends(get_session)
+    ) -> dict:
+        user_id = current_user["user_id"]
+        result = await session.execute(
+            select(RoleAtom)
+            .join(CustomRole, RoleAtom.role_id == CustomRole.id)
+            .join(User, User.custom_role_id == CustomRole.id)
+            .where(User.id == user_id, RoleAtom.atom == atom_name)
+        )
+        if not result.scalar_one_or_none():
+            raise HTTPException(status_code=403, detail=f"Missing permission: {atom_name}")
+        return current_user
+    return atom_dependency

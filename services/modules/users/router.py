@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
@@ -57,67 +57,86 @@ async def list_users(
     tenant_id: str = Depends(get_current_tenant),
 ):
     result = await session.execute(
-        select(User)
+        select(User, CustomRole)
+        .outerjoin(CustomRole, User.custom_role_id == CustomRole.id)
         .where(User.tenant_id == tenant_id)
         .order_by(User.created_at.desc())
     )
-    users = result.scalars().all()
+    users = result.all()
     return [
         {
             "id": str(u.id),
             "email": u.email,
             "full_name": u.full_name,
-            "role": u.role,
-            "custom_role_id": str(u.custom_role_id) if u.custom_role_id else None,
+            "role_name": cr.name if cr else None,
+            "role_id": str(u.custom_role_id) if u.custom_role_id else None,
+            "account_status": u.account_status,
             "active": u.active,
             "created_at": u.created_at.isoformat(),
             "last_login": u.last_login.isoformat() if u.last_login else None,
         }
-        for u in users
+        for u, cr in users
     ]
 
 
-@router.get("/{user_id}/role", dependencies=[Depends(verify_internal_token)])
-async def get_user_role(
-    user_id: str,
-    session: AsyncSession = Depends(get_session),
-    tenant_id: str = Depends(get_current_tenant),
-):
-    result = await session.execute(
-        select(User).where(User.id == user_id, User.tenant_id == tenant_id)
-    )
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    mapping = _ROLE_MAP.get(user.role, {"roleId": "role_viewer", "atoms": ["inventory.view"]})
-    return mapping
-
-
-def _user_dict(u: User) -> dict:
+def _user_dict(u: User, cr: CustomRole = None) -> dict:
     return {
         "id": str(u.id),
         "email": u.email,
         "full_name": u.full_name,
-        "role": u.role,
-        "custom_role_id": str(u.custom_role_id) if u.custom_role_id else None,
+        "role_name": cr.name if cr else None,
+        "role_id": str(u.custom_role_id) if u.custom_role_id else None,
+        "account_status": u.account_status,
         "active": u.active,
         "created_at": u.created_at.isoformat(),
         "last_login": u.last_login.isoformat() if u.last_login else None,
     }
 
 
+async def check_super_user_protection(
+    db: AsyncSession,
+    tenant_id: str,
+    user_id: str
+):
+    # Find super user role for this tenant
+    su_role = await db.execute(
+        select(CustomRole).where(
+            CustomRole.tenant_id == tenant_id,
+            CustomRole.is_system == True,
+            CustomRole.name == "Super User"
+        )
+    )
+    su_role = su_role.scalar_one_or_none()
+    if not su_role:
+        return
+    
+    # Count users with super user role
+    count = await db.execute(
+        select(func.count(User.id)).where(
+            User.custom_role_id == su_role.id,
+            User.account_status == "active"
+        )
+    )
+    count = count.scalar()
+    
+    # Check if this user is the last super user
+    user_result = await db.execute(
+        select(User).where(User.id == user_id)
+    )
+    user = user_result.scalar_one_or_none()
+    
+    if user and count == 1 and user.custom_role_id == su_role.id:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot remove the last Super User. Assign Super User role to another member first."
+        )
+
+
 class InviteRequest(BaseModel):
     email: str
-    role: str
+    role_id: str
     full_name: str | None = None
-    name: str | None = None  # legacy alias — ignored in favour of full_name
-
-
-class RoleUpdateRequest(BaseModel):
-    role: str
-
+    name: str | None = None  # legacy alias
 
 @router.post("/invite", dependencies=[Depends(verify_internal_token)])
 async def invite_user(
@@ -125,43 +144,29 @@ async def invite_user(
     session: AsyncSession = Depends(get_session),
     tenant_id: str = Depends(get_current_tenant),
 ):
-    if data.role not in VALID_ROLES:
-        raise HTTPException(status_code=422, detail=f"role must be one of: {sorted(VALID_ROLES)}")
-
     existing = await session.execute(
         select(User).where(User.email == data.email, User.tenant_id == tenant_id)
     )
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="User already exists")
 
-    user = User(tenant_id=tenant_id, email=data.email, role=data.role, active=True, full_name=data.full_name)
+    user = User(
+        tenant_id=tenant_id, 
+        email=data.email, 
+        custom_role_id=data.role_id, 
+        account_status="active",
+        active=True, 
+        full_name=data.full_name
+    )
     session.add(user)
     await session.commit()
     await session.refresh(user)
-    return _user_dict(user)
-
-
-@router.patch("/{user_id}/role", dependencies=[Depends(verify_internal_token)])
-async def update_user_role(
-    user_id: str,
-    data: RoleUpdateRequest,
-    session: AsyncSession = Depends(get_session),
-    tenant_id: str = Depends(get_current_tenant),
-):
-    if data.role not in VALID_ROLES:
-        raise HTTPException(status_code=422, detail=f"role must be one of: {sorted(VALID_ROLES)}")
-
-    result = await session.execute(
-        select(User).where(User.id == user_id, User.tenant_id == tenant_id)
-    )
-    user = result.scalar_one_or_none()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    user.role = data.role
-    await session.commit()
-    await session.refresh(user)
-    return _user_dict(user)
+    
+    # Get role to construct user dict
+    cr_result = await session.execute(select(CustomRole).where(CustomRole.id == data.role_id))
+    cr = cr_result.scalar_one_or_none()
+    
+    return _user_dict(user, cr)
 
 
 # ── Atoms ────────────────────────────────────────────────────────────────────
@@ -288,16 +293,64 @@ class AssignRoleBody(BaseModel):
 
 @router.post("/{user_id}/assign-role")
 async def assign_role(
-    user_id: uuid.UUID,
+    user_id: str,
     body: AssignRoleBody,
     current_user: dict = Depends(get_current_user),
     session: AsyncSession = Depends(get_session),
 ):
     await _check_atom("users.manage_roles", current_user["user_id"], session)
+    tenant_id = current_user["tenant_memberships"][0]["tenant_id"] if current_user.get("tenant_memberships") else None
+    
+    await check_super_user_protection(session, tenant_id, str(user_id))
+
     result = await session.execute(select(User).where(User.id == str(user_id)))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(404, "User not found")
+        
     user.custom_role_id = body.role_id if body.role_id else None
     await session.commit()
     return {"ok": True}
+
+
+@router.delete("/{user_id}/from-org")
+async def remove_user_from_org(
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    # Depending on how frontend expects this... wait, spec says FLOW 6 User removed from org
+    # Check atoms if necessary.
+    tenant_id = current_user["tenant_memberships"][0]["tenant_id"] if current_user.get("tenant_memberships") else None
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant ID missing")
+
+    await check_super_user_protection(session, tenant_id, str(user_id))
+
+    result = await session.execute(
+        select(User).where(User.id == str(user_id), User.tenant_id == tenant_id)
+    )
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Remove from user_tenants
+    await session.execute(
+        delete(UserTenant).where(
+            UserTenant.user_id == user.id,
+            UserTenant.tenant_id == tenant_id
+        )
+    )
+    
+    user.custom_role_id = None
+    
+    other_orgs = await session.execute(
+        select(func.count(UserTenant.id)).where(UserTenant.user_id == user.id)
+    )
+    if other_orgs.scalar() == 0:
+        user.account_status = "pending"
+    else:
+        user.account_status = "active"
+
+    await session.commit()
+    return {"message": "User removed from organisation"}

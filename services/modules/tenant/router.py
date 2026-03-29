@@ -7,9 +7,9 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.auth import verify_internal_token
-from core.auth_deps import get_current_user
+from core.auth_deps import get_current_user, require_atom
 from core.db import get_session
-from core.models import JoinRequest, Tenant, User, UserTenant
+from core.models import JoinRequest, Tenant, User, UserTenant, CustomRole, OrgInvite
 
 
 class TenantUpdateBody(BaseModel):
@@ -236,14 +236,18 @@ async def list_join_requests(
     return output
 
 
+class ApproveRequestBody(BaseModel):
+    role_id: str
+
+
 @router.post("/join-requests/{request_id}/approve")
 async def approve_join_request(
     request_id: str,
-    current_user: dict = Depends(get_current_user),
+    body: ApproveRequestBody,
+    current_user: dict = Depends(require_atom("users.manage")),
     session: AsyncSession = Depends(get_session),
 ):
-    user_id = current_user["user_id"]
-
+    # Get join request
     jr_result = await session.execute(
         select(JoinRequest).where(JoinRequest.id == request_id)
     )
@@ -251,31 +255,46 @@ async def approve_join_request(
     if not jr:
         raise HTTPException(status_code=404, detail="Join request not found")
 
-    # Verify current user is admin of that tenant
-    admin_check = await session.execute(
-        select(UserTenant).where(
-            UserTenant.user_id == user_id,
-            UserTenant.tenant_id == jr.tenant_id,
-            UserTenant.role == "admin",
+    # Validate role belongs to this tenant
+    role_result = await session.execute(
+        select(CustomRole)
+        .where(
+            CustomRole.id == body.role_id,
+            CustomRole.tenant_id == current_user["tenant_id"]
         )
     )
-    if not admin_check.scalar_one_or_none():
-        raise HTTPException(status_code=403, detail="Not authorised to approve for this organisation")
+    role = role_result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
 
-    # Add user to user_tenants
+    # Assign role to user
+    user_result = await session.execute(
+        select(User).where(User.id == jr.user_id)
+    )
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.custom_role_id = role.id
+    user.account_status = "active"
+
+    # Add to user_tenants
+    import uuid
     new_membership = UserTenant(
-        user_id=jr.user_id,
-        tenant_id=jr.tenant_id,
-        role="cashier",
+        id=str(uuid.uuid4()),
+        user_id=user.id,
+        tenant_id=current_user["tenant_id"],
+        role=role.id,
     )
     session.add(new_membership)
 
     jr.status = "approved"
+    jr.role_id = role.id
     jr.reviewed_at = datetime.utcnow()
-    jr.reviewed_by = user_id
-    await session.commit()
+    jr.reviewed_by = current_user["user_id"]
 
-    return {"message": "User approved"}
+    await session.commit()
+    return {"message": "User approved and role assigned"}
 
 
 @router.post("/join-requests/{request_id}/reject")
@@ -310,3 +329,160 @@ async def reject_join_request(
     await session.commit()
 
     return {"message": "User rejected"}
+
+
+# ── Invites ───────────────────────────────────────────────────────────────────
+
+class InviteByEmailBody(BaseModel):
+    email: str
+    role_id: str
+
+
+@router.post("/invite-by-email")
+async def invite_by_email(
+    body: InviteByEmailBody,
+    current_user: dict = Depends(require_atom("users.manage")),
+    session: AsyncSession = Depends(get_session),
+):
+    from datetime import timedelta
+    import uuid
+    tenant_id = current_user["tenant_id"]
+
+    # Check if already a member
+    existing = await session.execute(
+        select(User)
+        .join(UserTenant, UserTenant.user_id == User.id)
+        .where(
+            User.email == body.email,
+            UserTenant.tenant_id == tenant_id
+        )
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="User already a member")
+
+    # Check for existing pending invite
+    existing_invite = await session.execute(
+        select(OrgInvite).where(
+            OrgInvite.email == body.email,
+            OrgInvite.tenant_id == tenant_id,
+            OrgInvite.status == "pending"
+        )
+    )
+    if existing_invite.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Pending invite already exists for this email")
+
+    # Create invite
+    invite = OrgInvite(
+        id=str(uuid.uuid4()),
+        tenant_id=tenant_id,
+        invited_by=current_user["user_id"],
+        email=body.email,
+        role_id=body.role_id,
+        status="pending",
+        expires_at=datetime.utcnow() + timedelta(days=7)
+    )
+    session.add(invite)
+
+    # If user already exists on platform — link them
+    user_result = await session.execute(
+        select(User).where(User.email == body.email)
+    )
+    existing_user = user_result.scalar_one_or_none()
+    if existing_user:
+        invite.user_id = existing_user.id
+
+    await session.commit()
+    return {
+        "message": f"Invite sent to {body.email}",
+        "user_exists": existing_user is not None
+    }
+
+
+@router.post("/invite/{invite_id}/accept")
+async def accept_invite(
+    invite_id: str,
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    import uuid
+    result = await session.execute(
+        select(OrgInvite).where(OrgInvite.id == invite_id)
+    )
+    invite = result.scalar_one_or_none()
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found")
+
+    if invite.email != current_user["email"]:
+        raise HTTPException(status_code=403, detail="This invite is not for you")
+
+    if invite.status != "pending":
+        raise HTTPException(status_code=400, detail="Invite already used")
+
+    if invite.expires_at.replace(tzinfo=None) < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Invite has expired")
+
+    # Assign role and activate
+    user_result = await session.execute(
+        select(User).where(User.id == current_user["user_id"])
+    )
+    user = user_result.scalar_one_or_none()
+    user.custom_role_id = invite.role_id
+    user.account_status = "active"
+
+    session.add(UserTenant(
+        id=str(uuid.uuid4()),
+        user_id=user.id,
+        tenant_id=invite.tenant_id,
+        role=invite.role_id
+    ))
+
+    invite.status = "accepted"
+    invite.user_id = user.id
+    await session.commit()
+
+    return {"message": "Invite accepted. You can now access the organisation."}
+
+
+@router.post("/invite/{invite_id}/decline")
+async def decline_invite(
+    invite_id: str,
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    result = await session.execute(
+        select(OrgInvite).where(OrgInvite.id == invite_id)
+    )
+    invite = result.scalar_one_or_none()
+    if not invite or invite.email != current_user["email"]:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    
+    invite.status = "declined"
+    await session.commit()
+    return {"message": "Invite declined"}
+
+
+@router.get("/invites")
+async def list_invites(
+    current_user: dict = Depends(require_atom("users.manage")),
+    session: AsyncSession = Depends(get_session),
+):
+    result = await session.execute(
+        select(OrgInvite, CustomRole)
+        .join(CustomRole, OrgInvite.role_id == CustomRole.id)
+        .where(
+            OrgInvite.tenant_id == current_user["tenant_id"],
+            OrgInvite.status == "pending"
+        )
+        .order_by(OrgInvite.created_at.desc())
+    )
+    return [
+        {
+            "id": oi.id,
+            "email": oi.email,
+            "role_name": cr.name,
+            "created_at": oi.created_at.isoformat() if oi.created_at else None,
+            "expires_at": oi.expires_at.isoformat() if oi.expires_at else None,
+            "user_exists": oi.user_id is not None
+        }
+        for oi, cr in result.all()
+    ]
