@@ -430,58 +430,58 @@ component UsersPage {
         )}
 
         {this.selectedUser ? (
-          <div style={`position:fixed;top:0;right:0;bottom:0;width:360px;background:var(--color-surface-1,#1e1e2e);border-left:1px solid var(--color-border,rgba(255,255,255,0.08));box-shadow:-4px 0 24px rgba(0,0,0,0.18);z-index:200;display:flex;flex-direction:column;overflow-y:auto;transform:translateX(0);transition:transform 0.2s ease-out;`}>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--color-border,rgba(255,255,255,0.08));flex-shrink:0;">
-              <span style="font-weight:600;font-size:0.9375rem;color:var(--color-text);">Member Details</span>
+          <div style="position:fixed;top:0;right:0;bottom:0;width:360px;background:var(--color-bg-surface);border-left:1px solid var(--color-bg-border);box-shadow:-4px 0 24px rgba(0,0,0,0.15);z-index:200;display:flex;flex-direction:column;overflow-y:auto;transform:translateX(0);transition:transform 0.2s ease-out;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--color-bg-border);flex-shrink:0;">
+              <span style="font-weight:600;font-size:0.9375rem;color:var(--color-text-primary);">Member Details</span>
               <button
-                style="background:none;border:none;cursor:pointer;color:var(--color-text-muted);font-size:1.2rem;line-height:1;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center;"
+                style="background:transparent;border:none;cursor:pointer;color:var(--color-text-muted);font-size:1.2rem;line-height:1;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center;"
                 onclick={() => { this.selectedUser = null; this.scheduleUpdate?.(); }}
               >×</button>
             </div>
 
             <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1.5rem;flex:1;">
               <div style="display:flex;align-items:center;gap:1rem;">
-                <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1.15rem;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:-0.5px;">
+                <div style="width:48px;height:48px;border-radius:50%;background:var(--color-accent);display:flex;align-items:center;justify-content:center;font-size:1.15rem;font-weight:700;color:var(--color-bg-base);flex-shrink:0;">
                   {(this.selectedUser.full_name || this.selectedUser.email || '?').charAt(0).toUpperCase()}
                 </div>
                 <div style="min-width:0;">
-                  <div style="font-weight:600;font-size:0.9375rem;color:var(--color-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{this.selectedUser.full_name || '—'}</div>
+                  <div style="font-weight:600;font-size:0.9375rem;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{this.selectedUser.full_name || '—'}</div>
                   <div style="font-size:0.8125rem;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{this.selectedUser.email}</div>
                 </div>
               </div>
 
-              <div style="display:flex;flex-direction:column;gap:0;">
-                <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:0.5rem;">Status</div>
-                <div style="display:flex;flex-direction:column;gap:0.625rem;padding:0.875rem;background:var(--color-surface-2,rgba(255,255,255,0.04));border-radius:8px;border:1px solid var(--color-border,rgba(255,255,255,0.06));">
+              <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--color-text-muted);">Status</div>
+                <div style="display:flex;flex-direction:column;gap:0.625rem;padding:0.875rem;background:var(--color-bg-elevated);border-radius:8px;border:1px solid var(--color-bg-border);">
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="font-size:0.8125rem;color:var(--color-text-muted);">Account</span>
-                    <span style={`font-size:0.75rem;font-weight:500;padding:2px 10px;border-radius:10px;background:${
-                      this.selectedUser.account_status === 'active' ? 'rgba(34,197,94,0.12)' :
-                      this.selectedUser.account_status === 'pending' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)'
-                    };color:${
-                      this.selectedUser.account_status === 'active' ? '#22C55E' :
-                      this.selectedUser.account_status === 'pending' ? '#F59E0B' : '#EF4444'
-                    };text-transform:capitalize;`}>
+                    <span style={`font-size:0.75rem;font-weight:500;padding:2px 10px;border-radius:10px;text-transform:capitalize;background:color-mix(in srgb,${
+                      this.selectedUser.account_status === 'active' ? 'var(--color-success)' :
+                      this.selectedUser.account_status === 'pending' ? 'var(--color-warning)' : 'var(--color-danger)'
+                    } 15%,transparent);color:${
+                      this.selectedUser.account_status === 'active' ? 'var(--color-success)' :
+                      this.selectedUser.account_status === 'pending' ? 'var(--color-warning)' : 'var(--color-danger)'
+                    };`}>
                       {this.selectedUser.account_status || 'unknown'}
                     </span>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="font-size:0.8125rem;color:var(--color-text-muted);">Role</span>
                     {this.selectedUser.role_name ? (
-                      <span style="font-size:0.75rem;font-weight:500;padding:2px 10px;border-radius:10px;background:var(--color-surface-1,rgba(255,255,255,0.06));color:var(--color-text-secondary);">{this.selectedUser.role_name}</span>
+                      <span style="font-size:0.75rem;font-weight:500;padding:2px 10px;border-radius:10px;background:var(--color-bg-elevated);color:var(--color-text-secondary);border:1px solid var(--color-bg-border);">{this.selectedUser.role_name}</span>
                     ) : (
-                      <span style="font-size:0.75rem;color:#EF4444;font-weight:500;">No role assigned</span>
+                      <span style="font-size:0.75rem;color:var(--color-danger);font-weight:500;">No role assigned</span>
                     )}
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="font-size:0.8125rem;color:var(--color-text-muted);">Last Login</span>
-                    <span style="font-size:0.8125rem;color:var(--color-text);">{
+                    <span style="font-size:0.8125rem;color:var(--color-text-primary);">{
                       this.selectedUser.last_login ? new Date(this.selectedUser.last_login).toLocaleDateString() : 'Never'
                     }</span>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="font-size:0.8125rem;color:var(--color-text-muted);">Member Since</span>
-                    <span style="font-size:0.8125rem;color:var(--color-text);">{
+                    <span style="font-size:0.8125rem;color:var(--color-text-primary);">{
                       this.selectedUser.created_at ? new Date(this.selectedUser.created_at).toLocaleDateString() : '—'
                     }</span>
                   </div>
@@ -490,11 +490,11 @@ component UsersPage {
 
               {window.__skltn?.can('users.manage_roles') && (
                 <div style="display:flex;flex-direction:column;gap:0.5rem;">
-                  <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-text-muted);">{
+                  <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--color-text-muted);">{
                     this.selectedUser.role_name ? 'Change Role' : 'Assign Role'
                   }</div>
                   <select
-                    style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--color-border,rgba(255,255,255,0.12));background:var(--color-surface-2,rgba(255,255,255,0.04));color:var(--color-text);font-size:0.875rem;outline:none;"
+                    style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--color-bg-border);background:var(--color-bg-elevated);color:var(--color-text-primary);font-size:0.875rem;outline:none;"
                     onchange={(e: Event) => {
                       this.selectedUserRoleId = (e.target as HTMLSelectElement).value;
                       this.scheduleUpdate?.();
@@ -506,7 +506,7 @@ component UsersPage {
                     ))}
                   </select>
                   <button
-                    style="width:100%;padding:9px 16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.875rem;font-weight:600;letter-spacing:0.01em;"
+                    style="width:100%;padding:9px 16px;background:var(--color-text-primary);color:var(--color-bg-base);border:none;border-radius:6px;cursor:pointer;font-size:0.875rem;font-weight:600;letter-spacing:0.01em;"
                     onclick={() => {
                       if (this.selectedUserRoleId) this.assignRole(this.selectedUser.id, this.selectedUserRoleId);
                       else this.notifications?.warning('Select a role first');
@@ -516,14 +516,14 @@ component UsersPage {
               )}
 
               {window.__skltn?.can('users.manage') && this.selectedUser.role_name !== 'Super User' && (
-                <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:auto;padding-top:1rem;border-top:1px solid var(--color-border,rgba(255,255,255,0.06));">
-                  <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:0.25rem;">Actions</div>
+                <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:auto;padding-top:1rem;border-top:1px solid var(--color-bg-border);">
+                  <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:0.25rem;">Actions</div>
                   <button
-                    style="width:100%;padding:8px 16px;background:transparent;color:#F59E0B;border:1px solid rgba(245,158,11,0.35);border-radius:6px;cursor:pointer;font-size:0.875rem;font-weight:500;"
+                    style="width:100%;padding:8px 16px;background:transparent;color:var(--color-warning);border:1px solid var(--color-warning);border-radius:6px;cursor:pointer;font-size:0.875rem;font-weight:500;"
                     onclick={() => this.notifications?.warning('Suspend flow coming soon')}
                   >Suspend Member</button>
                   <button
-                    style="width:100%;padding:8px 16px;background:transparent;color:#EF4444;border:1px solid rgba(239,68,68,0.35);border-radius:6px;cursor:pointer;font-size:0.875rem;font-weight:500;"
+                    style="width:100%;padding:8px 16px;background:transparent;color:var(--color-danger);border:1px solid var(--color-danger);border-radius:6px;cursor:pointer;font-size:0.875rem;font-weight:500;"
                     onclick={() => this.notifications?.warning('Remove from org flow coming soon')}
                   >Remove from Org</button>
                 </div>
