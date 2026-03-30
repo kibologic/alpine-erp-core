@@ -230,30 +230,30 @@ component PosTerminalPage {
 
     try {
       // Round everything to 2 decimal places for Pydantic/Decimal precision
-      const r = (n: number) => Number(n.toFixed(2));
+      const round2 = (n: any) => parseFloat(Number(n).toFixed(2));
 
       const saleData = {
         session_id: this.session.id,
         register_id: REGISTER_ID,
-        subtotal: r(this.computedSubtotal),
-        tax: r(this.computedTax),
+        subtotal: round2(this.computedSubtotal),
+        tax: round2(this.computedTax),
         discount: 0,
-        total: r(this.computedTotal),
+        total: round2(this.computedTotal),
         lines: this.cartItems.map((item: any) => {
           const unitPrice = item.product?.price || item.price || 0;
-          const qty = item.qty || item.quantity || 1;
+          const qty = item.qty || item.quantity || item.qty || 1;
           return {
             product_id: item.product?.id || item.id,
-            quantity: r(qty),
-            unit_price: r(unitPrice),
+            quantity: Number(qty),
+            unit_price: round2(unitPrice),
             discount: 0,
-            tax: r(unitPrice * qty * 0.165),
-            line_total: r(unitPrice * qty)
+            tax: round2(Number(unitPrice) * Number(qty) * 0.165),
+            line_total: round2(Number(unitPrice) * Number(qty))
           };
         }),
         payments: [{
           method: this.selectedPaymentMethod,
-          amount: this.selectedPaymentMethod === 'cash' ? r(this.amountTendered) : r(this.computedTotal)
+          amount: this.selectedPaymentMethod === 'cash' ? round2(this.amountTendered) : round2(this.computedTotal)
         }]
       };
 
