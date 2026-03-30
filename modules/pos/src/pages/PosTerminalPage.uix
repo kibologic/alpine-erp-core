@@ -19,9 +19,11 @@ component PosTerminalPage {
   state { let loading: boolean = true; }
   state { let openingFloat: number = 0; }
   state { let processing: boolean = false; }
-  state { let paymentMethod: any = 'cash'; }
-  state { let showSuccessModal: boolean = false; }
-  state { let lastSaleTotal: number = 0; }
+  state { let selectedPaymentMethod: string = 'cash'; }
+  state { let showCheckoutModal: boolean = false; }
+  state { let checkoutState: string = 'checkout'; }
+  state { let amountTendered: number = 0; }
+  state { let lastSale: any = null; }
   state { let appFullscreen: boolean = false; }
   state { let browserFullscreen: boolean = false; }
   state { let showCloseConfirm: boolean = false; }
@@ -162,43 +164,123 @@ component PosTerminalPage {
     this.cartItems = this.cartItems.filter((i) => i.product.id !== productId);
   }
 
-  async checkout() {
+  get computedSubtotal() {
+    return this.cartItems.reduce(
+      (sum: number, item: any) =>
+        sum + ((item.price || item.product?.price || 0) * (item.quantity || item.qty || 1)), 0
+    );
+  }
+
+  get computedTax() {
+    return this.computedSubtotal * 0.165;
+  }
+
+  get computedTotal() {
+    return this.computedSubtotal + this.computedTax;
+  }
+
+  get computedChange() {
+    if (!this.amountTendered) return 0;
+    return Math.max(0, this.amountTendered - this.computedTotal);
+  }
+
+  formatMWK(amount: number) {
+    return 'MWK ' + (amount || 0).toLocaleString('en-MW', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  openCheckout() {
     if (this.cartItems.length === 0) return;
+    this.checkoutState = 'checkout';
+    this.selectedPaymentMethod = 'cash';
+    this.amountTendered = 0;
+    this.showCheckoutModal = true;
+  }
+
+  closeCheckoutModal() {
+    this.showCheckoutModal = false;
+    this.checkoutState = 'checkout';
+  }
+
+  async processPayment() {
+    if (this.processing) return;
     this.processing = true;
 
-    const subtotal = this.cartItems.reduce((s, i) => s + Number(i.lineTotal), 0);
-    const tax = subtotal * TAX_RATE;
-    const total = subtotal + tax;
-
-    const saleData = {
-      session_id: this.session.id,
-      register_id: REGISTER_ID,
-      subtotal,
-      tax,
-      discount: 0,
-      total,
-      lines: this.cartItems.map(i => ({
-        product_id: i.product.id,
-        quantity: i.qty,
-        unit_price: i.product.price,
-        discount: 0,
-        tax: i.product.price * i.qty * 0.165, // Using 16.5% for line tax logic
-        line_total: i.lineTotal
-      })),
-      payments: [{ method: this.paymentMethod, amount: total }]
-    };
-
     try {
-      const res = await PosService.createSale(saleData);
-      this.lastSaleTotal = total;
+      const saleData = {
+        session_id: this.session.id,
+        register_id: REGISTER_ID,
+        subtotal: this.computedSubtotal,
+        tax: this.computedTax,
+        discount: 0,
+        total: this.computedTotal,
+        lines: this.cartItems.map((item: any) => ({
+          product_id: item.product?.id || item.id,
+          quantity: item.qty || item.quantity,
+          unit_price: item.product?.price || item.price,
+          discount: 0,
+          tax: (item.product?.price || item.price) * (item.qty || item.quantity) * 0.165,
+          line_total: item.lineTotal || ((item.product?.price || item.price) * (item.qty || item.quantity))
+        })),
+        payments: [{
+          method: this.selectedPaymentMethod,
+          amount: this.computedTotal
+        }]
+      };
+
+      const response = await PosService.createSale(saleData);
+      this.lastSale = response.data || response;
+
+      // Auto-print receipt
+      this.triggerPrint();
+
+      // Switch modal to receipt state
+      this.checkoutState = 'receipt';
+
+      // Clear cart
       this.cartItems = [];
-      this.showSuccessModal = true;
-      await this.refreshData();
-    } catch (err) {
-      this.notifications?.error(`Checkout failed: ${err.message}`);
+
+    } catch (e: any) {
+      this.notifications?.error('Payment failed. Please try again.');
     } finally {
       this.processing = false;
     }
+  }
+
+  triggerPrint() {
+    try {
+      const ahbWs = new WebSocket('ws://127.0.0.1:5151');
+      ahbWs.onopen = () => {
+        ahbWs.send(JSON.stringify({
+          command: 'PRINT_RECEIPT',
+          data: {
+            items: this.cartItems,
+            subtotal: this.computedSubtotal,
+            tax: this.computedTax,
+            total: this.computedTotal,
+            payment_method: this.selectedPaymentMethod,
+            change: this.computedChange,
+            sale_id: this.lastSale?.id
+          }
+        }));
+        ahbWs.close();
+      };
+      ahbWs.onerror = () => {
+        window.print();
+      };
+    } catch (e) {
+      window.print();
+    }
+  }
+
+  startNewTransaction() {
+    this.cartItems = [];
+    this.lastSale = null;
+    this.showCheckoutModal = false;
+    this.checkoutState = 'checkout';
+    this.amountTendered = 0;
   }
 
   render() {
@@ -323,26 +405,21 @@ component PosTerminalPage {
             </div>
           </div>
 
-          <div class="pos-payment-methods">
-            {['cash', 'card', 'mobile'].map(method => (
-              <button 
-                class={`pos-pay-method ${this.paymentMethod === method ? 'active' : ''}`}
-                onclick={() => this.paymentMethod = method as any}
-              >
-                {method.toUpperCase()}
-              </button>
-            ))}
-          </div>
-
-          {window.__skltn?.can('pos.sell') && (
-            <button
-              class="pos-charge-btn"
-              disabled={this.cartItems.length === 0 || this.processing}
-              onclick={() => this.checkout()}
-            >
-              {this.processing ? 'PROCESSING...' : `CHARGE ${fmt(total)}`}
-            </button>
-          )}
+          <button
+            class="pos-checkout-btn"
+            onclick={this.openCheckout.bind(this)}
+            disabled={this.cartItems.length === 0}
+            style={`margin:0 16px 12px;
+              padding:14px;border-radius:10px;border:none;
+              background:var(--color-text-primary);
+              color:var(--color-bg-base);
+              font-size:15px;font-weight:700;
+              cursor:pointer;
+              width:calc(100% - 32px);
+              transition:all 0.15s;
+              opacity:${this.cartItems.length === 0 ? 0.4 : 1};`}>
+            Checkout — MWK {this.computedTotal.toLocaleString()}
+          </button>
 
           <div class="pos-session-bar">
             <div class="pos-session-info">Open: {new Date(this.session?.opened_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
@@ -352,19 +429,203 @@ component PosTerminalPage {
           </div>
         </div>
 
-        {/* Success Modal */}
-        {this.showSuccessModal ? 
-          <div class="pos-success-overlay">
-            <div class="pos-success-card">
-              <div class="pos-success-icon">✓</div>
-              <div class="pos-success-title">Sale Complete</div>
-              <div class="pos-success-amount">MWK {this.lastSaleTotal.toLocaleString()}</div>
-              <button class="pos-success-btn" onclick={() => this.showSuccessModal = false}>
-                New Sale
-              </button>
+        {/* Checkout Modal */}
+        {this.showCheckoutModal && (
+          <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px);">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:780px;max-width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+
+              {/* ── CHECKOUT STATE ── */}
+              {this.checkoutState === 'checkout' && (
+                <div style="display:flex;flex-direction:column;height:100%;">
+                  
+                  {/* Header */}
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--color-bg-border);">
+                    <span style="font-size:18px;font-weight:700;color:var(--color-text-primary);">
+                      Checkout
+                    </span>
+                    <button
+                      onclick={this.closeCheckoutModal.bind(this)}
+                      style="background:transparent;border:none;color:var(--color-text-muted);font-size:20px;cursor:pointer;padding:4px 8px;">
+                      ×
+                    </button>
+                  </div>
+
+                  {/* Body — two columns */}
+                  <div style="display:flex;flex:1;min-height:0;overflow:hidden;">
+                    
+                    {/* LEFT — Payment Method */}
+                    <div style="width:320px;flex-shrink:0;padding:24px;border-right:1px solid var(--color-bg-border);display:flex;flex-direction:column;gap:16px;">
+                      <div style="font-size:11px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;">
+                        Payment Method
+                      </div>
+
+                      {[
+                        { id: 'cash', label: 'Cash', icon: '💵' },
+                        { id: 'card', label: 'Card', icon: '💳' },
+                        { id: 'mobile', label: 'Mobile Money', icon: '📱' }
+                      ].map((method: any) => (
+                        <div
+                          onclick={() => {
+                            this.selectedPaymentMethod = method.id;
+                          }}
+                          style={`display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;cursor:pointer;
+                            border:2px solid ${this.selectedPaymentMethod === method.id ? 'var(--color-text-primary)' : 'var(--color-bg-border)'};
+                            background:${this.selectedPaymentMethod === method.id ? 'var(--color-bg-elevated)' : 'transparent'};
+                            transition:all 0.15s;`}>
+                          <span style="font-size:20px;">{method.icon}</span>
+                          <span style="font-size:14px;font-weight:500;color:var(--color-text-primary);">{method.label}</span>
+                          {this.selectedPaymentMethod === method.id && (
+                            <span style="margin-left:auto;color:var(--color-text-primary);font-size:16px;">✓</span>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* Amount tendered — cash only */}
+                      {this.selectedPaymentMethod === 'cash' && (
+                        <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
+                          <label style="font-size:11px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;">
+                            Amount Tendered
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="0.00"
+                            value={this.amountTendered || ''}
+                            oninput={(e: any) => {
+                              this.amountTendered = parseFloat(e.target.value) || 0;
+                            }}
+                            style="padding:10px 14px;background:var(--color-bg-elevated);border:1px solid var(--color-bg-border);border-radius:8px;color:var(--color-text-primary);font-size:15px;outline:none;width:100%;box-sizing:border-box;" />
+
+                          {this.amountTendered > 0 && (
+                            <div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--color-bg-elevated);border-radius:8px;">
+                              <span style="font-size:13px;color:var(--color-text-muted);">Change Due</span>
+                              <span style="font-size:13px;font-weight:700;color:var(--color-success);">
+                                {this.formatMWK(this.computedChange)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* RIGHT — Order Summary */}
+                    <div style="flex:1;padding:24px;display:flex;flex-direction:column;overflow-y:auto;">
+                      <div style="font-size:11px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px;">
+                        Order Summary
+                      </div>
+
+                      {/* Items */}
+                      <div style="flex:1;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+                        {this.cartItems.map((item: any) => (
+                          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--color-bg-border);">
+                            <div style="flex:1;min-width:0;">
+                              <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {item.name || item.product?.name}
+                              </div>
+                              <div style="font-size:11px;color:var(--color-text-muted);">
+                                x{item.qty || item.quantity} × {this.formatMWK(item.price || item.product?.price)}
+                              </div>
+                            </div>
+                            <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-left:16px;flex-shrink:0;">
+                              {this.formatMWK((item.price || item.product?.price) * (item.qty || item.quantity))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Totals */}
+                      <div style="border-top:1px solid var(--color-bg-border);padding-top:12px;display:flex;flex-direction:column;gap:6px;">
+                        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);">
+                          <span>Subtotal</span>
+                          <span>{this.formatMWK(this.computedSubtotal)}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);">
+                          <span>Tax (16.5%)</span>
+                          <span>{this.formatMWK(this.computedTax)}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:var(--color-text-primary);padding-top:8px;border-top:1px solid var(--color-bg-border);margin-top:4px;">
+                          <span>Total</span>
+                          <span>{this.formatMWK(this.computedTotal)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer — Charge button */}
+                  <div style="padding:16px 24px;border-top:1px solid var(--color-bg-border);">
+                    <button
+                      onclick={this.processPayment.bind(this)}
+                      disabled={this.processing}
+                      style={`width:100%;padding:16px;border-radius:10px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:16px;font-weight:700;cursor:pointer;opacity:${this.processing ? 0.6 : 1};transition:all 0.15s;letter-spacing:0.3px;`}>
+                      {this.processing ? 'Processing...' : `Charge ${this.formatMWK(this.computedTotal)}`}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── RECEIPT STATE ── */}
+              {this.checkoutState === 'receipt' && (
+                <div style="display:flex;flex-direction:column;align-items:center;padding:40px 32px;">
+                  
+                  {/* Success icon */}
+                  <div style="width:64px;height:64px;border-radius:50%;background:color-mix(in srgb, var(--color-success) 15%, transparent);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px;">
+                    ✓
+                  </div>
+
+                  <div style="font-size:22px;font-weight:700;color:var(--color-text-primary);margin-bottom:4px;">
+                    Payment Complete
+                  </div>
+
+                  <div style="font-size:14px;color:var(--color-text-muted);margin-bottom:4px;">
+                    {this.selectedPaymentMethod === 'cash' ? 'Cash' : this.selectedPaymentMethod === 'card' ? 'Card' : 'Mobile Money'}
+                  </div>
+
+                  {this.selectedPaymentMethod === 'cash' && this.amountTendered > this.computedTotal && (
+                    <div style="font-size:13px;color:var(--color-success);margin-bottom:8px;">
+                      Change: {this.formatMWK(this.computedChange)}
+                    </div>
+                  )}
+
+                  <div style="font-size:32px;font-weight:800;color:var(--color-text-primary);margin-bottom:24px;">
+                    {this.formatMWK(this.lastSale?.total || this.computedTotal)}
+                  </div>
+
+                  {/* Receipt items */}
+                  <div style="width:100%;max-width:400px;background:var(--color-bg-elevated);border-radius:10px;padding:16px;margin-bottom:24px;">
+                    {(this.lastSale?.lines || this.cartItems).map((item: any) => (
+                      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--color-bg-border);font-size:13px;">
+                        <span style="color:var(--color-text-secondary);">
+                          {item.name || item.product_name || item.product?.name} x {item.quantity || item.qty}
+                        </span>
+                        <span style="color:var(--color-text-primary);font-weight:500;">
+                          {this.formatMWK(item.line_total || (item.price || item.product?.price) * (item.quantity || item.qty))}
+                        </span>
+                      </div>
+                    ))}
+
+                    <div style="display:flex;justify-content:space-between;padding-top:10px;margin-top:4px;font-size:14px;font-weight:700;color:var(--color-text-primary);">
+                      <span>Total</span>
+                      <span>{this.formatMWK(this.lastSale?.total || this.computedTotal)}</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div style="display:flex;gap:12px;width:100%;max-width:400px;">
+                    <button
+                      onclick={this.triggerPrint.bind(this)}
+                      style="flex:1;padding:12px;border-radius:8px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-primary);font-size:13px;font-weight:600;cursor:pointer;">
+                      🖨 Print Receipt
+                    </button>
+                    <button
+                      onclick={this.startNewTransaction.bind(this)}
+                      style="flex:1;padding:12px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:13px;font-weight:600;cursor:pointer;">
+                      New Transaction
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        : null}
+        )}
 
         {/* Close Confirmation Modal */}
         {this.showCloseConfirm ? (
