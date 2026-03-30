@@ -1,17 +1,36 @@
 nohup: ignoring input
-INFO:     Started server process [99174]
+INFO:     Started server process [44583]
 INFO:     Waiting for application startup.
-[2m2026-03-30T03:14:14.395783Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+[2m2026-03-30T05:18:27.380652Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:46726 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:46732 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:46734 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:46748 - "GET /api/v1/tenant/limits HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55072 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55076 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55082 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55090 - "GET /api/v1/tenant/limits HTTP/1.1" 200 OK
-INFO:     127.0.0.1:57194 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:59070 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:54444 - "GET /api/v1/tenant/limits HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41576 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41590 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41602 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41618 - "POST /api/v1/pos/sessions/open HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:46342 - "POST /api/v1/pos/sessions/open HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:36946 - "POST /api/v1/pos/sessions/open HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40424 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40420 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59404 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59388 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59018 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59024 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59030 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60584 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60598 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60608 - "GET /api/v1/pos/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60624 - "POST /api/v1/pos/sales HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59970 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59972 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36026 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36036 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36032 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54492 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54494 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54510 - "GET /api/v1/pos/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56638 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56654 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51802 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51810 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49074 - "POST /api/v1/pos/sales HTTP/1.1" 200 OK
