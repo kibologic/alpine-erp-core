@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from gbil.math import Order, Cash, Money
 
 from core.db import get_session
 from core.auth import get_current_tenant
@@ -114,7 +115,7 @@ async def list_sales(
     ]
 
 
-@router.post("/sales", response_model=schemas.SaleResponse)
+@router.post("/sales")
 async def create_sale(
     data: schemas.SaleCreate,
     session: AsyncSession = Depends(get_session),
@@ -123,8 +124,85 @@ async def create_sale(
     current_user: dict = Depends(get_current_user),
 ):
     await limits.check_sales_limit()
+
+    # ── gbil-math: calculate order totals precisely ──
+    order_result = Order.calculate([
+        {
+            "unit_price": float(line.unit_price),
+            "quantity": float(line.quantity),
+            "tax_rate": "0.165",
+            "discount_fixed": float(line.discount) if line.discount else 0,
+        }
+        for line in data.lines
+    ])
+
+    # ── gbil-math: validate cash payment sufficiency ──
+    change_denominations = {}
+    for payment in data.payments:
+        if payment.method == "cash":
+            cash_result = Cash.tender(
+                total=order_result.total,
+                tendered=float(payment.amount)
+            )
+            if not cash_result.sufficient:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "code": "INSUFFICIENT_PAYMENT",
+                        "message": (
+                            f"Amount tendered "
+                            f"({Money.format(float(payment.amount), 'MWK')}) "
+                            f"is less than total "
+                            f"({Money.format(order_result.total, 'MWK')})"
+                        ),
+                        "total": float(order_result.total),
+                        "tendered": float(payment.amount),
+                        "shortfall": float(
+                            float(order_result.total) - float(payment.amount)
+                        )
+                    }
+                )
+            change_denominations = Cash.suggest_denominations(
+                float(cash_result.change)
+            )
+
     try:
-        return await service.create_sale(session, tenant_id, current_user["user_id"], data)
+        sale = await service.create_sale(session, tenant_id, current_user["user_id"], data)
+        # Attach change denominations to response dict
+        sale_dict = {
+            "id": sale.id,
+            "sale_number": sale.sale_number,
+            "customer_id": str(sale.customer_id) if sale.customer_id else None,
+            "cashier_id": str(sale.cashier_id),
+            "session_id": str(sale.session_id),
+            "subtotal": float(sale.subtotal),
+            "tax": float(sale.tax),
+            "discount": float(sale.discount),
+            "total": float(sale.total),
+            "status": sale.status,
+            "created_at": sale.created_at.isoformat(),
+            "lines": [
+                {
+                    "id": str(l.id),
+                    "product_id": str(l.product_id),
+                    "quantity": float(l.quantity),
+                    "unit_price": float(l.unit_price),
+                    "line_total": float(l.line_total),
+                }
+                for l in sale.lines
+            ],
+            "payments": [
+                {
+                    "id": str(p.id),
+                    "method": p.method,
+                    "amount": float(p.amount),
+                    "created_at": p.created_at.isoformat(),
+                }
+                for p in sale.payments
+            ],
+            "change_denominations": change_denominations,
+        }
+        return sale_dict
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
