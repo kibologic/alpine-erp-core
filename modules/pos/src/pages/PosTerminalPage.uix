@@ -30,6 +30,8 @@ component PosTerminalPage {
   state { let showCloseConfirm: boolean = false; }
   state { let closingFloat: number = 0; }
   state { let notifications: any = null; }
+  state { let showUpgradeModal: boolean = false; }
+  state { let upgradeMessage: string = ''; }
 
   async mounted() {
     this.notifications = window.__skltn.registry.get('notifications');
@@ -88,7 +90,8 @@ component PosTerminalPage {
       this.session = await PosService.openSession(REGISTER_ID, this.openingFloat, deviceId);
     } catch (err: any) {
       if (err.status === 403 && err.detail?.includes('Upgrade')) {
-        this.notifications?.error(err.detail); // We will replace this with the Upgrade Required modal shortly
+        this.upgradeMessage = err.detail;
+        this.showUpgradeModal = true;
       } else {
         this.notifications?.error(`Failed to open session: ${err.message || err.detail || 'Unknown error'}`);
       }
@@ -221,24 +224,31 @@ component PosTerminalPage {
     this.processing = true;
 
     try {
+      // Round everything to 2 decimal places for Pydantic/Decimal precision
+      const r = (n: number) => Number(n.toFixed(2));
+
       const saleData = {
         session_id: this.session.id,
         register_id: REGISTER_ID,
-        subtotal: this.computedSubtotal,
-        tax: this.computedTax,
+        subtotal: r(this.computedSubtotal),
+        tax: r(this.computedTax),
         discount: 0,
-        total: this.computedTotal,
-        lines: this.cartItems.map((item: any) => ({
-          product_id: item.product?.id || item.id,
-          quantity: item.qty || item.quantity,
-          unit_price: item.product?.price || item.price,
-          discount: 0,
-          tax: (item.product?.price || item.price) * (item.qty || item.quantity) * 0.165,
-          line_total: item.lineTotal || ((item.product?.price || item.price) * (item.qty || item.quantity))
-        })),
+        total: r(this.computedTotal),
+        lines: this.cartItems.map((item: any) => {
+          const unitPrice = item.product?.price || item.price || 0;
+          const qty = item.qty || item.quantity || 1;
+          return {
+            product_id: item.product?.id || item.id,
+            quantity: r(qty),
+            unit_price: r(unitPrice),
+            discount: 0,
+            tax: r(unitPrice * qty * 0.165),
+            line_total: r(unitPrice * qty)
+          };
+        }),
         payments: [{
           method: this.selectedPaymentMethod,
-          amount: this.computedTotal
+          amount: this.selectedPaymentMethod === 'cash' ? r(this.amountTendered) : r(this.computedTotal)
         }]
       };
 
@@ -259,6 +269,15 @@ component PosTerminalPage {
 
     } catch (e: any) {
       const detail = e?.response?.data?.detail || e?.data?.detail;
+      
+      // Handle upgrade message on sale creation too (if limit hit)
+      if (e?.status === 403 && detail?.includes('Upgrade')) {
+        this.upgradeMessage = detail;
+        this.showUpgradeModal = true;
+        this.processing = false;
+        return;
+      }
+
       if (detail?.code === 'INSUFFICIENT_PAYMENT') {
         this.notifications?.error(
           detail.message ||
@@ -680,6 +699,36 @@ component PosTerminalPage {
             </div>
           </div>
         ) : null}
+
+        {/* Upgrade Required Modal */}
+        {this.showUpgradeModal && (
+          <div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10002;backdrop-filter:blur(8px);">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:24px;width:480px;padding:40px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+              <div style="font-size:48px;margin-bottom:24px;">🚀</div>
+              <h2 style="font-size:24px;font-weight:800;color:var(--color-text-primary);margin-bottom:12px;">Premium Feature</h2>
+              <p style="font-size:15px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:32px;">
+                {this.upgradeMessage || 'You have reached a tier limit. Upgrade to a Pro or Enterprise plan to unlock more capacity.'}
+              </p>
+              
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <button 
+                  onclick={() => window.open('https://kibologic.com/pricing', '_blank')}
+                  style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;">
+                  View Pricing & Plans
+                </button>
+                <button 
+                  onclick={() => this.showUpgradeModal = false}
+                  style="width:100%;padding:14px;border-radius:12px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-muted);font-size:14px;font-weight:500;cursor:pointer;">
+                  Maybe Later
+                </button>
+              </div>
+              
+              <p style="font-size:12px;color:var(--color-text-muted);margin-top:24px;">
+                Need help? <a href="mailto:support@kibologic.com" style="color:var(--color-text-primary);text-decoration:none;font-weight:600;">Contact Support</a>
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

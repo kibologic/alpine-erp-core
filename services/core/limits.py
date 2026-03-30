@@ -8,7 +8,7 @@ TIER_LIMITS = {
     "free": {
         "max_users": 3,
         "max_products": 500,
-        "max_terminals": 1,
+        "max_terminals": 0,
         "device_locked": True,
     },
     "pro": {
