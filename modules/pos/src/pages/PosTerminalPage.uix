@@ -12,6 +12,7 @@ component PosTerminalPage {
   props = {};
 
   state { let cartItems: any[] = []; }
+  state { let receiptItems: any[] = []; }
   state { let products: any[] = []; }
   state { let search: string = ''; }
   state { let selectedCategory: string = 'All'; }
@@ -206,6 +207,17 @@ component PosTerminalPage {
 
   async processPayment() {
     if (this.processing) return;
+
+    if (this.selectedPaymentMethod === 'cash' &&
+        this.amountTendered > 0 &&
+        this.amountTendered < this.computedTotal) {
+      this.notifications?.error(
+        `Amount tendered ${this.formatMWK(this.amountTendered)} ` +
+        `is less than total ${this.formatMWK(this.computedTotal)}`
+      );
+      return;
+    }
+
     this.processing = true;
 
     try {
@@ -239,10 +251,22 @@ component PosTerminalPage {
       // Switch modal to receipt state
       this.checkoutState = 'receipt';
 
+      // Store items before clearing cart so we have product names
+      this.receiptItems = [...this.cartItems];
+
       // Clear cart
       this.cartItems = [];
 
     } catch (e: any) {
+      const detail = e?.response?.data?.detail || e?.data?.detail;
+      if (detail?.code === 'INSUFFICIENT_PAYMENT') {
+        this.notifications?.error(
+          detail.message ||
+          'Amount tendered is less than total'
+        );
+        this.processing = false;
+        return;
+      }
       this.notifications?.error('Payment failed. Please try again.');
     } finally {
       this.processing = false;
@@ -277,6 +301,7 @@ component PosTerminalPage {
 
   startNewTransaction() {
     this.cartItems = [];
+    this.receiptItems = [];
     this.lastSale = null;
     this.showCheckoutModal = false;
     this.checkoutState = 'checkout';
@@ -591,7 +616,7 @@ component PosTerminalPage {
 
                   {/* Receipt items */}
                   <div style="width:100%;max-width:400px;background:var(--color-bg-elevated);border-radius:10px;padding:16px;margin-bottom:24px;">
-                    {(this.lastSale?.lines || this.cartItems).map((item: any) => (
+                    {this.receiptItems.map((item: any) => (
                       <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--color-bg-border);font-size:13px;">
                         <span style="color:var(--color-text-secondary);">
                           {item.name || item.product_name || item.product?.name} x {item.quantity || item.qty}
