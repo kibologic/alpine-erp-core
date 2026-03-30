@@ -50,6 +50,14 @@ async def open_session(
     tenant_id: str = Depends(get_current_tenant),
     current_user: dict = Depends(get_current_user),
 ):
+    from core.limits import check_limit
+    limit_res = await check_limit(tenant_id, session, "terminal", data.device_id)
+    if not limit_res.get("allowed"):
+        raise HTTPException(
+            status_code=403, 
+            detail=limit_res.get("upgrade_message", "Limit exceeded")
+        )
+        
     try:
         return await service.open_session(session, tenant_id, current_user["user_id"], data)
     except ValueError as e:

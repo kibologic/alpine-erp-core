@@ -65,6 +65,19 @@ async def get_tenant_config(
     }
 
 
+@router.get("/limits")
+async def get_limits(
+    current_user: dict = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+    from core.limits import get_tenant_limits
+    tenant_id = current_user.get("tenant_id")
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="Tenant ID context missing")
+        
+    return await get_tenant_limits(tenant_id, session)
+
+
 # ── Update tenant ─────────────────────────────────────────────────────────────
 
 @router.patch("/{tid}")

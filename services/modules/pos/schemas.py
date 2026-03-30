@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 class SessionOpen(BaseModel):
     register_id: str
     opening_float: Decimal = Field(default=Decimal("0.0"), ge=0)
+    device_id: Optional[str] = None
 
 
 class SessionClose(BaseModel):
