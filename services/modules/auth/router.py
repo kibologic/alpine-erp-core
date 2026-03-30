@@ -130,10 +130,21 @@ async def login(
 
     atoms = await get_user_atoms(session, user.id)
 
+    # Fetch the main tenant tier to return it in the response
+    tier = "free"
+    if tenants:
+        tenant_result = await session.execute(
+            select(Tenant).where(Tenant.id == tenants[0]["tenant_id"])
+        )
+        main_tenant = tenant_result.scalar_one_or_none()
+        if main_tenant:
+            tier = main_tenant.tier
+
     return {
         "token": token,
         "user": {"id": user.id, "email": user.email, "account_status": user.account_status, "full_name": user.full_name},
         "tenants": tenants,
+        "tier": tier,
         "atoms": atoms,
         "pending_invites": pending_invites,
         "expiresAt": expires_at.isoformat() + "Z",

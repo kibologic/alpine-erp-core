@@ -1,5 +1,5 @@
 import { SwissComponent } from '@swissjs/core';
-import { PosService, InventoryService } from '@alpine/core';
+import { PosService, InventoryService, getDeviceId } from '@alpine/core';
 
 const TAX_RATE = 0.16;
 const REGISTER_ID = 'REG-001';
@@ -81,9 +81,14 @@ component PosTerminalPage {
   async openSession() {
     this.processing = true;
     try {
-      this.session = await PosService.openSession(REGISTER_ID, this.openingFloat);
-    } catch (err) {
-      this.notifications?.error(`Failed to open session: ${err.message}`);
+      const deviceId = await getDeviceId();
+      this.session = await PosService.openSession(REGISTER_ID, this.openingFloat, deviceId);
+    } catch (err: any) {
+      if (err.status === 403 && err.detail?.includes('Upgrade')) {
+        this.notifications?.error(err.detail); // We will replace this with the Upgrade Required modal shortly
+      } else {
+        this.notifications?.error(`Failed to open session: ${err.message || err.detail || 'Unknown error'}`);
+      }
     } finally {
       this.processing = false;
     }

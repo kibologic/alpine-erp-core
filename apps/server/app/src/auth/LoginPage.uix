@@ -60,6 +60,7 @@ component LoginPage {
         JSON.stringify(data.user));
       localStorage.setItem('alpine-user-atoms',
         JSON.stringify(data.atoms || []));
+      localStorage.setItem('alpine-tier', data.tier || 'free');
       if (data.tenants?.length > 0) {
         localStorage.setItem('alpine-tenant-id',
           data.tenants[0].tenant_id);

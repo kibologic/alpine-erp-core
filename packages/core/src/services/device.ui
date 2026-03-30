@@ -1,0 +1,21 @@
+export async function getDeviceId(): Promise<string> {
+  let id = localStorage.getItem('alpine-device-id');
+  if (id) return id;
+
+  // Extremely simple fingerprint
+  const parts = [
+    navigator.userAgent,
+    screen.width + 'x' + screen.height,
+    navigator.language,
+    (navigator as any).hardwareConcurrency || 2
+  ];
+  
+  const raw = parts.join('|');
+  const buffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+  const hashArray = Array.from(new Uint8Array(buffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  id = 'dev_' + hashHex.substring(0, 16);
+  localStorage.setItem('alpine-device-id', id);
+  return id;
+}

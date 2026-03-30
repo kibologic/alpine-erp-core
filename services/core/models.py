@@ -59,6 +59,7 @@ class Tenant(Base):
     slug: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     license_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
     tier: Mapped[str] = mapped_column(String(50), nullable=False, default="free")
+    terminal_device_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     industry: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     country: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)

@@ -1,56 +1,30 @@
 nohup: ignoring input
-INFO:     Started server process [7587]
+INFO:     Started server process [43397]
 INFO:     Waiting for application startup.
-[2m2026-03-29T12:57:44.722629Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+[2m2026-03-29T16:09:47.885500Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:36424 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:36430 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:48034 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:48038 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:59056 - "GET /api/v1/roles HTTP/1.1" 200 OK
-INFO:     127.0.0.1:59074 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:59078 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
-INFO:     127.0.0.1:59058 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:38118 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:38130 - "GET /api/v1/roles HTTP/1.1" 200 OK
-INFO:     127.0.0.1:38134 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
-INFO:     127.0.0.1:38128 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:43934 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:43908 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:43918 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
-INFO:     127.0.0.1:43944 - "GET /api/v1/roles HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60368 - "POST /api/v1/users/9a83ff93-d645-4b5b-a975-386d4c1da048/assign-role HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60380 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53784 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:57198 - "POST /api/v1/auth/login HTTP/1.1" 401 Unauthorized
-INFO:     127.0.0.1:56092 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56094 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56100 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56102 - "GET /api/v1/roles HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56106 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:41808 - "POST /api/v1/users/9a83ff93-d645-4b5b-a975-386d4c1da048/assign-role HTTP/1.1" 200 OK
-INFO:     127.0.0.1:41810 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:33494 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:33504 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:33478 - "GET /api/v1/roles HTTP/1.1" 200 OK
-INFO:     127.0.0.1:33520 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52888 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:52898 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:36246 - "GET /api/v1/pos/sales?page=1&page_size=100 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:36248 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:36254 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56692 - "GET /api/v1/pos/sales?page=1&page_size=100 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35226 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35228 - "GET /api/v1/pos/sessions HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35238 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35254 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35262 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35264 - "GET /api/v1/inventory/movements HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35270 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35280 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35292 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
-INFO:     127.0.0.1:35296 - "GET /api/v1/inventory/movements HTTP/1.1" 200 OK
-INFO:     127.0.0.1:44756 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49468 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49476 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39070 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37122 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36796 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36804 - "GET /api/v1/users/search?q=admin HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38620 - "GET /api/v1/inventory/valuation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38632 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38638 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38652 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38666 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38658 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45378 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45362 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45382 - "GET /api/v1/inventory/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45386 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45396 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45402 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45412 - "POST /api/v1/pos/sessions/open HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41316 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41328 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41334 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48642 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48628 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35994 - "GET /api/v1/pos/sessions/current/REG-001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36000 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
