@@ -210,6 +210,11 @@ component PosTerminalPage {
 
   async processPayment() {
     if (this.processing) return;
+    
+    if (!this.session?.id) {
+      this.notifications?.error('No active session. Please open a session first.');
+      return;
+    }
 
     if (this.selectedPaymentMethod === 'cash' &&
         this.amountTendered > 0 &&
@@ -268,6 +273,10 @@ component PosTerminalPage {
       this.cartItems = [];
 
     } catch (e: any) {
+      console.error('Payment error:', e);
+      console.error('Error response:', e?.response);
+      console.error('Error data:', e?.response?.data || e?.data);
+
       const detail = e?.response?.data?.detail || e?.data?.detail;
       
       // Handle upgrade message on sale creation too (if limit hit)
