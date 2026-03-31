@@ -8,8 +8,8 @@ from core.db import get_session
 from core.auth import get_current_tenant
 from core.auth_deps import get_current_user
 from core.limits import LimitEnforcer, get_limit_enforcer
-from core.models import Sale, Product, CashSession, FiscalSubmission
-from core.fiscal import get_fiscal_service, build_fiscal_sale
+from core.models import Tenant, Sale, Product, CashSession, FiscalSubmission
+from core.fiscal import get_fiscal_service_for_tenant, build_fiscal_sale
 from core.ws_manager import manager
 from . import schemas, service
 
@@ -215,7 +215,18 @@ async def create_sale(
         # ── gbil-fiscal: automatic submission ──
         fiscal_data = {}
         try:
-            fiscal_service = await get_fiscal_service()
+            # Fetch tenant details for fiscal routing
+            tenant_result = await session.execute(
+                select(Tenant).where(Tenant.id == current_user["tenant_id"])
+            )
+            tenant = tenant_result.scalar_one_or_none()
+
+            fiscal_service = await get_fiscal_service_for_tenant(
+                tenant_id=str(current_user["tenant_id"]),
+                country=tenant.country or "default",
+                fiscal_provider=tenant.fiscal_provider,
+                fiscal_config=tenant.fiscal_config or {}
+            )
             
             # Populate fiscal lines with product classification
             fiscal_lines = []

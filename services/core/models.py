@@ -63,6 +63,12 @@ class Tenant(Base):
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     industry: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     country: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    fiscal_provider: Mapped[Optional[str]] = mapped_column(
+        String, nullable=True, default="noop"
+    )
+    fiscal_config: Mapped[Optional[dict]] = mapped_column(
+        JSONB, nullable=True, default=dict
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc)
 
     users: Mapped[list["User"]] = relationship(
