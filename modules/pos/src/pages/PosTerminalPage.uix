@@ -32,6 +32,7 @@ component PosTerminalPage {
   state { let notifications: any = null; }
   state { let showUpgradeModal: boolean = false; }
   state { let upgradeMessage: string = ''; }
+  state { let fiscalData: any = null; }
 
   async mounted() {
     this.notifications = window.__skltn.registry.get('notifications');
@@ -259,6 +260,7 @@ component PosTerminalPage {
 
       const response = await PosService.createSale(saleData);
       this.lastSale = response.data || response;
+      this.fiscalData = this.lastSale?.fiscal || null;
 
       // Auto-print receipt
       this.triggerPrint();
@@ -314,7 +316,9 @@ component PosTerminalPage {
             total: this.computedTotal,
             payment_method: this.selectedPaymentMethod,
             change: this.computedChange,
-            sale_id: this.lastSale?.id
+            sale_id: this.lastSale?.id,
+            fiscal_code: this.fiscalData?.fiscal_code || null,
+            fiscal_status: this.fiscalData?.status || null,
           }
         }));
         ahbWs.close();
@@ -331,6 +335,7 @@ component PosTerminalPage {
     this.cartItems = [];
     this.receiptItems = [];
     this.lastSale = null;
+    this.fiscalData = null;
     this.showCheckoutModal = false;
     this.checkoutState = 'checkout';
     this.amountTendered = 0;
@@ -660,6 +665,48 @@ component PosTerminalPage {
                       <span>{this.formatMWK(this.lastSale?.total || this.computedTotal)}</span>
                     </div>
                   </div>
+
+                  {this.fiscalData && this.fiscalData.fiscal_code && (
+                    <div style="width:100%;max-width:400px;
+                      margin-bottom:16px;
+                      background:var(--color-bg-elevated);
+                      border:1px solid var(--color-bg-border);
+                      border-radius:10px;padding:16px;
+                      text-align:center;">
+                      <div style="font-size:10px;font-weight:600;
+                        color:var(--color-text-muted);
+                        text-transform:uppercase;
+                        letter-spacing:0.5px;margin-bottom:8px;">
+                        Fiscal Receipt
+                      </div>
+                      <div style="font-size:14px;font-weight:700;
+                        color:var(--color-text-primary);
+                        letter-spacing:1px;margin-bottom:4px;">
+                        {this.fiscalData.fiscal_code}
+                      </div>
+                      <div style="font-size:11px;
+                        color:var(--color-text-muted);">
+                        {this.fiscalData.status === 'submitted'
+                          ? '✓ Verified'
+                          : '⏳ Pending sync'}
+                      </div>
+                    </div>
+                  )}
+
+                  {this.fiscalData && !this.fiscalData.fiscal_code && (
+                    <div style="width:100%;max-width:400px;
+                      margin-bottom:16px;
+                      background:color-mix(in srgb,
+                        var(--color-warning) 10%, transparent);
+                      border:1px solid var(--color-warning);
+                      border-radius:10px;padding:12px 16px;
+                      text-align:center;">
+                      <div style="font-size:12px;
+                        color:var(--color-warning);">
+                        ⏳ Fiscal code pending — will sync when online
+                      </div>
+                    </div>
+                  )}
 
                   {/* Actions */}
                   <div style="display:flex;gap:12px;width:100%;max-width:400px;">
