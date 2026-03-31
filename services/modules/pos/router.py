@@ -8,8 +8,17 @@ from core.db import get_session
 from core.auth import get_current_tenant
 from core.auth_deps import get_current_user
 from core.limits import LimitEnforcer, get_limit_enforcer
-from core.models import Sale
+from core.models import Sale, Product, CashSession, FiscalSubmission
+from core.fiscal import get_fiscal_service, build_fiscal_sale
+from core.ws_manager import manager
 from . import schemas, service
+
+import json
+import logging
+import uuid
+from sqlalchemy import select
+
+logger = logging.getLogger("alpine.pos")
 
 router = APIRouter(prefix="/pos", tags=["POS"])
 
@@ -202,9 +211,112 @@ async def create_sale(
             ],
             "change_denominations": change_denominations,
         }
+
+        # ── gbil-fiscal: automatic submission ──
+        fiscal_data = {}
+        try:
+            fiscal_service = await get_fiscal_service()
+            
+            # Populate fiscal lines with product classification
+            fiscal_lines = []
+            for line in data.lines:
+                prod_result = await session.execute(
+                    select(Product).where(Product.id == line.product_id)
+                )
+                product = prod_result.scalar_one_or_none()
+                fiscal_lines.append({
+                    "product_id": str(line.product_id),
+                    "name": product.name if product else "Product",
+                    "quantity": line.quantity,
+                    "unit_price": line.unit_price,
+                    "tax": line.tax,
+                    "line_total": line.line_total,
+                    "unspsc_code": product.unspsc_code if product else None
+                })
+            
+            # Load session to get register_id for fiscal report
+            session_result = await session.execute(
+                select(CashSession).where(CashSession.id == data.session_id)
+            )
+            cash_session = session_result.scalar_one_or_none()
+            terminal_id = cash_session.register_id if cash_session else "REG-001"
+
+            # Map Alpine sale to Fiscal contract
+            fiscal_sale = build_fiscal_sale(
+                sale_id=str(sale.id),
+                tenant_id=str(tenant_id),
+                terminal_id=terminal_id,
+                cashier_id=str(current_user["user_id"]),
+                lines=fiscal_lines,
+                payments=[{"method": p.method, "amount": float(p.amount)} for p in data.payments],
+                subtotal=float(sale.subtotal),
+                tax=float(sale.tax),
+                total=float(sale.total),
+                receipt_counter=int(sale.sale_number.split("-")[-1]) if "-" in sale.sale_number else 1
+            )
+
+            fiscal_result, fiscal_block = await fiscal_service.submit_sale(fiscal_sale)
+
+            # Record submission in DB
+            fiscal_sub = FiscalSubmission(
+                id=str(uuid.uuid4()),
+                tenant_id=tenant_id,
+                sale_id=sale.id,
+                provider=fiscal_service._adapter.provider_name,
+                fiscal_code=fiscal_result.fiscal_code,
+                qr_code=fiscal_result.qr_code,
+                receipt_block=json.dumps(fiscal_block.to_dict()),
+                status="submitted" if fiscal_result.success else "queued",
+                submitted_at=fiscal_result.timestamp,
+                offline=fiscal_result.offline,
+                error_message=fiscal_result.error
+            )
+            session.add(fiscal_sub)
+            await session.commit()
+
+            fiscal_data = {
+                "fiscal_code": fiscal_result.fiscal_code,
+                "receipt_block": fiscal_block.to_dict(),
+                "status": "submitted" if fiscal_result.success else "queued",
+                "offline": fiscal_result.offline
+            }
+        except Exception as fe:
+            logger.warning(f"Fiscal submission failed for sale {sale.id}: {fe}")
+            fiscal_data = {
+                "fiscal_code": None,
+                "receipt_block": {
+                    "type": "fiscal_pending",
+                    "lines": ["FISCAL CODE: PENDING"]
+                },
+                "status": "queued",
+                "offline": True
+            }
+
+        # ── Real-time Notification ──
+        try:
+            await manager.broadcast(
+                tenant_id,
+                "pos.sale.created",
+                {
+                    "sale_id": str(sale.id),
+                    "total": float(sale.total),
+                    "fiscal_code": fiscal_data.get("fiscal_code"),
+                    "cashier_id": str(current_user["user_id"])
+                }
+            )
+        except Exception as we:
+            logger.warning(f"WebSocket broadcast failed: {we}")
+
+        # Merge fiscal results into response
+        sale_dict["fiscal"] = fiscal_data
         return sale_dict
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Sale creation error: {e}")
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/sales/{sale_id}/refund", response_model=schemas.SaleResponse)

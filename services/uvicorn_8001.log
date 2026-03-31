@@ -1,0 +1,22 @@
+nohup: ignoring input
+INFO:     Started server process [44271]
+INFO:     Waiting for application startup.
+[2m2026-03-31T03:48:41.732850Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     127.0.0.1:51238 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51250 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51258 - "GET /api/v1/pos/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51274 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+Loaded cached fiscal config vnoop-1.0
+Fiscal config refreshed vnoop-1.0 from Noop (No fiscal mandate)
+FiscalComplianceService initialized — provider: Noop (No fiscal mandate) (XX)
+Fiscal service initialized: Noop (No fiscal mandate)
+Sale 5f5d0cf9-47a2-43db-b664-5d8dc8392ef7 submitted — fiscal code: NOOP-5F5D0CF9
+INFO:     127.0.0.1:51280 - "POST /api/v1/pos/sales HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52982 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52988 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60608 - "GET /api/v1/pos/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60612 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+Sale d834fae2-5ca2-487e-a6c0-445583bd6a74 submitted — fiscal code: NOOP-D834FAE2
+INFO:     127.0.0.1:60626 - "POST /api/v1/pos/sales HTTP/1.1" 200 OK
