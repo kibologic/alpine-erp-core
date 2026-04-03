@@ -75,16 +75,21 @@ server.app.use('/api/v1', (req, res) => {
 
 console.log(`[proxy] /api/v1/* → http://${PYTHON_HOST}:${PYTHON_PORT}`);
 
-// ── @kibologic/shell static CSS files ────────────────────────────────────────────
-// Swite doesn't serve CSS from node_modules — serve them explicitly
+// ── @kibologic/shell static files ────────────────────────────────────────────
+// Swite doesn't serve from node_modules — serve CSS and JS explicitly
 const SHELL_ROOT = path.resolve(__dirname, 'node_modules/@kibologic/shell');
 server.app.use('/node_modules/@kibologic/shell', (req, res, next) => {
-  if (!req.url.endsWith('.css')) return next();
   const filePath = path.join(SHELL_ROOT, req.url);
   try {
-    const css = readFileSync(filePath, 'utf-8');
-    res.setHeader('Content-Type', 'text/css');
-    res.end(css);
+    const content = readFileSync(filePath, 'utf-8');
+    if (req.url.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    } else if (req.url.endsWith('.js') || req.url.endsWith('.ui') || req.url.endsWith('.uix')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else {
+      return next();
+    }
+    res.end(content);
   } catch {
     next();
   }
