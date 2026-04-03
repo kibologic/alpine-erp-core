@@ -1,4 +1,6 @@
 packages:
   - "packages/*"
+  - "packages/swiss-lib/packages/*"
+  - "packages/swiss-lib/packages/plugins/*"
   - "modules/*"
   - "apps/*"

@@ -36,8 +36,8 @@
     "@skltn/notifications": "link:../../../alpine-shell/packages/notifications",
     "@skltn/navigation": "link:../../../alpine-shell/packages/navigation",
     "@skltn/workspace": "link:../../../alpine-shell/packages/workspace",
-    "@swissjs/core": "link:../../packages/swiss-lib/packages/core",
-    "@swissjs/swite": "link:../../packages/swite",
+    "@swissjs/core": "workspace:*",
+    "@swissjs/swite": "workspace:*",
     "@alpine/ui": "link:../../../../alpine-ui/packages/ui",
     "reflect-metadata": "^0.2.2"
   },
