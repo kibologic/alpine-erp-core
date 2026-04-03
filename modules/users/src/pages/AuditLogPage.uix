@@ -1,4 +1,4 @@
-import { SwissComponent } from '@swissjs/core';
+import { SwissComponent } from '@kibologic/core';
 import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
 import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
 import { api } from '@alpine/core/src/services/api.ui';

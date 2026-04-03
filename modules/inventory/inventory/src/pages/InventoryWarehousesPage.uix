@@ -1,4 +1,4 @@
-import { SwissComponent } from '@swissjs/core';
+import { SwissComponent } from '@kibologic/core';
 
 const WAREHOUSES = [
   { id: 'WH-01', name: 'Main Warehouse',    location: 'Lilongwe, Malawi',   capacity: 5000, used: 3200, manager: 'Kofi Asante' },

@@ -4,11 +4,14 @@ RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-COPY . /app
+# .npmrc uses ${GITHUB_TOKEN} env var — safe to copy
+COPY .npmrc ./
+COPY package.json pnpm-workspace.yaml ./
+COPY apps/ apps/
+COPY modules/ modules/
+COPY packages/ packages/
 
-# Temporarily force build to continue past install failures to capture debugging info in logs
-RUN pnpm install --no-frozen-lockfile; exit 0
+RUN pnpm install --frozen-lockfile
 
 ENV PORT=3000
-# Run from root /app so Node's module resolution finds everything in /app/node_modules
 CMD ["node", "apps/server/dev.mjs"]

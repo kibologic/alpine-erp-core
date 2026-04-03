@@ -2,10 +2,10 @@
   "version": "1.0",
   "generated": 1740614400000,
   "imports": {
-    "@swissjs/core": "/node_modules/@swissjs/core/src/index.ts",
-    "@swissjs/core/browser": "/node_modules/@swissjs/core/src/browser.ts",
-    "@swissjs/core/jsx-runtime": "/node_modules/@swissjs/core/src/jsx-runtime.ts",
-    "@swissjs/core/jsx-dev-runtime": "/node_modules/@swissjs/core/src/jsx-dev-runtime.ts",
+    "@kibologic/core": "/node_modules/@kibologic/core/src/index.ts",
+    "@kibologic/core/browser": "/node_modules/@kibologic/core/src/browser.ts",
+    "@kibologic/core/jsx-runtime": "/node_modules/@kibologic/core/src/jsx-runtime.ts",
+    "@kibologic/core/jsx-dev-runtime": "/node_modules/@kibologic/core/src/jsx-dev-runtime.ts",
     "reflect-metadata": "/node_modules/reflect-metadata/Reflect.js"
   }
 }

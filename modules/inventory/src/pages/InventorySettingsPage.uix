@@ -1,4 +1,4 @@
-import { SwissComponent } from '@swissjs/core';
+import { SwissComponent } from '@kibologic/core';
 import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
 import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
 import { TextField } from '@alpine/ui/src/form/TextField.uix';

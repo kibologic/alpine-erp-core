@@ -5,7 +5,7 @@
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SwiteServer } from '@swissjs/swite';
+import { SwiteServer } from '@kibologic/swite';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 
@@ -75,10 +75,10 @@ server.app.use('/api/v1', (req, res) => {
 
 console.log(`[proxy] /api/v1/* → http://${PYTHON_HOST}:${PYTHON_PORT}`);
 
-// ── @skltn/shell static CSS files ────────────────────────────────────────────
+// ── @kibologic/shell static CSS files ────────────────────────────────────────────
 // Swite doesn't serve CSS from node_modules — serve them explicitly
-const SHELL_ROOT = path.resolve(__dirname, 'node_modules/@skltn/shell');
-server.app.use('/node_modules/@skltn/shell', (req, res, next) => {
+const SHELL_ROOT = path.resolve(__dirname, 'node_modules/@kibologic/shell');
+server.app.use('/node_modules/@kibologic/shell', (req, res, next) => {
   if (!req.url.endsWith('.css')) return next();
   const filePath = path.join(SHELL_ROOT, req.url);
   try {

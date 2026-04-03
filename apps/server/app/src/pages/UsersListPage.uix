@@ -1,4 +1,4 @@
-import { SwissComponent } from '@swissjs/core';
+import { SwissComponent } from '@kibologic/core';
 
 component UsersListPage {
   props = {};

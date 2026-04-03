@@ -1,6 +1,6 @@
-import { SwissApp } from '@swissjs/core';
-import { Shell } from '@skltn/shell/host/src/Shell.uix';
-import { boot } from '@skltn/shell/host/src/boot.ui';
+import { SwissApp } from '@kibologic/core';
+import { Shell } from '@kibologic/shell/host/src/Shell.uix';
+import { boot } from '@kibologic/shell/host/src/boot.ui';
 import { register } from './register.ui';
 import { LoginPage } from './auth/LoginPage.uix';
 import { SignupPage } from './auth/SignupPage.uix';
