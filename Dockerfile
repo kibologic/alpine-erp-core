@@ -7,7 +7,9 @@ WORKDIR /app
 COPY . .
 
 ARG GITHUB_TOKEN
-RUN echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc && \
+RUN if [ -n "$GITHUB_TOKEN" ]; then \
+      echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc; \
+    fi && \
     pnpm install --no-frozen-lockfile && \
     rm -f .npmrc
 
