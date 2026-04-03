@@ -35,6 +35,9 @@ importers:
       '@alpine/core':
         specifier: link:../../packages/core
         version: link:../../packages/core
+      '@kibologic/contracts':
+        specifier: latest
+        version: 0.1.5
       '@kibologic/core':
         specifier: latest
         version: 0.1.4
