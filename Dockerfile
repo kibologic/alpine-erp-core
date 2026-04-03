@@ -6,9 +6,16 @@ WORKDIR /app
 
 # .npmrc uses ${GITHUB_TOKEN} env var — safe to copy
 COPY .npmrc ./
-COPY . .
+COPY package.json pnpm-workspace.yaml ./
+COPY apps/ apps/
+COPY modules/ modules/
+COPY packages/ packages/
 
-RUN pnpm install --no-frozen-lockfile
+# Surface pnpm install errors in build log
+RUN pnpm install --no-frozen-lockfile 2>&1 | tee /install.log; \
+    EXIT_CODE=${PIPESTATUS[0]}; \
+    cat /install.log; \
+    exit $EXIT_CODE
 
 ENV PORT=3000
 CMD ["node", "apps/server/dev.mjs"]
