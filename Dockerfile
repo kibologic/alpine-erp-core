@@ -27,6 +27,10 @@ RUN mkdir -p apps/server/node_modules/@swissjs && \
     cp -r packages/swiss-lib/packages/security apps/server/node_modules/@swissjs/security 2>/dev/null || true && \
     cp -r packages/swiss-lib/packages/plugins/file-router apps/server/node_modules/@swissjs/plugin-file-router 2>/dev/null || true
 
+# Verify the copy worked
+RUN ls -l apps/server/node_modules/@swissjs/swite/ && \
+    ls -l apps/server/node_modules/@swissjs/swite/dist/ || echo "no dist"
+
 # Now install remaining deps
 # Using --no-frozen-lockfile because we manually injected directories into node_modules
 # which might make the lockfile look 'dirty' to pnpm
