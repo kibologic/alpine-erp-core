@@ -2,10 +2,10 @@
   "version": "1.0",
   "generated": 1740614400000,
   "imports": {
-    "@kibologic/core": "/node_modules/@kibologic/core/src/index.ts",
-    "@kibologic/core/browser": "/node_modules/@kibologic/core/src/browser.ts",
-    "@kibologic/core/jsx-runtime": "/node_modules/@kibologic/core/src/jsx-runtime.ts",
-    "@kibologic/core/jsx-dev-runtime": "/node_modules/@kibologic/core/src/jsx-dev-runtime.ts",
+    "@kibologic/core": "/node_modules/@kibologic/core/dist/index.js",
+    "@kibologic/core/browser": "/node_modules/@kibologic/core/dist/browser.js",
+    "@kibologic/core/jsx-runtime": "/node_modules/@kibologic/core/dist/jsx-runtime.js",
+    "@kibologic/core/jsx-dev-runtime": "/node_modules/@kibologic/core/dist/jsx-dev-runtime.js",
     "reflect-metadata": "/node_modules/reflect-metadata/Reflect.js"
   }
 }
