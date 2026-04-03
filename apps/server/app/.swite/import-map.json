@@ -6,6 +6,7 @@
     "@kibologic/core/browser": "/node_modules/@kibologic/core/dist/browser.js",
     "@kibologic/core/jsx-runtime": "/node_modules/@kibologic/core/dist/jsx-runtime.js",
     "@kibologic/core/jsx-dev-runtime": "/node_modules/@kibologic/core/dist/jsx-dev-runtime.js",
+    "@kibologic/contracts": "/node_modules/@kibologic/contracts/index.ui",
     "reflect-metadata": "/node_modules/reflect-metadata/Reflect.js"
   }
 }

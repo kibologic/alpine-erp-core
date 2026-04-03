@@ -15,6 +15,7 @@
     "@kibologic/notifications": "latest",
     "@kibologic/navigation": "latest",
     "@kibologic/workspace": "latest",
+    "@kibologic/contracts": "latest",
     "@kibologic/core": "latest",
     "@kibologic/swite": "latest",
     "reflect-metadata": "^0.2.2"
