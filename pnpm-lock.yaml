@@ -52,7 +52,7 @@ importers:
         version: 0.0.5
       '@kibologic/swite':
         specifier: latest
-        version: 0.2.10(vite@5.4.21)
+        version: 0.2.11(vite@5.4.21)
       '@kibologic/workspace':
         specifier: latest
         version: 0.1.5
@@ -675,8 +675,8 @@ packages:
   '@kibologic/storage@0.1.4':
     resolution: {integrity: sha512-zWOscE1TgGKrMoQkZZ/KxBkWxsYA7Y1Ag4Kylwxi7nllUJMD1qvxpPJozECq9GCD1pwc9QXo/uEicd4EQd/4Sg==, tarball: https://npm.pkg.github.com/download/@kibologic/storage/0.1.4/b82a84ca46f47e4a0184b0a8b38da813b56975c8}
 
-  '@kibologic/swite@0.2.10':
-    resolution: {integrity: sha512-EMmT2fsyxbyZX1alKTBY9kCRJKtv3aSFWeixW1LCKiSkvJ44hH1UQFn230MhGMuR1u+DL+O30zKEGH99MXT2Aw==, tarball: https://npm.pkg.github.com/download/@kibologic/swite/0.2.10/92cccd320308fb854639cb9239d75d273e1c923c}
+  '@kibologic/swite@0.2.11':
+    resolution: {integrity: sha512-KHcrL10qCuWqIEjvi+RA6gsoAuPL88gtrBRgHB4iSR65mVTB9k9v7Udek0QwiJTU5ntv4ypZnQam7jf+SXumVw==, tarball: https://npm.pkg.github.com/download/@kibologic/swite/0.2.11/17e972665bed2f5a5d51b118c5c0e60c4e36c763}
     hasBin: true
 
   '@kibologic/utils@0.1.14':
@@ -1794,7 +1794,7 @@ snapshots:
     dependencies:
       '@kibologic/contracts': 0.1.5
 
-  '@kibologic/swite@0.2.10(vite@5.4.21)':
+  '@kibologic/swite@0.2.11(vite@5.4.21)':
     dependencies:
       '@kibologic/compiler': 0.1.3
       '@kibologic/core': 0.1.4
