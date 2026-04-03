@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "nodePackages.pnpm"]
+
+[phases.install]
+cmds = [
+  "echo '//npm.pkg.github.com/:_authToken='$GITHUB_TOKEN >> .npmrc",
+  "pnpm install --no-frozen-lockfile"
+]
+
+[phases.build]
+cmds = ["echo 'no build'"]
+
+[start]
+cmd = "node apps/server/dev.mjs"
