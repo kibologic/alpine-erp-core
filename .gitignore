@@ -12,3 +12,4 @@ services/core/keys/dev_private.pem
 apps/server/app/node_modules
 .env
 *.env
+.npmrc.tmp

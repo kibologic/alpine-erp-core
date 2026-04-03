@@ -4,18 +4,13 @@ RUN npm install -g pnpm@9
 
 WORKDIR /app
 
-# .npmrc uses ${GITHUB_TOKEN} env var — safe to copy
-COPY .npmrc ./
-COPY package.json pnpm-workspace.yaml ./
-COPY apps/ apps/
-COPY modules/ modules/
-COPY packages/ packages/
+COPY . .
 
-# Surface pnpm install errors in build log
-RUN pnpm install --no-frozen-lockfile 2>&1 | tee /install.log; \
-    EXIT_CODE=${PIPESTATUS[0]}; \
-    cat /install.log; \
-    exit $EXIT_CODE
+# Token injected as build arg from Railway env var
+ARG GITHUB_TOKEN
+RUN echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc && \
+    pnpm install --no-frozen-lockfile && \
+    rm -f .npmrc
 
 ENV PORT=3000
 CMD ["node", "apps/server/dev.mjs"]

@@ -14,30 +14,18 @@
   },
   "pnpm": {
     "overrides": {
-      "@alpine/ui": "link:../alpine-ui/packages/ui",
       "@kibologic/core": "latest",
       "@kibologic/compiler": "latest",
       "@kibologic/plugin-file-router": "latest",
       "@kibologic/swite": "latest",
-      "@kibologic/components": "latest",
       "@kibologic/plugin-web-storage": "latest",
       "@kibologic/security": "latest",
       "@kibologic/router": "latest",
       "@kibologic/utils": "latest",
-      "@kibologic/identity": "latest",
-      "@kibologic/web-storage": "latest",
-      "@kibologic/shared-types": "latest",
-      "@kibologic/shared-utils": "latest",
-      "@kibologic/theme": "latest",
       "@kibologic/event-bus": "latest",
       "@kibologic/contracts": "latest",
       "@kibologic/connectivity": "latest",
-      "@kibologic/payments": "latest",
-      "@kibologic/telemetry": "latest",
       "@kibologic/i18n": "latest",
-      "@kibologic/action-catalog": "latest",
-      "@kibologic/ai-agents": "latest",
-      "@kibologic/ai-orchestrator": "latest",
       "@kibologic/shell": "latest"
     }
   }

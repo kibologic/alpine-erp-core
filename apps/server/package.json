@@ -16,7 +16,6 @@
     "@kibologic/workspace": "latest",
     "@kibologic/core": "latest",
     "@kibologic/swite": "latest",
-    "@alpine/ui": "link:../../../../alpine-ui/packages/ui",
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
