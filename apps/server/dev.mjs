@@ -75,16 +75,24 @@ server.app.use('/api/v1', (req, res) => {
 
 console.log(`[proxy] /api/v1/* → http://${PYTHON_HOST}:${PYTHON_PORT}`);
 
-// ── @kibologic/shell static files ────────────────────────────────────────────
-// Swite doesn't serve from node_modules — serve CSS and JS explicitly
-const SHELL_ROOT = path.resolve(__dirname, 'node_modules/@kibologic/shell');
-server.app.use('/node_modules/@kibologic/shell', (req, res, next) => {
-  const filePath = path.join(SHELL_ROOT, req.url);
+// ── node_modules static files ─────────────────────────────────────────────────
+// Swite doesn't serve from node_modules. Resolve node_modules from the monorepo
+// root (two levels up from apps/server/) with a fallback to the local copy so
+// both local dev and Railway (where hoisting puts packages at /app/node_modules)
+// work correctly.
+import { existsSync } from 'node:fs';
+
+const MONOREPO_NM = path.resolve(__dirname, '../../node_modules');
+const LOCAL_NM    = path.resolve(__dirname, 'node_modules');
+const NM_ROOT     = existsSync(path.join(MONOREPO_NM, '@kibologic')) ? MONOREPO_NM : LOCAL_NM;
+
+server.app.use('/node_modules', (req, res, next) => {
+  const filePath = path.join(NM_ROOT, req.url);
   try {
     const content = readFileSync(filePath, 'utf-8');
     if (req.url.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css');
-    } else if (req.url.endsWith('.js') || req.url.endsWith('.ui') || req.url.endsWith('.uix')) {
+    } else if (req.url.endsWith('.js') || req.url.endsWith('.ui') || req.url.endsWith('.uix') || req.url.endsWith('.ts')) {
       res.setHeader('Content-Type', 'application/javascript');
     } else {
       return next();
