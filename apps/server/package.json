@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@alpine/core": "link:../../packages/core",
+    "@kibologic/shell": "latest",
     "@kibologic/notifications": "latest",
     "@kibologic/navigation": "latest",
     "@kibologic/workspace": "latest",
