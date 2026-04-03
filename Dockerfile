@@ -6,30 +6,33 @@ WORKDIR /app
 
 COPY . /app
 
-RUN pnpm install --frozen-lockfile || true
+# Copy @swissjs packages into place BEFORE pnpm install
+# so pnpm finds them as real directories not symlinks
+RUN mkdir -p node_modules/@swissjs && \
+    cp -r packages/swite node_modules/@swissjs/swite && \
+    cp -r packages/swiss-lib/packages/core node_modules/@swissjs/core 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/compiler node_modules/@swissjs/compiler 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/router node_modules/@swissjs/router 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/utils node_modules/@swissjs/utils 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/security node_modules/@swissjs/security 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/plugins/file-router node_modules/@swissjs/plugin-file-router 2>/dev/null || true
 
-# Manually ensure @swissjs/swite resolves
-# pnpm symlinks don't work reliably in Docker
-RUN mkdir -p /app/apps/server/node_modules/@swissjs && \
-    cp -r /app/packages/swite /app/apps/server/node_modules/@swissjs/swite && \
-    mkdir -p /app/node_modules/@swissjs && \
-    cp -r /app/packages/swite /app/node_modules/@swissjs/swite
+# Also copy into apps/server/node_modules
+RUN mkdir -p apps/server/node_modules/@swissjs && \
+    cp -r packages/swite apps/server/node_modules/@swissjs/swite && \
+    cp -r packages/swiss-lib/packages/core apps/server/node_modules/@swissjs/core 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/compiler apps/server/node_modules/@swissjs/compiler 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/router apps/server/node_modules/@swissjs/router 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/utils apps/server/node_modules/@swissjs/utils 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/security apps/server/node_modules/@swissjs/security 2>/dev/null || true && \
+    cp -r packages/swiss-lib/packages/plugins/file-router apps/server/node_modules/@swissjs/plugin-file-router 2>/dev/null || true
 
-# Manually copy all @swissjs core/plugin packages into node_modules
-# This allows them to be found by swite and swiss-lib internal dependencies
-RUN cp -r /app/packages/swiss-lib/packages/core /app/apps/server/node_modules/@swissjs/core && \
-    cp -r /app/packages/swiss-lib/packages/compiler /app/apps/server/node_modules/@swissjs/compiler && \
-    cp -r /app/packages/swiss-lib/packages/plugins/file-router /app/apps/server/node_modules/@swissjs/plugin-file-router && \
-    cp -r /app/packages/swiss-lib/packages/router /app/apps/server/node_modules/@swissjs/router && \
-    cp -r /app/packages/swiss-lib/packages/utils /app/apps/server/node_modules/@swissjs/utils && \
-    cp -r /app/packages/swiss-lib/packages/security /app/apps/server/node_modules/@swissjs/security && \
-    # Also copy to root node_modules for good measure
-    cp -r /app/packages/swiss-lib/packages/core /app/node_modules/@swissjs/core && \
-    cp -r /app/packages/swiss-lib/packages/compiler /app/node_modules/@swissjs/compiler && \
-    cp -r /app/packages/swiss-lib/packages/plugins/file-router /app/node_modules/@swissjs/plugin-file-router && \
-    cp -r /app/packages/swiss-lib/packages/router /app/node_modules/@swissjs/router && \
-    cp -r /app/packages/swiss-lib/packages/utils /app/node_modules/@swissjs/utils && \
-    cp -r /app/packages/swiss-lib/packages/security /app/node_modules/@swissjs/security
+# Now install remaining deps
+# Using --no-frozen-lockfile because we manually injected directories into node_modules
+# which might make the lockfile look 'dirty' to pnpm
+RUN pnpm install --no-frozen-lockfile 2>/dev/null || \
+    pnpm install --frozen-lockfile 2>/dev/null || \
+    npm install --legacy-peer-deps || true
 
 WORKDIR /app/apps/server
 
