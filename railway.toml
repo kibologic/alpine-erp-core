@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "cd apps/server && node dev.mjs"
+healthcheckPath = "/"
+healthcheckTimeout = 60

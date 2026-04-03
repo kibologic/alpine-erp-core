@@ -95,6 +95,7 @@ from modules.approvals.router import router as approvals_router
 from modules.push.router import router as push_router
 from modules.media.router import router as media_router
 from modules.dashboard.router import router as dashboard_router
+from modules.pos.tabs_router import router as tabs_router
 
 register_module(
     name="auth",
@@ -155,6 +156,11 @@ register_module(
 register_module(
     name="dashboard",
     router_factory=lambda app: app.include_router(dashboard_router, prefix="/api/v1"),
+    tier="core",
+)
+register_module(
+    name="pos-tabs",
+    router_factory=lambda app: app.include_router(tabs_router, prefix="/api/v1"),
     tier="core",
 )
 

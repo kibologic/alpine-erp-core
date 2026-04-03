@@ -9,7 +9,7 @@ export default {
     python: {
       entry: '../../services/main.py',
       port: 8000,
-      autoStart: false,
+      autoStart: true,
       healthCheck: '/health',
     },
   },

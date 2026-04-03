@@ -736,3 +736,120 @@ class FiscalSubmission(Base):
     tenant: Mapped["Tenant"] = relationship()
     sale: Mapped["Sale"] = relationship()
 
+
+# ─── POS Selling Mode Engine ──────────────────────────────────────────────────
+
+class TerminalConfig(Base):
+    __tablename__ = "terminal_configs"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
+    )
+    terminal_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, default="Main Terminal")
+    enabled_modes: Mapped[list] = mapped_column(JSONB, default=lambda: ["instant"])
+    default_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="instant")
+    config: Mapped[dict] = mapped_column(JSONB, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "terminal_id", name="uq_terminal_config_tenant_terminal"),
+    )
+
+    tenant: Mapped["Tenant"] = relationship()
+
+
+class Tab(Base):
+    __tablename__ = "tabs"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
+    )
+    session_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("cash_sessions.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="open")
+    subtotal: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0.0)
+    tax: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0.0)
+    total: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0.0)
+    created_by: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("users.id", ondelete="SET NULL"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    closed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    tenant: Mapped["Tenant"] = relationship()
+    lines: Mapped[list["TabLine"]] = relationship(back_populates="tab", cascade="all, delete-orphan")
+
+
+class TabLine(Base):
+    __tablename__ = "tab_lines"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    tab_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("tabs.id", ondelete="CASCADE"), nullable=False
+    )
+    product_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("products.id", ondelete="RESTRICT"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    quantity: Mapped[float] = mapped_column(Numeric(12, 3), nullable=False, default=1.0)
+    unit_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    line_total: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    tax: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0.0)
+    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    tab: Mapped["Tab"] = relationship(back_populates="lines")
+    product: Mapped["Product"] = relationship()
+
+
+class KitchenOrder(Base):
+    __tablename__ = "kitchen_orders"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
+    )
+    session_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("cash_sessions.id", ondelete="CASCADE"), nullable=False
+    )
+    tab_id: Mapped[Optional[str]] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("tabs.id", ondelete="SET NULL"), nullable=True
+    )
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    tenant: Mapped["Tenant"] = relationship()
+    tab: Mapped[Optional["Tab"]] = relationship()
+    lines: Mapped[list["KitchenOrderLine"]] = relationship(back_populates="kitchen_order", cascade="all, delete-orphan")
+
+
+class KitchenOrderLine(Base):
+    __tablename__ = "kitchen_order_lines"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    kitchen_order_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("kitchen_orders.id", ondelete="CASCADE"), nullable=False
+    )
+    product_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), ForeignKey("products.id", ondelete="RESTRICT"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    quantity: Mapped[float] = mapped_column(Numeric(12, 3), nullable=False, default=1.0)
+    notes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    kitchen_order: Mapped["KitchenOrder"] = relationship(back_populates="lines")
+    product: Mapped["Product"] = relationship()
