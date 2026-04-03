@@ -6,11 +6,7 @@ WORKDIR /app
 
 # .npmrc uses ${GITHUB_TOKEN} env var — safe to copy
 COPY .npmrc ./
-COPY package.json pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml ./
-COPY apps/ apps/
-COPY modules/ modules/
-COPY packages/ packages/
+COPY . .
 
 RUN pnpm install --no-frozen-lockfile
 
