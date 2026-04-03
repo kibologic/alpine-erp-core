@@ -76,18 +76,27 @@ server.app.use('/api/v1', (req, res) => {
 console.log(`[proxy] /api/v1/* → http://${PYTHON_HOST}:${PYTHON_PORT}`);
 
 // ── node_modules static files ─────────────────────────────────────────────────
-// Swite doesn't serve from node_modules. Resolve node_modules from the monorepo
-// root (two levels up from apps/server/) with a fallback to the local copy so
-// both local dev and Railway (where hoisting puts packages at /app/node_modules)
-// work correctly.
+// Swite doesn't serve from node_modules. pnpm may hoist packages to the monorepo
+// root OR keep them in the workspace package's local node_modules. Try both so
+// it works in local dev and Railway regardless of hoisting.
 import { existsSync } from 'node:fs';
 
-const MONOREPO_NM = path.resolve(__dirname, '../../node_modules');
-const LOCAL_NM    = path.resolve(__dirname, 'node_modules');
-const NM_ROOT     = existsSync(path.join(MONOREPO_NM, '@kibologic')) ? MONOREPO_NM : LOCAL_NM;
+const NM_CANDIDATES = [
+  path.resolve(__dirname, '../../node_modules'), // monorepo root (Railway: /app/node_modules)
+  path.resolve(__dirname, 'node_modules'),        // local: apps/server/node_modules
+];
+
+function resolveFromNM(relPath) {
+  for (const base of NM_CANDIDATES) {
+    const full = path.join(base, relPath);
+    if (existsSync(full)) return full;
+  }
+  return null;
+}
 
 server.app.use('/node_modules', (req, res, next) => {
-  const filePath = path.join(NM_ROOT, req.url);
+  const filePath = resolveFromNM(req.url);
+  if (!filePath) return next();
   try {
     const content = readFileSync(filePath, 'utf-8');
     if (req.url.endsWith('.css')) {
