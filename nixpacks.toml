@@ -1,11 +1,11 @@
 [phases.setup]
-nixPkgs = ["nodejs_20"]
+nixPkgs = ["nodejs_20", "nodePackages.pnpm"]
 
 [phases.install]
-cmds = ["npm install -g pnpm@9", "pnpm install --frozen-lockfile"]
+cmds = ["pnpm install --frozen-lockfile"]
 
 [phases.build]
-cmds = ["echo 'no build step'"]
+cmds = ["echo 'no build'"]
 
 [start]
 cmd = "cd apps/server && node dev.mjs"
