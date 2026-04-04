@@ -582,7 +582,7 @@ component PosTerminalPage {
         </div>
 
         {/* Right Panel — shared wrapper with session bar at bottom */}
-        <div class="pos-cart" style="display:flex;flex-direction:column;height:100%;">
+        <div class="pos-cart" style={'display:flex;flex-direction:column;height:100%;' + (this.cartPosition === 'left' ? 'border-right:1px solid var(--color-bg-border);' : '')}>
 
           {/* Mode-specific content */}
           {this.activeMode === 'tabbed' ? (

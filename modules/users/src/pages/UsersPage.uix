@@ -287,11 +287,22 @@ component UsersPage {
               color:var(--color-text-secondary);">
               {row.role_name}
             </span>
+          ) : window.__skltn?.can('users.manage_roles') ? (
+            <span
+              style="font-size:12px;font-weight:500;padding:2px 10px;border-radius:10px;background:rgba(239,68,68,0.1);color:#EF4444;cursor:pointer;border:1px dashed rgba(239,68,68,0.4);"
+              title="Click to assign role"
+              onclick={(e: Event) => {
+                e.stopPropagation();
+                const full = this.users.find((u: any) => u.id === row._id);
+                this.selectedUser = full || null;
+                this.selectedUserRoleId = full?.role_id || '';
+                this.scheduleUpdate?.();
+              }}
+            >
+              No role assigned
+            </span>
           ) : (
-            <span style="font-size:12px;font-weight:500;
-              padding:2px 10px;border-radius:10px;
-              background:rgba(239,68,68,0.1);
-              color:#EF4444;">
+            <span style="font-size:12px;font-weight:500;padding:2px 10px;border-radius:10px;background:rgba(239,68,68,0.1);color:#EF4444;">
               No role assigned
             </span>
           );

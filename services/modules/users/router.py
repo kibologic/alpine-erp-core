@@ -291,6 +291,36 @@ class AssignRoleBody(BaseModel):
     role_id: Optional[str] = None  # None to unassign
 
 
+@router.post("/users/{user_id}/assign-role")
+async def assign_role_to_user(
+    user_id: uuid.UUID,
+    body: AssignRoleBody,
+    session: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
+):
+    tenant_id = current_user["tenant_memberships"][0]["tenant_id"] if current_user.get("tenant_memberships") else None
+    await _check_atom("users.manage_roles", current_user["user_id"], session)
+
+    result = await session.execute(select(User).where(User.id == str(user_id)))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(404, "User not found")
+
+    if body.role_id:
+        role_result = await session.execute(
+            select(CustomRole).where(CustomRole.id == body.role_id, CustomRole.tenant_id == tenant_id)
+        )
+        role = role_result.scalar_one_or_none()
+        if not role:
+            raise HTTPException(404, "Role not found")
+        user.custom_role_id = body.role_id
+    else:
+        user.custom_role_id = None
+
+    await session.commit()
+    return {"ok": True, "role_id": body.role_id}
+
+
 @router.patch("/users/{user_id}/suspend")
 async def suspend_user(
     user_id: uuid.UUID,
