@@ -152,14 +152,14 @@ component PosTerminalPage {
   }
 
   get categories() {
-    const cats = ['All', ...new Set(this.products.map(p => p.category?.name || 'Uncategorized'))];
-    return cats;
+    const names = this.products.map(p => p.category?.name).filter(n => !!n);
+    return ['All', ...Array.from(new Set(names))];
   }
 
   get filteredProducts() {
     let prods = this.products;
     if (this.selectedCategory !== 'All') {
-      prods = prods.filter(p => (p.category?.name || 'Uncategorized') === this.selectedCategory);
+      prods = prods.filter(p => p.category?.name === this.selectedCategory);
     }
     const q = (this.search || '').toLowerCase();
     if (q) {
@@ -514,18 +514,16 @@ component PosTerminalPage {
           <div class="pos-products-header">
             {/* Unified header: [mode pills] [search] [utility buttons] */}
             <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--color-bg-border);background:var(--color-bg-surface);">
-              {/* Mode pills — left cluster */}
-              {this.enabledModes.length > 0 && (
-                <div style="display:flex;gap:2px;padding:2px;border-radius:7px;background:var(--color-bg-elevated);border:1px solid var(--color-bg-border);flex-shrink:0;">
-                  {this.enabledModes.map((mode: string) => (
-                    <button
-                      onclick={() => this.switchMode(mode)}
-                      style={'padding:4px 12px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;white-space:nowrap;background:' + (this.activeMode === mode ? 'var(--color-text-primary)' : 'transparent') + ';color:' + (this.activeMode === mode ? 'var(--color-bg-base)' : 'var(--color-text-secondary)') + ';'}>
-                      {mode === 'instant' ? '⚡ Quick Sale' : mode === 'tabbed' ? '📋 Tabs' : mode}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Mode pills — always show both modes */}
+              <div style="display:flex;gap:2px;padding:2px;border-radius:7px;background:var(--color-bg-elevated);border:1px solid var(--color-bg-border);flex-shrink:0;">
+                {(['instant', 'tabbed'] as string[]).map((mode: string) => (
+                  <button
+                    onclick={() => this.switchMode(mode)}
+                    style={'padding:4px 12px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;white-space:nowrap;background:' + (this.activeMode === mode ? 'var(--color-text-primary)' : 'transparent') + ';color:' + (this.activeMode === mode ? 'var(--color-bg-base)' : 'var(--color-text-secondary)') + ';'}>
+                    {mode === 'instant' ? '⚡ Quick Sale' : '📋 Tabs'}
+                  </button>
+                ))}
+              </div>
               {/* Search — center, grows to fill */}
               <input
                 type="text"
@@ -572,140 +570,138 @@ component PosTerminalPage {
           </div>
         </div>
 
-        {/* Right Panel — mode-conditional */}
-        {this.activeMode === 'tabbed' ? (
-          <div class="pos-cart" style="display:flex;flex-direction:column;height:100%;background:var(--color-bg-surface);">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--color-bg-border);">
-              <span style="font-size:13px;font-weight:600;color:var(--color-text-primary);">
-                Open Tabs ({this.tabs.length})
-              </span>
-              <button
-                onclick={() => { this.showNewTabModal = true; this.scheduleUpdate?.(); }}
-                style="padding:6px 14px;border-radius:6px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:12px;font-weight:600;cursor:pointer;">
-                + New Tab
-              </button>
-            </div>
+        {/* Right Panel — shared wrapper with session bar at bottom */}
+        <div class="pos-cart" style="display:flex;flex-direction:column;height:100%;">
 
-            <div style="flex:1;overflow-y:auto;padding:8px;">
-              {this.tabs.length === 0 && (
-                <div style="text-align:center;padding:40px 16px;color:var(--color-text-muted);font-size:13px;">
-                  No open tabs. Create one to start.
+          {/* Mode-specific content */}
+          {this.activeMode === 'tabbed' ? (
+            <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--color-bg-surface);">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--color-bg-border);">
+                <span style="font-size:13px;font-weight:600;color:var(--color-text-primary);">
+                  Open Tabs ({this.tabs.length})
+                </span>
+                <button
+                  onclick={() => { this.showNewTabModal = true; this.scheduleUpdate?.(); }}
+                  style="padding:6px 14px;border-radius:6px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:12px;font-weight:600;cursor:pointer;">
+                  + New Tab
+                </button>
+              </div>
+
+              <div style="flex:1;overflow-y:auto;padding:8px;">
+                {this.tabs.length === 0 && (
+                  <div style="text-align:center;padding:40px 16px;color:var(--color-text-muted);font-size:13px;">
+                    No open tabs. Create one to start.
+                  </div>
+                )}
+                {this.tabs.map((tab: any) => (
+                  <div
+                    onclick={() => this.selectTab(tab)}
+                    style={'padding:12px 14px;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;border:2px solid ' + (this.activeTab?.id === tab.id ? 'var(--color-text-primary)' : 'var(--color-bg-border)') + ';background:' + (this.activeTab?.id === tab.id ? 'var(--color-bg-elevated)' : 'transparent') + ';'}>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                      <span style="font-size:13px;font-weight:600;color:var(--color-text-primary);">{tab.name}</span>
+                      <span style="font-size:12px;font-weight:700;color:var(--color-text-primary);">MWK {(tab.total || 0).toLocaleString()}</span>
+                    </div>
+                    <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">{(tab.lines || []).length} items</div>
+                  </div>
+                ))}
+              </div>
+
+              {this.activeTab && (
+                <div style="border-top:1px solid var(--color-bg-border);max-height:50%;overflow-y:auto;">
+                  <div style="padding:10px 16px;display:flex;justify-content:space-between;align-items:center;background:var(--color-bg-elevated);">
+                    <span style="font-size:12px;font-weight:600;color:var(--color-text-primary);">{this.activeTab.name}</span>
+                    <span style="font-size:11px;color:var(--color-text-muted);">{(this.activeTab.lines || []).length} items</span>
+                  </div>
+                  <div style="padding:8px 16px;">
+                    {(this.activeTab.lines || []).map((line: any) => (
+                      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid var(--color-bg-border);gap:8px;">
+                        <span style="color:var(--color-text-secondary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{line.name} x{line.quantity}</span>
+                        <span style="color:var(--color-text-primary);font-weight:500;flex-shrink:0;">MWK {(line.line_total || 0).toLocaleString()}</span>
+                        <button
+                          onclick={(e: any) => { e.stopPropagation(); this.removeTabLine(this.activeTab.id, line.id); }}
+                          style="flex-shrink:0;background:transparent;border:none;color:var(--color-text-muted);font-size:14px;cursor:pointer;padding:0 2px;line-height:1;opacity:0.7;">
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div style="padding:12px 16px;">
+                    <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--color-text-primary);margin-bottom:10px;">
+                      <span>Total</span>
+                      <span>MWK {(this.activeTab.total || 0).toLocaleString()}</span>
+                    </div>
+                    <button
+                      onclick={() => { this.checkoutState = 'checkout'; this.showCheckoutModal = true; this.scheduleUpdate?.(); }}
+                      style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:13px;font-weight:700;cursor:pointer;">
+                      Close Tab — MWK {(this.activeTab.total || 0).toLocaleString()}
+                    </button>
+                  </div>
                 </div>
               )}
-              {this.tabs.map((tab: any) => (
-                <div
-                  onclick={() => this.selectTab(tab)}
-                  style={'padding:12px 14px;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;border:2px solid ' + (this.activeTab?.id === tab.id ? 'var(--color-text-primary)' : 'var(--color-bg-border)') + ';background:' + (this.activeTab?.id === tab.id ? 'var(--color-bg-elevated)' : 'transparent') + ';'}>
-                  <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span style="font-size:13px;font-weight:600;color:var(--color-text-primary);">{tab.name}</span>
-                    <span style="font-size:12px;font-weight:700;color:var(--color-text-primary);">MWK {(tab.total || 0).toLocaleString()}</span>
-                  </div>
-                  <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">{(tab.lines || []).length} items</div>
-                </div>
-              ))}
             </div>
+          ) : (
+            <div style="flex:1;min-height:0;display:flex;flex-direction:column;">
+              <div class="pos-cart-header">
+                <span>Session: {this.session?.register_id || this.terminalId}</span>
+                {this.cartItems.length > 0 && <span class="pos-cart-badge">{this.cartItems.length}</span>}
+              </div>
 
-            {this.activeTab && (
-              <div style="border-top:1px solid var(--color-bg-border);max-height:50%;overflow-y:auto;">
-                <div style="padding:10px 16px;display:flex;justify-content:space-between;align-items:center;background:var(--color-bg-elevated);">
-                  <span style="font-size:12px;font-weight:600;color:var(--color-text-primary);">{this.activeTab.name}</span>
-                  <span style="font-size:11px;color:var(--color-text-muted);">{(this.activeTab.lines || []).length} items</span>
-                </div>
-                <div style="padding:8px 16px;">
-                  {(this.activeTab.lines || []).map((line: any) => (
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid var(--color-bg-border);gap:8px;">
-                      <span style="color:var(--color-text-secondary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{line.name} x{line.quantity}</span>
-                      <span style="color:var(--color-text-primary);font-weight:500;flex-shrink:0;">MWK {(line.line_total || 0).toLocaleString()}</span>
-                      <button
-                        onclick={(e: any) => { e.stopPropagation(); this.removeTabLine(this.activeTab.id, line.id); }}
-                        style="flex-shrink:0;background:transparent;border:none;color:var(--color-text-muted);font-size:14px;cursor:pointer;padding:0 2px;line-height:1;opacity:0.7;">
-                        ✕
-                      </button>
+              <div class="pos-cart-items">
+                {this.cartItems.length === 0 ? (
+                  <div class="pos-cart-empty">
+                    <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.3;">🛒</div>
+                    No items yet<br/>Tap a product to add it
+                  </div>
+                ) : (
+                  this.cartItems.map(item => (
+                    <div class="pos-cart-item">
+                      <span class="pos-cart-item-name">{item.product.name}</span>
+                      <div class="pos-cart-qty">
+                        <button class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, -1)}>−</button>
+                        <span class="pos-cart-qty-val">{item.qty}</span>
+                        <button class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, 1)}>+</button>
+                      </div>
+                      <span class="pos-cart-item-total">{fmt(item.lineTotal)}</span>
+                      <button class="pos-cart-item-remove" onclick={() => this.removeFromCart(item.product.id)}>×</button>
                     </div>
-                  ))}
+                  ))
+                )}
+              </div>
+
+              <div class="pos-cart-totals">
+                <div class="pos-totals-row">
+                  <span>Subtotal</span>
+                  <span>{fmt(subtotal)}</span>
                 </div>
-                <div style="padding:12px 16px;">
-                  <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--color-text-primary);margin-bottom:10px;">
-                    <span>Total</span>
-                    <span>MWK {(this.activeTab.total || 0).toLocaleString()}</span>
-                  </div>
-                  <button
-                    onclick={() => { this.checkoutState = 'checkout'; this.showCheckoutModal = true; this.scheduleUpdate?.(); }}
-                    style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:13px;font-weight:700;cursor:pointer;">
-                    Close Tab — MWK {(this.activeTab.total || 0).toLocaleString()}
-                  </button>
+                <div class="pos-totals-row">
+                  <span>Tax (16%)</span>
+                  <span>{fmt(tax)}</span>
+                </div>
+                <div class="pos-totals-row pos-totals-row--total">
+                  <span>TOTAL</span>
+                  <span>{fmt(total)}</span>
                 </div>
               </div>
-            )}
-          </div>
-        ) : (
-        <div class="pos-cart">
-          <div class="pos-cart-header">
-            <span>Session: {this.session?.register_id || this.terminalId}</span>
-            {this.cartItems.length > 0 && <span class="pos-cart-badge">{this.cartItems.length}</span>}
-          </div>
 
-          <div class="pos-cart-items">
-            {this.cartItems.length === 0 ? (
-              <div class="pos-cart-empty">
-                <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.3;">🛒</div>
-                No items yet<br/>Tap a product to add it
-              </div>
-            ) : (
-              this.cartItems.map(item => (
-                <div class="pos-cart-item">
-                  <span class="pos-cart-item-name">{item.product.name}</span>
-                  <div class="pos-cart-qty">
-                    <button class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, -1)}>−</button>
-                    <span class="pos-cart-qty-val">{item.qty}</span>
-                    <button class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, 1)}>+</button>
-                  </div>
-                  <span class="pos-cart-item-total">{fmt(item.lineTotal)}</span>
-                  <button class="pos-cart-item-remove" onclick={() => this.removeFromCart(item.product.id)}>×</button>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div class="pos-cart-totals">
-            <div class="pos-totals-row">
-              <span>Subtotal</span>
-              <span>{fmt(subtotal)}</span>
+              <button
+                class="pos-checkout-btn"
+                onclick={this.openCheckout.bind(this)}
+                disabled={this.cartItems.length === 0}
+                style={`margin:0 16px 12px;padding:14px;border-radius:10px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:700;cursor:pointer;width:calc(100% - 32px);transition:all 0.15s;opacity:${this.cartItems.length === 0 ? 0.4 : 1};`}>
+                Checkout — MWK {this.computedTotal.toLocaleString()}
+              </button>
             </div>
-            <div class="pos-totals-row">
-              <span>Tax (16%)</span>
-              <span>{fmt(tax)}</span>
-            </div>
-            <div class="pos-totals-row pos-totals-row--total">
-              <span>TOTAL</span>
-              <span>{fmt(total)}</span>
-            </div>
-          </div>
+          )}
 
-          <button
-            class="pos-checkout-btn"
-            onclick={this.openCheckout.bind(this)}
-            disabled={this.cartItems.length === 0}
-            style={`margin:0 16px 12px;
-              padding:14px;border-radius:10px;border:none;
-              background:var(--color-text-primary);
-              color:var(--color-bg-base);
-              font-size:15px;font-weight:700;
-              cursor:pointer;
-              width:calc(100% - 32px);
-              transition:all 0.15s;
-              opacity:${this.cartItems.length === 0 ? 0.4 : 1};`}>
-            Checkout — MWK {this.computedTotal.toLocaleString()}
-          </button>
-
+          {/* Session bar — shared across all modes */}
           <div class="pos-session-bar">
             <div class="pos-session-info">Open: {new Date(this.session?.opened_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
             {window.__skltn?.can('pos.close_session') && (
               <button class="pos-close-session-btn" onclick={() => this.closeSession()} disabled={this.processing}>Close Session</button>
             )}
           </div>
+
         </div>
-        )}
 
         {/* Checkout Modal */}
         {this.showCheckoutModal && (
