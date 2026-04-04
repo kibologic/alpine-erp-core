@@ -1,23 +1,83 @@
+/* ── Legacy single-column layout (OrgSelect, PendingInvites) ─── */
 .auth-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
-  padding: var(--space-lg);
+  background: var(--color-bg-base);
+  padding: var(--space-xl);
 }
 
 .auth-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-xl);
-  padding: var(--space-2xl);
   width: 100%;
-  max-width: 400px;
+  max-width: 480px;
 }
 
 .auth-card--wide {
-  max-width: 480px;
+  max-width: 560px;
+}
+
+/* ── Two-column split layout ─────────────────────────────────── */
+.auth-split {
+  min-height: 100vh;
+  display: flex;
+}
+
+.auth-split-form {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 64px;
+  background: var(--color-bg-base);
+}
+
+.auth-form-inner {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-split-brand {
+  width: 42%;
+  flex-shrink: 0;
+  background: var(--color-bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  border-left: 1px solid var(--color-bg-border);
+}
+
+.auth-brand-inner {
+  text-align: center;
+  max-width: 280px;
+}
+
+.auth-brand-logo {
+  font-size: 3rem;
+  margin-bottom: 1.25rem;
+  opacity: 0.7;
+}
+
+.auth-brand-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin-bottom: 0.625rem;
+  line-height: 1.1;
+}
+
+.auth-brand-sub {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .auth-split { flex-direction: column; }
+  .auth-split-brand { display: none; }
+  .auth-split-form { padding: 40px 24px; align-items: flex-start; }
+  .auth-form-inner { max-width: 100%; }
 }
 
 .auth-logo {
@@ -38,10 +98,11 @@
 }
 
 .auth-title {
-  font-size: var(--font-size-xl);
+  font-size: 1.875rem;
   font-weight: 700;
   color: var(--color-text);
   margin: 0 0 var(--space-xs);
+  line-height: 1.2;
 }
 
 .auth-subtitle {
@@ -93,6 +154,7 @@
 }
 
 .auth-btn {
+  width: 100%;
   padding: var(--space-sm) var(--space-lg);
   border-radius: var(--border-radius-md);
   font-size: var(--font-size-base);
@@ -241,4 +303,99 @@
   font-size: var(--font-size-sm);
   text-align: center;
   margin: var(--space-sm) 0;
+}
+
+/* ── Org choice cards (signup step 2) ───────────────────────── */
+.auth-org-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.auth-org-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 16px;
+  border: 2px solid var(--color-bg-border);
+  border-radius: 10px;
+  background: var(--color-bg-elevated);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  text-align: center;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+}
+
+.auth-org-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-hover);
+}
+
+.auth-org-card--active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-bg-elevated));
+}
+
+.auth-org-card-icon {
+  font-size: 1.75rem;
+}
+
+.auth-org-card-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.auth-org-card-sub {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: -4px;
+}
+
+/* ── Org search results ─────────────────────────────────────── */
+.auth-org-search-results {
+  border: 1px solid var(--color-bg-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.auth-org-search-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-bg-border);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-sans);
+  transition: background var(--transition-fast);
+}
+
+.auth-org-search-item:last-child {
+  border-bottom: none;
+}
+
+.auth-org-search-item:hover,
+.auth-org-search-item--selected {
+  background: var(--color-bg-elevated);
+}
+
+.auth-org-search-item-name {
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+.auth-org-search-item-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
 }

@@ -23,16 +23,13 @@ component PendingInvitesPage {
           'Content-Type': 'application/json'
         }
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to accept');
-      }
+
+      if (!response.ok) throw new Error('Failed to accept');
 
       this.invites = this.invites.filter((i: any) => i.invite_id !== inviteId);
       localStorage.setItem('alpine-pending-invites', JSON.stringify(this.invites));
-      
+
       if (this.invites.length === 0) {
-        // Refresh login to get new token with atoms
         localStorage.removeItem('alpine-auth-token');
         window.location.href = '/login';
       } else {
@@ -50,18 +47,14 @@ component PendingInvitesPage {
     try {
       const response = await fetch(`/api/v1/tenant/invite/${inviteId}/decline`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('alpine-auth-token')}`
-        }
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('alpine-auth-token')}` }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to decline');
-      }
+      if (!response.ok) throw new Error('Failed to decline');
 
       this.invites = this.invites.filter((i: any) => i.invite_id !== inviteId);
       localStorage.setItem('alpine-pending-invites', JSON.stringify(this.invites));
-      
+
       if (this.invites.length === 0) {
         window.location.href = '/';
       } else {
@@ -74,45 +67,47 @@ component PendingInvitesPage {
 
   render() {
     return (
-      <div style="min-height:100vh;display:flex; align-items:center;justify-content:center; background:var(--color-bg-base);">
-        <div style="width:480px;padding:40px;">
-          <div style="font-size:22px;font-weight:700; color:var(--color-text-primary); margin-bottom:8px;">
-            You have been invited
+      <div class="auth-page">
+        <div class="auth-card">
+          <div class="auth-logo" style="margin-bottom:2rem;">
+            <span class="auth-logo-icon">⛰</span>
+            <span class="auth-logo-text">Alpine ERP</span>
           </div>
-          <div style="font-size:14px; color:var(--color-text-muted); margin-bottom:32px;">
-            Review and respond to your organisation invites
+          <h1 class="auth-title" style="margin-bottom:6px;">You've been invited</h1>
+          <p class="auth-subtitle" style="margin-bottom:1.5rem;">Review and respond to your organisation invites</p>
+
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            {this.invites.map((invite: any) => (
+              <div style="padding:18px;background:var(--color-bg-elevated);border:1px solid var(--color-bg-border);border-radius:10px;">
+                <div style="font-weight:600;font-size:0.9375rem;color:var(--color-text-primary);margin-bottom:4px;">
+                  {invite.org_name}
+                </div>
+                <div style="font-size:0.8125rem;color:var(--color-text-muted);margin-bottom:14px;">
+                  Role: <strong style="color:var(--color-text-secondary);">{invite.role_name}</strong>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button
+                    onclick={() => this.acceptInvite(invite.invite_id)}
+                    disabled={this.loading}
+                    style="flex:1;padding:9px 16px;border-radius:7px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:0.875rem;font-weight:600;cursor:pointer;font-family:var(--font-sans);"
+                  >
+                    {this.loading ? 'Joining…' : 'Accept & Join'}
+                  </button>
+                  <button
+                    onclick={() => this.declineInvite(invite.invite_id)}
+                    disabled={this.loading}
+                    style="padding:9px 18px;border-radius:7px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-secondary);font-size:0.875rem;cursor:pointer;font-family:var(--font-sans);"
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-          
-          {this.invites.map((invite: any) => (
-            <div style="background:var(--color-bg-surface); border:1px solid var(--color-bg-border); border-radius:12px;padding:20px; margin-bottom:16px;">
-              <div style="font-size:16px;font-weight:600; color:var(--color-text-primary); margin-bottom:4px;">
-                {invite.org_name}
-              </div>
-              <div style="font-size:13px; color:var(--color-text-muted); margin-bottom:16px;">
-                Role: <strong>{invite.role_name}</strong>
-              </div>
-              <div style="display:flex;gap:8px;">
-                <button
-                  onclick={() => this.acceptInvite(invite.invite_id)}
-                  disabled={this.loading}
-                  style="flex:1;padding:10px;border-radius:8px; border:none; background:var(--color-text-primary); color:var(--color-bg-base); font-size:13px;font-weight:600; cursor:pointer;"
-                >
-                  {this.loading ? 'Joining...' : 'Accept & Join'}
-                </button>
-                <button
-                  onclick={() => this.declineInvite(invite.invite_id)}
-                  disabled={this.loading}
-                  style="padding:10px 20px;border-radius:8px; border:1px solid var(--color-bg-border); background:transparent; color:var(--color-text-secondary); font-size:13px;cursor:pointer;"
-                >
-                  Decline
-                </button>
-              </div>
-            </div>
-          ))}
-          
+
           <button
             onclick={() => { window.location.href = '/'; }}
-            style="width:100%;margin-top:8px;padding:10px; border-radius:8px; border:1px solid var(--color-bg-border); background:transparent; color:var(--color-text-muted); font-size:13px;cursor:pointer;"
+            style="width:100%;margin-top:16px;padding:10px;border-radius:8px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-muted);font-size:0.875rem;cursor:pointer;font-family:var(--font-sans);"
           >
             Skip for now
           </button>

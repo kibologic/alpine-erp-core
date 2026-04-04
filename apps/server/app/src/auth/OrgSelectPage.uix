@@ -1,5 +1,4 @@
 import { SwissComponent } from '@kibologic/core';
-import { Spinner } from '../components/Spinner.uix';
 
 component OrgSelectPage {
   props = {
@@ -33,20 +32,10 @@ component OrgSelectPage {
               initial: (data.name || 'O')[0].toUpperCase(),
             });
           } else {
-            resolved.push({
-              id: t.tenant_id,
-              name: t.tenant_id,
-              role: t.role,
-              initial: '?',
-            });
+            resolved.push({ id: t.tenant_id, name: t.tenant_id, role: t.role, initial: '?' });
           }
         } catch {
-          resolved.push({
-            id: t.tenant_id,
-            name: t.tenant_id,
-            role: t.role,
-            initial: '?',
-          });
+          resolved.push({ id: t.tenant_id, name: t.tenant_id, role: t.role, initial: '?' });
         }
       }
 
@@ -74,24 +63,22 @@ component OrgSelectPage {
   render() {
     return (
       <div class="auth-page">
-        <div class="auth-card auth-card--wide">
-          <div class="auth-logo">
+        <div class="auth-card">
+          <div class="auth-logo" style="margin-bottom:2rem;">
             <span class="auth-logo-icon">⛰</span>
             <span class="auth-logo-text">Alpine ERP</span>
           </div>
-          <h1 class="auth-title">Select organisation</h1>
-          <p class="auth-subtitle">Choose which org to open</p>
+          <h1 class="auth-title" style="margin-bottom:6px;">Select organisation</h1>
+          <p class="auth-subtitle" style="margin-bottom:1.5rem;">Choose which workspace to open</p>
 
           {this.loading ? (
-            <div style="display:flex;justify-content:center;padding:24px;">
-              <Spinner />
-            </div>
+            <div style="padding:2rem;text-align:center;color:var(--color-text-muted);">Loading…</div>
           ) : (
             <div class="org-list">
               {this.orgs.length === 0 ? (
-                <p class="auth-subtitle" style="text-align:center;">No organisations found.</p>
+                <p style="text-align:center;color:var(--color-text-muted);padding:2rem 0;">No organisations found.</p>
               ) : (
-                this.orgs.map((org) => (
+                this.orgs.map((org: any) => (
                   <button class="org-item" type="button" onClick={() => this.selectOrg(org.id)}>
                     <div class="org-item-avatar">{org.initial}</div>
                     <div class="org-item-info">
@@ -105,7 +92,7 @@ component OrgSelectPage {
             </div>
           )}
 
-          <p class="auth-switch">
+          <p class="auth-switch" style="margin-top:1.5rem;">
             <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.signOut(); }}>
               Sign out
             </a>

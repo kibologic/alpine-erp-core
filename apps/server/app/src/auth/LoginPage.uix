@@ -1,5 +1,4 @@
 import { SwissComponent } from '@kibologic/core';
-import { Spinner } from '../components/Spinner.uix';
 
 component LoginPage {
   props = {
@@ -30,7 +29,7 @@ component LoginPage {
       if (!response.ok) {
         const err = await response.json();
         const detail = err.detail;
-        
+
         if (typeof detail === 'object') {
           if (detail.code === 'ACCOUNT_PENDING') {
             this.error = '';
@@ -47,8 +46,7 @@ component LoginPage {
             return;
           }
         }
-        this.error = typeof detail === 'string' 
-          ? detail : 'Invalid email or password';
+        this.error = typeof detail === 'string' ? detail : 'Invalid email or password';
         this.loading = false;
         this.scheduleUpdate?.();
         return;
@@ -56,18 +54,14 @@ component LoginPage {
 
       const data = await response.json();
       localStorage.setItem('alpine-auth-token', data.token);
-      localStorage.setItem('alpine-user',
-        JSON.stringify(data.user));
-      localStorage.setItem('alpine-user-atoms',
-        JSON.stringify(data.atoms || []));
+      localStorage.setItem('alpine-user', JSON.stringify(data.user));
+      localStorage.setItem('alpine-user-atoms', JSON.stringify(data.atoms || []));
       localStorage.setItem('alpine-tier', data.tier || 'free');
       if (data.tenants?.length > 0) {
-        localStorage.setItem('alpine-tenant-id',
-          data.tenants[0].tenant_id);
+        localStorage.setItem('alpine-tenant-id', data.tenants[0].tenant_id);
       }
       if (data.pending_invites?.length > 0) {
-        localStorage.setItem('alpine-pending-invites',
-          JSON.stringify(data.pending_invites));
+        localStorage.setItem('alpine-pending-invites', JSON.stringify(data.pending_invites));
       }
       window.location.href = '/';
     } catch (e) {
@@ -79,78 +73,91 @@ component LoginPage {
 
   render() {
     return (
-      <div class="auth-page">
-        <div class="auth-card">
-          <div class="auth-logo">
-            <span class="auth-logo-icon">⛰</span>
-            <span class="auth-logo-text">Alpine ERP</span>
-          </div>
-
-          {this.showPending ? (
-            <div style="text-align:center;padding:40px 32px; max-width:400px;margin:0 auto;">
-              <div style="font-size:48px;margin-bottom:16px;">
-                ⏳
-              </div>
-              <div style="font-size:18px;font-weight:700; color:var(--color-text-primary); margin-bottom:12px;">
-                Account Pending
-              </div>
-              <div style="font-size:14px; color:var(--color-text-secondary); line-height:1.6;">
-                {this.pendingMessage}
-              </div>
-              <button
-                onclick={() => { this.showPending = false; this.scheduleUpdate?.(); }}
-                style="margin-top:24px;padding:10px 24px; border-radius:8px;border:1px solid var(--color-bg-border);background:transparent; color:var(--color-text-primary); font-size:13px;cursor:pointer;"
-              >
-                Back to Login
-              </button>
+      <div class="auth-split">
+        <div class="auth-split-form">
+          <div class="auth-form-inner">
+            <div class="auth-logo" style="margin-bottom:2rem;">
+              <span class="auth-logo-icon">⛰</span>
+              <span class="auth-logo-text">Alpine ERP</span>
             </div>
-          ) : (
-            <div>
-              <h1 class="auth-title">Welcome back</h1>
-              <p class="auth-subtitle">Sign in to your account</p>
 
-              <form class="auth-form">
-                <div class="auth-field">
-                  <label>Email</label>
-                  <input
-                    type="email"
-                    placeholder="you@company.com"
-                    value={this.email}
-                    onInput={(e) => { this.email = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
-                  />
-                </div>
-                <div class="auth-field">
-                  <label>Password</label>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={this.password}
-                    onInput={(e) => { this.password = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
-                  />
-                </div>
-                <div class="auth-form-footer">
-                  <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('forgot-password'); }}>Forgot password?</a>
-                </div>
+            {this.showPending ? (
+              <div style="padding:16px 0;">
+                <div style="font-size:2.5rem;margin-bottom:16px;">⏳</div>
+                <h1 class="auth-title" style="margin-bottom:8px;">Account Pending</h1>
+                <p class="auth-subtitle" style="margin-bottom:24px;">{this.pendingMessage}</p>
                 <button
-                  type="button"
-                  class="auth-btn auth-btn--primary"
-                  disabled={this.loading}
-                  onClick={() => this.login()}
+                  class="auth-btn auth-btn--secondary"
+                  onclick={() => { this.showPending = false; this.scheduleUpdate?.(); }}
                 >
-                  {this.loading ? 'Signing in...' : 'Sign in'}
+                  Back to Login
                 </button>
-              </form>
+              </div>
+            ) : (
+              <div>
+                <h1 class="auth-title" style="margin-bottom:6px;">Welcome back</h1>
+                <p class="auth-subtitle" style="margin-bottom:2rem;">Sign in to your account</p>
 
-              {this.error && <p class="auth-error">{this.error}</p>}
+                <div class="auth-form">
+                  <div class="auth-field">
+                    <label>Email</label>
+                    <input
+                      type="email"
+                      placeholder="you@company.com"
+                      value={this.email}
+                      onInput={(e) => { this.email = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+                      onKeyDown={(e: KeyboardEvent) => { if (e.key === 'Enter') this.login(); }}
+                    />
+                  </div>
+                  <div class="auth-field">
+                    <label>Password</label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={this.password}
+                      onInput={(e) => { this.password = (e.target as HTMLInputElement).value; this.scheduleUpdate?.(); }}
+                      onKeyDown={(e: KeyboardEvent) => { if (e.key === 'Enter') this.login(); }}
+                    />
+                    <div style="text-align:right;margin-top:4px;">
+                      <a
+                        href="#"
+                        class="auth-link"
+                        onClick={(e) => { e.preventDefault(); this.props.onNavigate('forgot-password'); }}
+                      >Forgot password?</a>
+                    </div>
+                  </div>
 
-              <p class="auth-switch">
-                No account?{' '}
-                <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('signup'); }}>
-                  Create one
-                </a>
-              </p>
-            </div>
-          )}
+                  {this.error ? (
+                    <p class="auth-error">{this.error}</p>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    class="auth-btn auth-btn--primary"
+                    disabled={this.loading}
+                    onClick={() => this.login()}
+                  >
+                    {this.loading ? 'Signing in…' : 'Sign in'}
+                  </button>
+                </div>
+
+                <p class="auth-switch" style="margin-top:1.5rem;">
+                  Don't have an account?{' '}
+                  <a href="#" class="auth-link" onClick={(e) => { e.preventDefault(); this.props.onNavigate('signup'); }}>
+                    Sign up
+                  </a>
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div class="auth-split-brand">
+          <div class="auth-brand-inner">
+            <div class="auth-brand-logo">⛰</div>
+            <div class="auth-brand-title">Alpine ERP</div>
+            <div class="auth-brand-sub">Business operations, simplified.</div>
+          </div>
         </div>
       </div>
     );
