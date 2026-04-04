@@ -22,5 +22,26 @@ export const PosService = {
 
   createCustomer: (data: any) =>
     api.post('/inventory/customers', data),
+
+  getTerminalConfig: (terminalId: string) =>
+    api.get(`/pos/tabs/config/${terminalId}`),
+
+  listTabs: (sessionId: string) =>
+    api.get(`/pos/tabs?session_id=${sessionId}`),
+
+  createTab: (name: string, sessionId: string) =>
+    api.post('/pos/tabs', { name, session_id: sessionId }),
+
+  getTab: (tabId: string) =>
+    api.get(`/pos/tabs/${tabId}`),
+
+  addTabLine: (tabId: string, productId: string, quantity: number) =>
+    api.post(`/pos/tabs/${tabId}/lines`, { product_id: productId, quantity }),
+
+  removeTabLine: (tabId: string, lineId: string) =>
+    api.delete(`/pos/tabs/${tabId}/lines/${lineId}`),
+
+  closeTab: (tabId: string, paymentMethod: string, amountTendered: number) =>
+    api.post(`/pos/tabs/${tabId}/close`, { payment_method: paymentMethod, amount_tendered: amountTendered }),
 };
 
