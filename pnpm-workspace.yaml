@@ -1,5 +1,8 @@
 packages:
-  - "apps/*"
-  - "modules/*"
-  - "packages/core"
-  - "packages/ui"
+  - apps/*
+  - modules/*
+  - packages/*
+  - ../swite
+  - ../swiss-lib/packages/*
+  - ../swiss-lib/packages/plugins/*
+  - ../alpine-shell/packages/*

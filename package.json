@@ -9,24 +9,13 @@
     "lint": "turbo run lint"
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
-    "tsx": "^4.21.0"
+    "tsx": "^4.21.0",
+    "turbo": "^2.0.0"
   },
   "pnpm": {
-    "overrides": {
-      "@kibologic/core": "latest",
-      "@kibologic/compiler": "latest",
-      "@kibologic/plugin-file-router": "latest",
-      "@kibologic/swite": "latest",
-      "@kibologic/plugin-web-storage": "latest",
-      "@kibologic/security": "latest",
-      "@kibologic/router": "latest",
-      "@kibologic/utils": "latest",
-      "@kibologic/event-bus": "latest",
-      "@kibologic/contracts": "latest",
-      "@kibologic/connectivity": "latest",
-      "@kibologic/i18n": "latest",
-      "@kibologic/shell": "latest"
-    }
+    "overrides": {}
+  },
+  "dependencies": {
+    "@kibologic/swite": "link:../swite"
   }
 }
