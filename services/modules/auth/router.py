@@ -541,6 +541,7 @@ async def signup(
         await session.flush()
 
         token, expires_at = await _issue_token(session, user.id)
+        atoms = await get_user_atoms(session, user.id)
 
         return {
             "token": token,
@@ -551,6 +552,8 @@ async def signup(
                 "full_name": user.full_name,
             },
             "tenants": [{"tenant_id": tenant.id, "role": su_role.id}],
+            "tier": tenant.tier,
+            "atoms": atoms,
             "expiresAt": expires_at.isoformat() + "Z",
         }
 
@@ -603,6 +606,7 @@ async def signup(
             await session.commit()
             
             token, expires_at = await _issue_token(session, user.id)
+            atoms = await get_user_atoms(session, user.id)
             return {
                 "token": token,
                 "user": {
@@ -612,6 +616,7 @@ async def signup(
                     "full_name": user.full_name,
                 },
                 "tenants": [{"tenant_id": existing_invite.tenant_id, "role": existing_invite.role_id}],
+                "atoms": atoms,
                 "expiresAt": expires_at.isoformat() + "Z",
             }
 
