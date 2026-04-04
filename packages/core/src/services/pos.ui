@@ -23,6 +23,9 @@ export const PosService = {
   createCustomer: (data: any) =>
     api.post('/inventory/customers', data),
 
+  listTerminals: () =>
+    api.get('/pos/terminals'),
+
   getTerminalConfig: (terminalId: string) =>
     api.get(`/pos/tabs/config/${terminalId}`),
 

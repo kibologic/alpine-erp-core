@@ -8,7 +8,7 @@ from core.db import get_session
 from core.auth import get_current_tenant
 from core.auth_deps import get_current_user
 from core.limits import LimitEnforcer, get_limit_enforcer
-from core.models import Tenant, Sale, Product, CashSession, FiscalSubmission
+from core.models import Tenant, Sale, Product, CashSession, FiscalSubmission, TerminalConfig
 from core.fiscal import get_fiscal_service_for_tenant, build_fiscal_sale
 from core.ws_manager import manager
 from . import schemas, service
@@ -86,6 +86,28 @@ async def close_session(
         return await service.close_session(session, tenant_id, current_user["user_id"], session_id, data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/terminals")
+async def list_terminals(
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+):
+    result = await session.execute(
+        select(TerminalConfig)
+        .where(TerminalConfig.tenant_id == tenant_id)
+        .order_by(TerminalConfig.created_at)
+    )
+    configs = result.scalars().all()
+    return [
+        {
+            "terminal_id": c.terminal_id,
+            "name": c.name,
+            "enabled_modes": c.enabled_modes,
+            "default_mode": c.default_mode,
+        }
+        for c in configs
+    ]
 
 
 @router.get("/sessions/current/{register_id}", response_model=Optional[schemas.SessionResponse])

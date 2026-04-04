@@ -2,7 +2,6 @@ import { SwissComponent } from '@kibologic/core';
 import { PosService, InventoryService, getDeviceId } from '@alpine/core';
 
 const TAX_RATE = 0.16;
-const REGISTER_ID = 'REG-001';
 
 function fmt(n: number): string {
   return `MWK ${(n || 0).toLocaleString()}`;
@@ -33,6 +32,7 @@ component PosTerminalPage {
   state { let showUpgradeModal: boolean = false; }
   state { let upgradeMessage: string = ''; }
   state { let fiscalData: any = null; }
+  state { let terminalId: string = ''; }
   state { let activeMode: string = 'instant'; }
   state { let enabledModes: any = []; }
   state { let tabs: any = []; }
@@ -43,17 +43,26 @@ component PosTerminalPage {
 
   async mounted() {
     this.notifications = window.__skltn.registry.get('notifications');
-    await this.refreshData();
+    // Resolve terminal ID for this tenant before anything else
     try {
-      const configRes = await PosService.getTerminalConfig(REGISTER_ID);
-      const config = configRes.data || configRes;
-      this.enabledModes = config.enabled_modes || ['instant'];
-      this.activeMode = config.default_mode || 'instant';
+      const terminalsRes = await PosService.listTerminals();
+      const terminals = terminalsRes.data || terminalsRes;
+      if (Array.isArray(terminals) && terminals.length > 0) {
+        this.terminalId = terminals[0].terminal_id;
+        this.enabledModes = terminals[0].enabled_modes || ['instant'];
+        this.activeMode = terminals[0].default_mode || 'instant';
+      } else {
+        this.terminalId = 'REG-001';
+        this.enabledModes = ['instant'];
+        this.activeMode = 'instant';
+      }
     } catch (e) {
+      this.terminalId = 'REG-001';
       this.enabledModes = ['instant'];
       this.activeMode = 'instant';
     }
     this.scheduleUpdate?.();
+    await this.refreshData();
     if (this.enabledModes.includes('tabbed') && this.session?.id) {
       await this.loadTabs();
     }
@@ -92,7 +101,7 @@ component PosTerminalPage {
     this.loading = true;
     try {
       const [sess, prods] = await Promise.all([
-        PosService.getCurrentSession(REGISTER_ID),
+        PosService.getCurrentSession(this.terminalId),
         InventoryService.getProducts()
       ]);
       this.session = sess;
@@ -108,7 +117,7 @@ component PosTerminalPage {
     this.processing = true;
     try {
       const deviceId = await getDeviceId();
-      this.session = await PosService.openSession(REGISTER_ID, this.openingFloat, deviceId);
+      this.session = await PosService.openSession(this.terminalId, this.openingFloat, deviceId);
     } catch (err: any) {
       if (err.status === 403 && err.detail?.includes('Upgrade')) {
         this.upgradeMessage = err.detail;
@@ -260,7 +269,7 @@ component PosTerminalPage {
 
       const saleData = {
         session_id: this.session.id,
-        register_id: REGISTER_ID,
+        register_id: this.terminalId,
         subtotal: round2(this.computedSubtotal),
         tax: round2(this.computedTax),
         discount: 0,
@@ -458,9 +467,20 @@ component PosTerminalPage {
     if (!this.session) {
       return (
         <div class="pos-gate-state">
+          {this.enabledModes.length > 0 && (
+            <div style="position:absolute;top:16px;left:16px;display:flex;gap:2px;padding:2px;border-radius:7px;background:var(--color-bg-elevated);border:1px solid var(--color-bg-border);">
+              {this.enabledModes.map((mode: string) => (
+                <button
+                  onclick={() => this.switchMode(mode)}
+                  style={'padding:4px 12px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;white-space:nowrap;background:' + (this.activeMode === mode ? 'var(--color-text-primary)' : 'transparent') + ';color:' + (this.activeMode === mode ? 'var(--color-bg-base)' : 'var(--color-text-secondary)') + ';'}>
+                  {mode === 'instant' ? '⚡ Quick Sale' : mode === 'tabbed' ? '📋 Tabs' : mode}
+                </button>
+              ))}
+            </div>
+          )}
           <div class="pos-state-card">
             <h2 class="pos-state-title">Open Cash Session</h2>
-            <p class="pos-state-desc">Register: {REGISTER_ID}</p>
+            <p class="pos-state-desc">Register: {this.terminalId || '…'}</p>
             {window.__skltn?.can('pos.open_session') ? (
               <div>
                 <div class="pos-float-row">
@@ -491,7 +511,7 @@ component PosTerminalPage {
             {/* Unified header: [mode pills] [search] [utility buttons] */}
             <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--color-bg-border);background:var(--color-bg-surface);">
               {/* Mode pills — left cluster */}
-              {this.enabledModes.length > 1 && (
+              {this.enabledModes.length > 0 && (
                 <div style="display:flex;gap:2px;padding:2px;border-radius:7px;background:var(--color-bg-elevated);border:1px solid var(--color-bg-border);flex-shrink:0;">
                   {this.enabledModes.map((mode: string) => (
                     <button
@@ -612,7 +632,7 @@ component PosTerminalPage {
         ) : (
         <div class="pos-cart">
           <div class="pos-cart-header">
-            <span>Session: {this.session?.register_id || REGISTER_ID}</span>
+            <span>Session: {this.session?.register_id || this.terminalId}</span>
             {this.cartItems.length > 0 && <span class="pos-cart-badge">{this.cartItems.length}</span>}
           </div>
 
