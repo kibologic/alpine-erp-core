@@ -43,7 +43,7 @@ component PosTerminalPage {
 
   async mounted() {
     this.notifications = window.__skltn.registry.get('notifications');
-    // Resolve terminal ID for this tenant before anything else
+    // Resolve terminal config + session + products atomically — no partial renders
     try {
       const terminalsRes = await PosService.listTerminals();
       const terminals = terminalsRes.data || terminalsRes;
@@ -61,7 +61,7 @@ component PosTerminalPage {
       this.enabledModes = ['instant'];
       this.activeMode = 'instant';
     }
-    this.scheduleUpdate?.();
+    // refreshData uses this.terminalId — load after terminal ID is known
     await this.refreshData();
     if (this.enabledModes.includes('tabbed') && this.session?.id) {
       await this.loadTabs();
@@ -392,6 +392,7 @@ component PosTerminalPage {
 
   switchMode(mode: string) {
     this.activeMode = mode;
+    this.activeTab = null;
     this.scheduleUpdate?.();
     if (mode === 'tabbed' && this.session?.id) {
       this.loadTabs();
@@ -435,11 +436,13 @@ component PosTerminalPage {
     if (!this.newTabName.trim()) return;
     try {
       const res = await PosService.createTab(this.newTabName, this.session.id);
-      const tab = res.data || res;
-      this.tabs = [tab, ...this.tabs];
-      this.activeTab = tab;
+      const created = res.data || res;
+      this.tabs = [created, ...this.tabs];
       this.newTabName = '';
       this.showNewTabModal = false;
+      // Fetch fresh tab data — never set activeTab directly from create response
+      const fresh = await PosService.getTab(created.id);
+      this.activeTab = fresh.data || fresh;
       this.scheduleUpdate?.();
     } catch (e) {
       this.notifications?.error('Failed to create tab');
@@ -461,26 +464,27 @@ component PosTerminalPage {
     }
   }
 
+  async removeTabLine(tabId: string, lineId: string) {
+    try {
+      await PosService.removeTabLine(tabId, lineId);
+      const res = await PosService.getTab(tabId);
+      this.activeTab = res.data || res;
+      this.tabs = this.tabs.map((t: any) => t.id === tabId ? this.activeTab : t);
+      this.scheduleUpdate?.();
+    } catch (e) {
+      this.notifications?.error('Failed to remove item');
+    }
+  }
+
   render() {
-    if (this.loading) return <div class="pos-loading-state"><div class="pos-loading-ring"></div>Loading POS...</div>;
+    if (!this.terminalId || this.loading) return <div class="pos-loading-state"><div class="pos-loading-ring"></div>Loading POS...</div>;
 
     if (!this.session) {
       return (
         <div class="pos-gate-state">
-          {this.enabledModes.length > 0 && (
-            <div style="position:absolute;top:16px;left:16px;display:flex;gap:2px;padding:2px;border-radius:7px;background:var(--color-bg-elevated);border:1px solid var(--color-bg-border);">
-              {this.enabledModes.map((mode: string) => (
-                <button
-                  onclick={() => this.switchMode(mode)}
-                  style={'padding:4px 12px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;white-space:nowrap;background:' + (this.activeMode === mode ? 'var(--color-text-primary)' : 'transparent') + ';color:' + (this.activeMode === mode ? 'var(--color-bg-base)' : 'var(--color-text-secondary)') + ';'}>
-                  {mode === 'instant' ? '⚡ Quick Sale' : mode === 'tabbed' ? '📋 Tabs' : mode}
-                </button>
-              ))}
-            </div>
-          )}
           <div class="pos-state-card">
             <h2 class="pos-state-title">Open Cash Session</h2>
-            <p class="pos-state-desc">Register: {this.terminalId || '…'}</p>
+            <p class="pos-state-desc">Register: {this.terminalId}</p>
             {window.__skltn?.can('pos.open_session') ? (
               <div>
                 <div class="pos-float-row">
@@ -609,9 +613,14 @@ component PosTerminalPage {
                 </div>
                 <div style="padding:8px 16px;">
                   {(this.activeTab.lines || []).map((line: any) => (
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid var(--color-bg-border);">
-                      <span style="color:var(--color-text-secondary);">{line.name} x{line.quantity}</span>
-                      <span style="color:var(--color-text-primary);font-weight:500;">MWK {(line.line_total || 0).toLocaleString()}</span>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid var(--color-bg-border);gap:8px;">
+                      <span style="color:var(--color-text-secondary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{line.name} x{line.quantity}</span>
+                      <span style="color:var(--color-text-primary);font-weight:500;flex-shrink:0;">MWK {(line.line_total || 0).toLocaleString()}</span>
+                      <button
+                        onclick={(e: any) => { e.stopPropagation(); this.removeTabLine(this.activeTab.id, line.id); }}
+                        style="flex-shrink:0;background:transparent;border:none;color:var(--color-text-muted);font-size:14px;cursor:pointer;padding:0 2px;line-height:1;opacity:0.7;">
+                        ✕
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -705,7 +714,7 @@ component PosTerminalPage {
 
               {/* ── CHECKOUT STATE ── */}
               {this.checkoutState === 'checkout' && (
-                <div style="display:flex;flex-direction:column;height:100%;">
+                <div style="display:flex;flex-direction:column;flex:1;min-height:0;">
                   
                   {/* Header */}
                   <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--color-bg-border);">
@@ -823,7 +832,7 @@ component PosTerminalPage {
                   </div>
 
                   {/* Footer — Charge button */}
-                  <div style="padding:16px 24px;border-top:1px solid var(--color-bg-border);">
+                  <div style="padding:16px 24px;border-top:1px solid var(--color-bg-border);flex-shrink:0;">
                     <button
                       onclick={this.processPayment.bind(this)}
                       disabled={this.processing}
