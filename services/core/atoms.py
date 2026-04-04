@@ -18,6 +18,7 @@ ALL_ATOMS = {
     "settings.view": "View settings",
     "settings.manage": "Modify settings",
     "reports.view": "View reports",
+    "org.manage": "Manage organisation settings",
 }
 
 SUPER_USER_ATOMS = list(ALL_ATOMS.keys())

@@ -39,11 +39,16 @@ async def _issue_token(session: AsyncSession, user_id: str) -> tuple[str, dateti
 _STANDARD_ROLE_ATOMS = {
     "admin": [
         "pos.sell", "pos.refund", "pos.open_session", "pos.close_session",
+        "pos.view_sales", "pos.view_sessions", "pos.manage_customers",
         "inventory.view", "inventory.adjust", "inventory.manage",
-        "users.view", "users.manage", "settings.view", "settings.manage",
+        "inventory.export", "inventory.stock_take", "inventory.view_movements",
+        "users.view", "users.manage", "users.manage_roles",
+        "settings.view", "settings.manage",
+        "reports.view", "org.manage",
     ],
     "manager": [
         "pos.sell", "pos.refund", "pos.open_session", "pos.close_session",
+        "pos.view_sales", "pos.view_sessions",
         "inventory.view", "inventory.adjust",
         "users.view", "settings.view",
     ],
@@ -508,8 +513,11 @@ async def signup(
         session.add(su_role)
         await session.flush()
         
-        # Add atoms to the su_role (simplification: we'll skip adding specific atoms initially, or we could add all. The existing logic relies on whatever logic was built previously. Wait, I'll let another endpoint or seed script add atoms, or just do a generic approach, or leave it empty, but the spec says "Issue token with atoms". Wait, the spec says "Seed Super User custom role for tenant, Assign Super User role to user". Let's give it an atom like "super.user" or just all atoms. I'll just create the role here as requested.)
-        # Actually, let's just make the role. The spec doesn't say to seed atoms right here.
+        # Seed all atoms for the Super User role so the org creator has full access
+        from core.atoms import SUPER_USER_ATOMS
+        for atom in SUPER_USER_ATOMS:
+            session.add(RoleAtom(role_id=su_role.id, atom=atom))
+        await session.flush()
 
         user = User(
             tenant_id=tenant.id,
