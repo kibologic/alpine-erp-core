@@ -40,9 +40,12 @@ component PosTerminalPage {
   state { let showNewTabModal: boolean = false; }
   state { let newTabName: string = ''; }
   state { let loadingTabs: boolean = false; }
+  state { let categories: string[] = ['All']; }
+  state { let cartPosition: string = 'right'; }
 
   async mounted() {
     this.notifications = window.__skltn.registry.get('notifications');
+    this.cartPosition = localStorage.getItem('alpine-cart-position') || 'right';
     // Resolve terminal config + session + products atomically — no partial renders
     try {
       const terminalsRes = await PosService.listTerminals();
@@ -89,6 +92,12 @@ component PosTerminalPage {
     this.scheduleUpdate?.();
   }
 
+  toggleCartPosition() {
+    this.cartPosition = this.cartPosition === 'right' ? 'left' : 'right';
+    localStorage.setItem('alpine-cart-position', this.cartPosition);
+    this.scheduleUpdate?.();
+  }
+
   async toggleBrowserFullscreen() {
     if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
       await (document.exitFullscreen?.() || (document as any).webkitExitFullscreen?.());
@@ -106,6 +115,13 @@ component PosTerminalPage {
       ]);
       this.session = sess;
       this.products = prods || [];
+      const seen = new Set();
+      const cats: string[] = ['All'];
+      for (const p of this.products) {
+        const cat = p.category?.name || 'Other';
+        if (!seen.has(cat)) { seen.add(cat); cats.push(cat); }
+      }
+      this.categories = cats;
     } catch (err) {
       this.notifications?.error('Failed to refresh POS data');
     } finally {
@@ -151,15 +167,10 @@ component PosTerminalPage {
     }
   }
 
-  get categories() {
-    const names = this.products.map(p => p.category?.name).filter(n => !!n);
-    return ['All', ...Array.from(new Set(names))];
-  }
-
   get filteredProducts() {
     let prods = this.products;
     if (this.selectedCategory !== 'All') {
-      prods = prods.filter(p => p.category?.name === this.selectedCategory);
+      prods = prods.filter(p => (p.category?.name || 'Other') === this.selectedCategory);
     }
     const q = (this.search || '').toLowerCase();
     if (q) {
@@ -508,7 +519,7 @@ component PosTerminalPage {
     const total = subtotal + tax;
 
     return (
-      <div class="pos-terminal" style={this.appFullscreen ? 'position:fixed;inset:0;z-index:9999;background:var(--color-bg-base);' : ''}>
+      <div class="pos-terminal" style={(this.appFullscreen ? 'position:fixed;inset:0;z-index:9999;background:var(--color-bg-base);' : '') + (this.cartPosition === 'left' ? 'flex-direction:row-reverse;' : '')}>
         {/* Left Panel — Products */}
         <div class="pos-products">
           <div class="pos-products-header">
@@ -543,7 +554,7 @@ component PosTerminalPage {
                 </button>
               </div>
             </div>
-            {/* Category pills row */}
+            {/* Category pills row — derived from loaded products */}
             <div class="pos-category-filters">
               {this.categories.map(cat => (
                 <button
@@ -696,9 +707,18 @@ component PosTerminalPage {
           {/* Session bar — shared across all modes */}
           <div class="pos-session-bar">
             <div class="pos-session-info">Open: {new Date(this.session?.opened_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-            {window.__skltn?.can('pos.close_session') && (
-              <button class="pos-close-session-btn" onclick={() => this.closeSession()} disabled={this.processing}>Close Session</button>
-            )}
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button
+                onclick={() => this.toggleCartPosition()}
+                title={this.cartPosition === 'right' ? 'Move cart left' : 'Move cart right'}
+                class="pos-fs-btn"
+                style="font-size:14px;padding:4px 8px;">
+                {this.cartPosition === 'right' ? '⇐' : '⇒'}
+              </button>
+              {window.__skltn?.can('pos.close_session') && (
+                <button class="pos-close-session-btn" onclick={() => this.closeSession()} disabled={this.processing}>Close Session</button>
+              )}
+            </div>
           </div>
 
         </div>
