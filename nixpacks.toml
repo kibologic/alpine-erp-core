@@ -3,7 +3,7 @@ nixPkgs = ["nodejs_20"]
 
 [phases.install]
 cmds = [
-  "npm install -g pnpm@10.0.0",
+  "npm install -g pnpm@10",
   "echo '//npm.pkg.github.com/:_authToken='$GITHUB_TOKEN >> .npmrc",
   "pnpm install --no-frozen-lockfile"
 ]
