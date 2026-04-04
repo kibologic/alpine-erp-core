@@ -82,6 +82,36 @@
   --anim-ease-out:      cubic-bezier(0.33, 1, 0.68, 1);
   --anim-duration-base: 0.4s;
   --anim-duration-slow: 0.8s;
+
+  /* --erp-* aliases for @alpine/ui components */
+  --erp-accent:           var(--color-accent);
+  --erp-accent-hover:     var(--color-accent-hover);
+  --erp-accent-active:    var(--color-accent-hover);
+  --erp-accent-glow:      var(--color-accent-subtle);
+  --erp-text-primary:     var(--color-text-primary);
+  --erp-text-secondary:   var(--color-text-secondary);
+  --erp-text-muted:       var(--color-text-muted);
+  --erp-text-inverse:     var(--color-text-inverse);
+  --erp-border:           var(--color-bg-border);
+  --erp-divider:          var(--color-bg-border);
+  --erp-surface-1:        var(--color-bg-base);
+  --erp-surface-2:        var(--color-bg-surface);
+  --erp-surface-3:        var(--color-bg-elevated);
+  --erp-card-bg:          var(--color-bg-surface);
+  --erp-card-border:      var(--color-bg-border);
+  --erp-card-hover:       var(--color-bg-elevated);
+  --erp-input-bg:         var(--color-bg-elevated);
+  --erp-input-border:     var(--color-bg-border);
+  --erp-input-focus:      var(--color-accent);
+  --erp-input-placeholder: var(--color-text-muted);
+  --erp-table-header:     var(--color-bg-elevated);
+  --erp-table-row:        var(--color-bg-surface);
+  --erp-table-row-alt:    var(--color-bg-base);
+  --erp-table-hover:      var(--color-bg-elevated);
+  --erp-table-selected:   var(--color-sidebar-active);
+  --erp-success:          var(--color-success);
+  --erp-warning:          var(--color-warning);
+  --erp-danger:           var(--color-danger);
 }
 
 /* ── Animations ── */
