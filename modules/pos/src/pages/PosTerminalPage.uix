@@ -111,14 +111,14 @@ component PosTerminalPage {
     try {
       const [sess, prods] = await Promise.all([
         PosService.getCurrentSession(this.terminalId),
-        InventoryService.getProducts()
+        InventoryService.getStockLevels()
       ]);
       this.session = sess;
       this.products = prods || [];
       const seen = new Set();
       const cats: string[] = ['All'];
       for (const p of this.products) {
-        const cat = p.category?.name || 'Other';
+        const cat = (typeof p.category === 'string' ? p.category : p.category?.name) || 'Other';
         if (!seen.has(cat)) { seen.add(cat); cats.push(cat); }
       }
       this.categories = cats;
@@ -126,6 +126,7 @@ component PosTerminalPage {
       this.notifications?.error('Failed to refresh POS data');
     } finally {
       this.loading = false;
+      this.scheduleUpdate?.();
     }
   }
 
@@ -170,7 +171,7 @@ component PosTerminalPage {
   get filteredProducts() {
     let prods = this.products;
     if (this.selectedCategory !== 'All') {
-      prods = prods.filter(p => (p.category?.name || 'Other') === this.selectedCategory);
+      prods = prods.filter(p => ((typeof p.category === 'string' ? p.category : p.category?.name) || 'Other') === this.selectedCategory);
     }
     const q = (this.search || '').toLowerCase();
     if (q) {
