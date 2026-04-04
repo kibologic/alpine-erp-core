@@ -77,7 +77,17 @@ async def list_tabs(
         query.order_by(Tab.created_at.desc())
     )
     tabs = result.scalars().all()
-    return [tab_to_dict(t) for t in tabs]
+    if not tabs:
+        return []
+    tab_ids = [t.id for t in tabs]
+    lines_result = await db.execute(
+        select(TabLine).where(TabLine.tab_id.in_(tab_ids)).order_by(TabLine.added_at)
+    )
+    all_lines = lines_result.scalars().all()
+    lines_by_tab: dict = {}
+    for line in all_lines:
+        lines_by_tab.setdefault(str(line.tab_id), []).append(line)
+    return [tab_to_dict(t, lines_by_tab.get(str(t.id), [])) for t in tabs]
 
 @router.post("")
 async def create_tab(
