@@ -95,13 +95,20 @@ function resolveFromNM(relPath) {
 }
 
 server.app.use('/node_modules', (req, res, next) => {
+  // Only serve plain static assets here (.css, plain .js from dist/).
+  // Source files (.ui, .uix, .ts) MUST fall through to Swite's middleware
+  // for compilation — serving them raw causes SyntaxError in the browser.
+  const url = req.url.split('?')[0];
+  if (url.endsWith('.ui') || url.endsWith('.uix') || url.endsWith('.ts')) {
+    return next();
+  }
   const filePath = resolveFromNM(req.url);
   if (!filePath) return next();
   try {
     const content = readFileSync(filePath, 'utf-8');
-    if (req.url.endsWith('.css')) {
+    if (url.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css');
-    } else if (req.url.endsWith('.js') || req.url.endsWith('.ui') || req.url.endsWith('.uix') || req.url.endsWith('.ts')) {
+    } else if (url.endsWith('.js') || url.endsWith('.mjs')) {
       res.setHeader('Content-Type', 'application/javascript');
     } else {
       return next();
