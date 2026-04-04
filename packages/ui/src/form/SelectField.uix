@@ -1,0 +1,42 @@
+import { SwissComponent } from '@kibologic/core';
+
+component SelectField {
+  props = {
+    options: Array as () => Array<{ value: string; label: string; disabled?: boolean }>,
+    value: String,
+    placeholder: String,
+    disabled: Boolean,
+    error: String,
+    onchange: Function as (value: string) => void,
+  };
+
+  render() {
+    const options = Array.isArray(this.props.options) ? this.props.options : [];
+    const hasError = !!this.props.error;
+    return (
+      <div class={`alp-input-wrap alp-input-wrap--md`}>
+        <select
+          class={`alp-input alp-input--md${hasError ? ' alp-input--error' : ''}`}
+          disabled={!!this.props.disabled}
+          onchange={(e: Event) => {
+            if (this.props.onchange) this.props.onchange((e.target as HTMLSelectElement).value);
+          }}
+        >
+          {this.props.placeholder ? (
+            <option value="" disabled={true} selected={!this.props.value}>{this.props.placeholder}</option>
+          ) : null}
+          {options.map(opt => (
+            <option
+              value={opt.value}
+              selected={opt.value === this.props.value}
+              disabled={!!opt.disabled}
+            >
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        {hasError ? <span class="alp-field-error">{this.props.error}</span> : null}
+      </div>
+    );
+  }
+}

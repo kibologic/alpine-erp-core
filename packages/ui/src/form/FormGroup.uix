@@ -1,0 +1,23 @@
+import { SwissComponent } from '@kibologic/core';
+
+component FormGroup {
+  props = {
+    label: String,
+    required: Boolean,
+    renderField: Function as () => any,
+  };
+
+  render() {
+    return (
+      <div class="alp-field">
+        {this.props.label ? (
+          <label class="alp-field-label">
+            {this.props.label}
+            {this.props.required ? <span style="color:var(--color-danger);margin-left:2px">*</span> : null}
+          </label>
+        ) : null}
+        {this.props.renderField ? this.props.renderField() : this.props.children}
+      </div>
+    );
+  }
+}

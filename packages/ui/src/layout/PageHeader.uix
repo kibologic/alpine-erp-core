@@ -1,0 +1,25 @@
+import { SwissComponent } from '@kibologic/core';
+
+component PageHeader {
+  props = {
+    title: String,
+    subtitle: String,
+    renderActions: Function as () => any,
+  };
+
+  render() {
+    return (
+      <div class="erp-page-header">
+        <div class="erp-page-header-left">
+          <h1 class="erp-page-title">{this.props.title}</h1>
+          {this.props.subtitle ? (
+            <p class="erp-page-subtitle">{this.props.subtitle}</p>
+          ) : null}
+        </div>
+        {this.props.renderActions ? (
+          <div class="erp-page-header-right">{this.props.renderActions()}</div>
+        ) : null}
+      </div>
+    );
+  }
+}

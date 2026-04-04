@@ -1,0 +1,24 @@
+import { SwissComponent } from '@kibologic/core';
+
+component StatStrip {
+  props = {
+    stats: Array as () => Array<{ label: string; value: string; deltaType?: string }>,
+  };
+
+  render() {
+    const stats = Array.isArray(this.props.stats) ? this.props.stats : [];
+    return (
+      <div class="alp-stat-strip">
+        {stats.map(s => (
+          <div class="alp-stat-card">
+            <span class="alp-stat-value">{s.value}</span>
+            <span class="alp-stat-label">{s.label}</span>
+            {s.deltaType ? (
+              <span class={`alp-stat-delta alp-stat-delta--${s.deltaType}`}></span>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    );
+  }
+}

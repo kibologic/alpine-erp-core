@@ -2,9 +2,13 @@
   "name": "@alpine/ui",
   "version": "0.1.0",
   "private": true,
-  "main": "./src/index.ts",
+  "main": "./src/index.ui",
+  "exports": {
+    ".": "./src/index.ui",
+    "./*": "./*"
+  },
   "scripts": {
-    "build": "tsc -b",
+    "build": "echo 'ui: no build needed'",
     "dev": "echo 'ui: no-op'"
   }
 }

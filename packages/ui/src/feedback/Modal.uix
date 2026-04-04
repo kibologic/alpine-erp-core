@@ -1,0 +1,59 @@
+import { SwissComponent } from '@kibologic/core';
+
+component Modal {
+  props = {
+    open: Boolean,
+    title: String,
+    size: String,
+    onclose: Function as () => void,
+    onClose: Function as () => void,
+    hideClose: Boolean,
+    renderBody: Function as () => any,
+    renderFooter: Function as () => any,
+  };
+
+  mount() {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && this.props.open && !this.props.hideClose) {
+          const close = this.props.onclose || this.props.onClose;
+          if (close) close();
+        }
+      });
+    }
+  }
+
+  handleClose() {
+    const close = this.props.onclose || this.props.onClose;
+    if (close) close();
+  }
+
+  render() {
+    if (!this.props.open) return null;
+    const size = this.props.size || 'md';
+    return (
+      <div class="alp-modal-backdrop" onclick={() => this.handleClose()}>
+        <div
+          class={`alp-modal alp-modal--${size}`}
+          onclick={(e: Event) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="alp-modal-title"
+        >
+          <div class="alp-modal-header">
+            <h2 class="alp-modal-title" id="alp-modal-title">{this.props.title}</h2>
+            {!this.props.hideClose ? (
+              <button class="alp-modal-close" onclick={() => this.handleClose()} aria-label="Close">✕</button>
+            ) : null}
+          </div>
+          <div class="alp-modal-body">
+            {this.props.renderBody ? this.props.renderBody() : this.props.children}
+          </div>
+          {this.props.renderFooter ? (
+            <div class="alp-modal-footer">{this.props.renderFooter()}</div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+}

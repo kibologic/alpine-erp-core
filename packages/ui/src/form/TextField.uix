@@ -1,0 +1,43 @@
+import { SwissComponent } from '@kibologic/core';
+
+component TextField {
+  props = {
+    type: String,
+    value: String,
+    placeholder: String,
+    disabled: Boolean,
+    error: String,
+    onchange: Function as (value: string) => void,
+  };
+
+  state { let internalValue: string = ''; }
+
+  mount() {
+    this.internalValue = this.props.value || '';
+  }
+
+  handleInput(e: Event) {
+    const val = (e.target as HTMLInputElement).value;
+    this.internalValue = val;
+    this.scheduleUpdate?.();
+    if (this.props.onchange) this.props.onchange(val);
+  }
+
+  render() {
+    const type = this.props.type || 'text';
+    const hasError = !!this.props.error;
+    return (
+      <div class={`alp-input-wrap alp-input-wrap--md`}>
+        <input
+          type={type}
+          class={`alp-input alp-input--md${hasError ? ' alp-input--error' : ''}`}
+          value={this.internalValue}
+          placeholder={this.props.placeholder || ''}
+          disabled={!!this.props.disabled}
+          oninput={(e: Event) => this.handleInput(e)}
+        />
+        {hasError ? <span class="alp-field-error">{this.props.error}</span> : null}
+      </div>
+    );
+  }
+}

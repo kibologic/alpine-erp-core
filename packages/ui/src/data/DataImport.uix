@@ -1,0 +1,60 @@
+import { SwissComponent } from '@kibologic/core';
+
+component DataImport {
+  props = {
+    accept: String,
+    onImport: Function as (data: any[]) => void,
+  };
+
+  state { let dragging: boolean = false; }
+
+  handleFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      const text = e.target?.result as string;
+      const lines = text.split('\n').filter(l => l.trim());
+      if (lines.length < 2) return;
+      const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+      const rows = lines.slice(1).map(line => {
+        const vals = line.split(',');
+        const row: Record<string, string> = {};
+        headers.forEach((h, i) => { row[h] = (vals[i] || '').replace(/^"|"$/g, '').trim(); });
+        return row;
+      });
+      if (this.props.onImport) this.props.onImport(rows);
+    };
+    reader.readAsText(file);
+  }
+
+  render() {
+    return (
+      <div
+        class={`alp-import-zone${this.dragging ? ' alp-import-zone--active' : ''}`}
+        ondragover={(e: DragEvent) => { e.preventDefault(); this.dragging = true; this.scheduleUpdate?.(); }}
+        ondragleave={() => { this.dragging = false; this.scheduleUpdate?.(); }}
+        ondrop={(e: DragEvent) => {
+          e.preventDefault();
+          this.dragging = false;
+          const file = e.dataTransfer?.files[0];
+          if (file) this.handleFile(file);
+          this.scheduleUpdate?.();
+        }}
+      >
+        <span class="alp-empty-icon">📂</span>
+        <p style="margin:8px 0 4px;font-weight:500">Drop a CSV file here</p>
+        <label class="aui-btn aui-btn--outline aui-btn--sm" style="cursor:pointer">
+          Browse file
+          <input
+            type="file"
+            accept={this.props.accept || '.csv'}
+            style="display:none"
+            onchange={(e: Event) => {
+              const file = (e.target as HTMLInputElement).files?.[0];
+              if (file) this.handleFile(file);
+            }}
+          />
+        </label>
+      </div>
+    );
+  }
+}
