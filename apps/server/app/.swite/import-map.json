@@ -6,6 +6,25 @@
     "@kibologic/core/browser": "/node_modules/@kibologic/core/dist/browser.js",
     "@kibologic/core/jsx-runtime": "/node_modules/@kibologic/core/dist/jsx-runtime.js",
     "@kibologic/core/jsx-dev-runtime": "/node_modules/@kibologic/core/dist/jsx-dev-runtime.js",
-    "@kibologic/contracts": "/node_modules/@kibologic/contracts/index.ui"
+    "@kibologic/contracts": "/node_modules/@kibologic/shell/packages/contracts/index.ui",
+    "@kibologic/event-bus": "/node_modules/@kibologic/shell/packages/event-bus/index.ui",
+    "@kibologic/logging": "/node_modules/@kibologic/shell/packages/logging/index.ui",
+    "@kibologic/storage": "/node_modules/@kibologic/shell/packages/storage/index.ui",
+    "@kibologic/device": "/node_modules/@kibologic/shell/packages/device/index.ui",
+    "@kibologic/connectivity": "/node_modules/@kibologic/shell/packages/connectivity/index.js",
+    "@kibologic/auth": "/node_modules/@kibologic/shell/packages/auth/index.js",
+    "@kibologic/sync": "/node_modules/@kibologic/shell/packages/sync/index.js",
+    "@kibologic/heartbeat": "/node_modules/@kibologic/shell/packages/heartbeat/index.js",
+    "@kibologic/cache": "/node_modules/@kibologic/shell/packages/cache/index.js",
+    "@kibologic/tenant": "/node_modules/@kibologic/shell/packages/tenant/index.ui",
+    "@kibologic/permissions": "/node_modules/@kibologic/shell/packages/permissions/index.ui",
+    "@kibologic/theming": "/node_modules/@kibologic/shell/packages/theming/index.ui",
+    "@kibologic/feature-flags": "/node_modules/@kibologic/shell/packages/feature-flags/index.ui",
+    "@kibologic/l10n": "/node_modules/@kibologic/shell/packages/l10n/index.ui",
+    "@kibologic/i18n": "/node_modules/@kibologic/shell/packages/i18n/index.ui",
+    "@kibologic/rtl": "/node_modules/@kibologic/shell/packages/rtl/index.ui",
+    "@kibologic/notifications": "/node_modules/@kibologic/shell/packages/notifications/index.ui",
+    "@kibologic/navigation": "/node_modules/@kibologic/shell/packages/navigation/index.ui",
+    "@kibologic/workspace": "/node_modules/@kibologic/shell/packages/workspace/index.ui"
   }
 }
