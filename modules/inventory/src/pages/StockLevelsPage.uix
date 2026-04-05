@@ -68,9 +68,15 @@ component StockLevelsPage {
           ]}
         />
 
-        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
-          <button class="aui-btn aui-btn--outline" onclick={() => this.mounted()}>Refresh</button>
-          <button class="aui-btn aui-btn--outline">Inventory Analytics</button>
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Stock Levels</h3>
+            <p class="alp-page-subtitle">Track realtime on-hand quantities and reorder thresholds.</p>
+          </div>
+          <div class="alp-page-header-actions">
+            <button class="alp-btn alp-btn--secondary" onclick={() => this.mounted()}>Refresh</button>
+            <button class="alp-btn alp-btn--secondary">Analytics</button>
+          </div>
         </div>
 
         <DataTable

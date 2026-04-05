@@ -93,9 +93,15 @@ component PosCustomersPage {
           ]}
         />
 
-        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
-          <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Customer</button>
-          <button class="aui-btn aui-btn--outline">Export</button>
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Customers</h3>
+            <p class="alp-page-subtitle">Manage customer profiles and contact information.</p>
+          </div>
+          <div class="alp-page-header-actions">
+            <button class="alp-btn alp-btn--secondary">Export</button>
+            <button class="alp-btn alp-btn--primary" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Customer</button>
+          </div>
         </div>
 
         <DataTable 
@@ -142,8 +148,8 @@ component PosCustomersPage {
             )}
             renderFooter={() => (
               <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn" disabled={this.saving} onclick={() => this.createCustomer()}>
+                <button class="alp-btn alp-btn--secondary" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="alp-btn alp-btn--primary" disabled={this.saving} onclick={() => this.createCustomer()}>
                    {this.saving ? 'Saving...' : 'Save Customer'}
                 </button>
               </div>

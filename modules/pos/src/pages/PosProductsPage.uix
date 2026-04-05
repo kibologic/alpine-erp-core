@@ -76,6 +76,17 @@ component PosProductsPage {
           ]}
         />
 
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Products</h3>
+            <p class="alp-page-subtitle">Manage your product catalog, pricing, and point-of-sale availability.</p>
+          </div>
+          <div class="alp-page-header-actions">
+            <button class="alp-btn alp-btn--secondary" onclick={() => { this.showImportModal = true; this.scheduleUpdate?.(); }}>Import</button>
+            <button class="alp-btn alp-btn--primary" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Product</button>
+          </div>
+        </div>
+
         <DataTable
           columns={columns}
           rows={displayRows}
@@ -162,11 +173,11 @@ component PosProductsPage {
             renderFooter={() => (
               <div style="display: flex; justify-content: flex-end; gap: 1rem;">
                 <button 
-                  class="aui-btn aui-btn--outline" 
+                  class="alp-btn alp-btn--secondary" 
                    onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}
                 >Cancel</button>
                 <button 
-                  class="aui-btn" 
+                  class="alp-btn alp-btn--primary" 
                   onclick={() => { 
                     this.products = [this.newProduct, ...this.products];
                     this.newProduct = { sku: '', name: '', category: '', price: 0 };

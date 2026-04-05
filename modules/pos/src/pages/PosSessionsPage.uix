@@ -76,6 +76,13 @@ component PosSessionsPage {
           ]}
         />
 
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Session History</h3>
+            <p class="alp-page-subtitle">Monitor register operations and cash drawer shifts.</p>
+          </div>
+        </div>
+
         <DataTable
           columns={updatedColumns}
           rows={this.sessions}

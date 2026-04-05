@@ -179,10 +179,10 @@ component InventoryItemsPage {
           render: (val: any, row: any) => (
             <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
               {window.__skltn?.can('inventory.manage') && (
-                <button class="aui-btn aui-btn--icon" onclick={() => this.openEditModal(row)} title="Edit">✎</button>
+                <button class="alp-btn alp-btn--ghost" style="width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;" onclick={() => this.openEditModal(row)} title="Edit">✎</button>
               )}
               {window.__skltn?.can('inventory.manage') && (
-                <button class="aui-btn aui-btn--icon aui-btn--danger" onclick={() => this.deleteProduct(row)} title="Delete">🗑</button>
+                <button class="alp-btn alp-btn--ghost" style="width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;color:var(--color-danger);" onmouseover={(e: any) => { e.target.style.background = 'var(--color-danger-bg)'; }} onmouseout={(e: any) => { e.target.style.background = 'transparent'; }} onclick={() => this.deleteProduct(row)} title="Delete">🗑</button>
               )}
             </div>
           )
@@ -201,19 +201,25 @@ component InventoryItemsPage {
           ]}
         />
 
-        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
-          <SelectField
-            placeholder="All Categories"
-            options={[
-                { value: '', label: 'All Categories' },
-                ...this.categories.map(c => ({ value: c.id, label: c.name }))
-            ]}
-            value={this.selectedCategory}
-            onchange={(val: string) => { this.selectedCategory = val; this.scheduleUpdate?.(); }}
-          />
-          {window.__skltn?.can('inventory.manage') && (
-            <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Product</button>
-          )}
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Inventory Items</h3>
+            <p class="alp-page-subtitle">Manage products, pricing, and stock levels.</p>
+          </div>
+          <div class="alp-page-header-actions" style="align-items:center;">
+            <SelectField
+              placeholder="All Categories"
+              options={[
+                  { value: '', label: 'All Categories' },
+                  ...this.categories.map(c => ({ value: c.id, label: c.name }))
+              ]}
+              value={this.selectedCategory}
+              onchange={(val: string) => { this.selectedCategory = val; this.scheduleUpdate?.(); }}
+            />
+            {window.__skltn?.can('inventory.manage') && (
+              <button class="alp-btn alp-btn--primary" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Product</button>
+            )}
+          </div>
         </div>
 
         <DataTable 
@@ -264,8 +270,8 @@ component InventoryItemsPage {
             )}
             renderFooter={() => (
               <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn" disabled={this.saving} onclick={() => this.createProduct()}>
+                <button class="alp-btn alp-btn--secondary" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="alp-btn alp-btn--primary" disabled={this.saving} onclick={() => this.createProduct()}>
                    {this.saving ? 'Creating...' : 'Create Product'}
                 </button>
               </div>
@@ -310,8 +316,8 @@ component InventoryItemsPage {
             )}
             renderFooter={() => (
               <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showEditModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn" disabled={this.saving} onclick={() => this.saveEditProduct()}>
+                <button class="alp-btn alp-btn--secondary" onclick={() => { this.showEditModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="alp-btn alp-btn--primary" disabled={this.saving} onclick={() => this.saveEditProduct()}>
                    {this.saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
@@ -333,8 +339,8 @@ component InventoryItemsPage {
             )}
             renderFooter={() => (
               <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showDeleteConfirm = false; this.deletingProduct = null; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn aui-btn--danger" onclick={() => this.confirmDeleteProduct()}>
+                <button class="alp-btn alp-btn--secondary" onclick={() => { this.showDeleteConfirm = false; this.deletingProduct = null; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="alp-btn alp-btn--danger" onclick={() => this.confirmDeleteProduct()}>
                    Delete Product
                 </button>
               </div>

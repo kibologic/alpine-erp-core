@@ -80,6 +80,13 @@ component PosSalesPage {
           ]}
         />
 
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Sales History</h3>
+            <p class="alp-page-subtitle">View and manage all past transactions across all Point of Sale terminals.</p>
+          </div>
+        </div>
+
         <DataTable
           columns={updatedColumns}
           rows={this.sales}
@@ -149,10 +156,10 @@ component PosSalesPage {
                 </div>
               </div>
             )}
-            renderFooter={() => (
+             renderFooter={() => (
                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                  <button class="aui-btn aui-btn--outline">Print Receipt</button>
-                  <button class="aui-btn" onclick={() => { this.selectedSale = null; this.scheduleUpdate?.(); }}>Close</button>
+                  <button class="alp-btn alp-btn--ghost">Print Receipt</button>
+                  <button class="alp-btn alp-btn--secondary" onclick={() => { this.selectedSale = null; this.scheduleUpdate?.(); }}>Close</button>
                </div>
             )}
           />

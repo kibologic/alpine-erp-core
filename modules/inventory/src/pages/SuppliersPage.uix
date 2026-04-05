@@ -77,9 +77,15 @@ component SuppliersPage {
           ]}
         />
 
-        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
-          <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Supplier</button>
-          <button class="aui-btn aui-btn--outline">Export CSV</button>
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Suppliers</h3>
+            <p class="alp-page-subtitle">Manage supplier accounts and contact directories.</p>
+          </div>
+          <div class="alp-page-header-actions">
+            <button class="alp-btn alp-btn--secondary">Export CSV</button>
+            <button class="alp-btn alp-btn--primary" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Supplier</button>
+          </div>
         </div>
 
         <DataTable
@@ -138,8 +144,8 @@ component SuppliersPage {
             )}
             renderFooter={() => (
               <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn" disabled={this.saving} onclick={() => this.createSupplier()}>
+                <button class="alp-btn alp-btn--secondary" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="alp-btn alp-btn--primary" disabled={this.saving} onclick={() => this.createSupplier()}>
                   {this.saving ? 'Saving...' : 'Save Supplier'}
                 </button>
               </div>

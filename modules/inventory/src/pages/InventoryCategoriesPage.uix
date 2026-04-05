@@ -80,12 +80,13 @@ component InventoryCategoriesPage {
           ]}
         />
 
-        <div class="alp-toolbar">
-          <div class="alp-toolbar-left">
-             <h2 style="font-weight: 600; font-size: 1.25rem;">Inventory Categories</h2>
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Inventory Categories</h3>
+            <p class="alp-page-subtitle">Organize products into hierarchical groupings for structured reporting.</p>
           </div>
-          <div class="alp-toolbar-right">
-             <button class="aui-btn" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Category</button>
+          <div class="alp-page-header-actions">
+            <button class="alp-btn alp-btn--primary" onclick={() => { this.showAddModal = true; this.scheduleUpdate?.(); }}>+ Add Category</button>
           </div>
         </div>
 
@@ -124,8 +125,8 @@ component InventoryCategoriesPage {
             )}
             renderFooter={() => (
               <div style="display: flex; justify-content: flex-end; gap: 1rem;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn" disabled={this.saving} onclick={() => this.createCategory()}>
+                <button class="alp-btn alp-btn--secondary" onclick={() => { this.showAddModal = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="alp-btn alp-btn--primary" disabled={this.saving} onclick={() => this.createCategory()}>
                   {this.saving ? 'Creating...' : 'Create Category'}
                 </button>
               </div>

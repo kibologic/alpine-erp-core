@@ -63,9 +63,15 @@ component StockMovementsPage {
           ]}
         />
 
-        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
-          <button class="aui-btn aui-btn--outline" onclick={() => this.mounted()}>Refresh</button>
-          <button class="aui-btn aui-btn--outline">Export History</button>
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Stock Movements</h3>
+            <p class="alp-page-subtitle">Track the entire history of inventory adjustments, receipts, and shipments.</p>
+          </div>
+          <div class="alp-page-header-actions">
+            <button class="alp-btn alp-btn--secondary" onclick={() => this.mounted()}>Refresh</button>
+            <button class="alp-btn alp-btn--secondary">Export History</button>
+          </div>
         </div>
 
         <DataTable 

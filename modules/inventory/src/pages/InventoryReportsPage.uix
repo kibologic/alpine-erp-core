@@ -46,14 +46,15 @@ component InventoryReportsPage {
           ]}
         />
 
-        <div class="alp-toolbar" style="margin-bottom: 2rem;">
-            <div class="alp-toolbar-left">
-                <h2 style="font-weight: 600; font-size: 1.25rem;">Stock Valuation Report</h2>
-            </div>
-            <div class="alp-toolbar-right">
-                <button class="aui-btn aui-btn--outline" onclick={() => this.mounted()}>Refresh Report</button>
-                <button class="aui-btn" style="margin-left: 0.5rem;">Export PDF</button>
-            </div>
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Stock Valuation Report</h3>
+            <p class="alp-page-subtitle">Real-time breakdown of your inventory asset value by category.</p>
+          </div>
+          <div class="alp-page-header-actions">
+            <button class="alp-btn alp-btn--secondary" onclick={() => this.mounted()}>Refresh Report</button>
+            <button class="alp-btn alp-btn--primary">Export PDF</button>
+          </div>
         </div>
 
         <DataTable 

@@ -77,6 +77,13 @@ component AuditLogPage {
           ]}
         />
 
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Audit Log</h3>
+            <p class="alp-page-subtitle">Track and monitor all major system changes and actions.</p>
+          </div>
+        </div>
+
         <DataTable
           columns={columns}
           rows={rows}
