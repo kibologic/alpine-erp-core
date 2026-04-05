@@ -27,7 +27,7 @@ component PosSettingsPage {
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
               <FormGroup label="Terminal Name" description="Identify this point of sale terminal." renderField={() => <TextField value="Main Terminal" onchange={() => {}} />} />
               <FormGroup label="Currency" renderField={() => <SelectField value="MWK" options={[{value:'MWK', label:'Malawian Kwacha (MWK)'}]} onchange={() => {}} />} />
-              <FormGroup label="Register ID" renderField={() => <TextField value="REG-001" disabled={true} onchange={() => {}} />} />
+              <FormGroup label="Register ID" description="Assigned when terminal is registered to this device." renderField={() => <TextField value={localStorage.getItem('alpine-terminal-id') || 'Not registered'} disabled={true} onchange={() => {}} />} />
             </div>
           ) : null}
 

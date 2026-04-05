@@ -26,6 +26,12 @@ export const PosService = {
   listTerminals: () =>
     api.get('/pos/terminals'),
 
+  createTerminal: (terminalId: string, name: string, deviceId: string, enabledModes: string[], defaultMode: string) =>
+    api.post('/pos/terminals', { terminal_id: terminalId, name, device_id: deviceId, enabled_modes: enabledModes, default_mode: defaultMode }),
+
+  bindTerminalDevice: (terminalId: string, deviceId: string) =>
+    api.patch(`/pos/terminals/${terminalId}/bind-device`, { device_id: deviceId }),
+
   getTerminalConfig: (terminalId: string) =>
     api.get(`/pos/tabs/config/${terminalId}`),
 

@@ -44,7 +44,7 @@ _STANDARD_ROLE_ATOMS = {
         "inventory.export", "inventory.stock_take", "inventory.view_movements",
         "users.view", "users.manage", "users.manage_roles",
         "settings.view", "settings.manage",
-        "reports.view", "org.manage",
+        "reports.view", "org.manage", "pos.manage_terminals",
     ],
     "manager": [
         "pos.sell", "pos.refund", "pos.open_session", "pos.close_session",

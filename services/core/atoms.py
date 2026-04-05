@@ -19,6 +19,7 @@ ALL_ATOMS = {
     "settings.manage": "Modify settings",
     "reports.view": "View reports",
     "org.manage": "Manage organisation settings",
+    "pos.manage_terminals": "Register and manage POS terminals",
 }
 
 SUPER_USER_ATOMS = list(ALL_ATOMS.keys())

@@ -42,28 +42,46 @@ component PosTerminalPage {
   state { let loadingTabs: boolean = false; }
   state { let categories: string[] = ['All']; }
   state { let cartPosition: string = 'right'; }
+  state { let deviceId: string = ''; }
+  state { let showTerminalGate: boolean = false; }
+  state { let allTerminals: any[] = []; }
+  state { let registerTerminalName: string = ''; }
+  state { let registeringTerminal: boolean = false; }
 
   async mounted() {
     this.notifications = window.__skltn.registry.get('notifications');
     this.cartPosition = localStorage.getItem('alpine-cart-position') || 'right';
-    // Resolve terminal config + session + products atomically — no partial renders
+
+    const deviceId = await getDeviceId();
+    this.deviceId = deviceId;
+
     try {
       const terminalsRes = await PosService.listTerminals();
-      const terminals = terminalsRes.data || terminalsRes;
-      if (Array.isArray(terminals) && terminals.length > 0) {
-        this.terminalId = terminals[0].terminal_id;
-        this.enabledModes = terminals[0].enabled_modes || ['instant'];
-        this.activeMode = terminals[0].default_mode || 'instant';
+      const terminals = Array.isArray(terminalsRes) ? terminalsRes : (terminalsRes.data || []);
+      this.allTerminals = terminals;
+
+      const myTerminals = terminals.filter((t: any) => t.device_id === deviceId);
+
+      if (myTerminals.length >= 1) {
+        const t = myTerminals[0];
+        this.terminalId = t.terminal_id;
+        this.enabledModes = t.enabled_modes || ['instant'];
+        this.activeMode = t.default_mode || 'instant';
+        localStorage.setItem('alpine-terminal-id', t.terminal_id);
       } else {
-        this.terminalId = 'REG-001';
-        this.enabledModes = ['instant'];
-        this.activeMode = 'instant';
+        // No terminal bound to this device — show gate
+        this.showTerminalGate = true;
+        this.loading = false;
+        this.scheduleUpdate?.();
+        return;
       }
     } catch (e) {
-      this.terminalId = 'REG-001';
-      this.enabledModes = ['instant'];
-      this.activeMode = 'instant';
+      this.showTerminalGate = true;
+      this.loading = false;
+      this.scheduleUpdate?.();
+      return;
     }
+
     // refreshData uses this.terminalId — load after terminal ID is known
     await this.refreshData();
     if (this.enabledModes.includes('tabbed') && this.session?.id) {
@@ -488,7 +506,125 @@ component PosTerminalPage {
     }
   }
 
+  async registerTerminal() {
+    if (!this.registerTerminalName.trim()) {
+      this.notifications?.warning('Terminal name is required');
+      return;
+    }
+    this.registeringTerminal = true;
+    this.scheduleUpdate?.();
+    try {
+      const tid = 'T-' + Date.now().toString(36).toUpperCase();
+      const result = await PosService.createTerminal(tid, this.registerTerminalName, this.deviceId, ['instant', 'tabbed'], 'instant');
+      const t = result.data || result;
+      this.terminalId = t.terminal_id;
+      this.enabledModes = t.enabled_modes || ['instant'];
+      this.activeMode = t.default_mode || 'instant';
+      localStorage.setItem('alpine-terminal-id', t.terminal_id);
+      this.showTerminalGate = false;
+      this.loading = true;
+      this.scheduleUpdate?.();
+      await this.refreshData();
+    } catch (e: any) {
+      this.notifications?.error(e?.detail || e?.message || 'Failed to register terminal');
+    } finally {
+      this.registeringTerminal = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
+  async bindTerminal(terminalId: string, enabledModes: any, defaultMode: string) {
+    this.registeringTerminal = true;
+    this.scheduleUpdate?.();
+    try {
+      await PosService.bindTerminalDevice(terminalId, this.deviceId);
+      this.terminalId = terminalId;
+      this.enabledModes = enabledModes || ['instant'];
+      this.activeMode = defaultMode || 'instant';
+      localStorage.setItem('alpine-terminal-id', terminalId);
+      this.showTerminalGate = false;
+      this.loading = true;
+      this.scheduleUpdate?.();
+      await this.refreshData();
+    } catch (e: any) {
+      this.notifications?.error(e?.detail || e?.message || 'Failed to bind terminal');
+    } finally {
+      this.registeringTerminal = false;
+      this.scheduleUpdate?.();
+    }
+  }
+
   render() {
+    const canManageTerminals = window.__skltn?.can('pos.manage_terminals') || window.__skltn?.can('settings.manage');
+
+    /* ── Terminal Gate ── */
+    if (this.showTerminalGate) {
+      return (
+        <div class="pos-gate-state">
+          <div class="pos-state-card" style="max-width:480px;width:100%;">
+            <div style="font-size:1.5rem;margin-bottom:8px;">🖥️</div>
+            <h2 class="pos-state-title" style="margin-bottom:6px;">
+              {canManageTerminals ? 'Set up this terminal' : 'No terminal assigned'}
+            </h2>
+            <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:20px;">
+              {canManageTerminals
+                ? 'This device has no terminal assigned. Register a new one or use an existing terminal.'
+                : 'This device has no terminal assigned. Contact your administrator to set one up.'}
+            </p>
+
+            {canManageTerminals ? (
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                {/* Existing unbound terminals */}
+                {this.allTerminals.filter((t: any) => !t.device_id).length > 0 ? (
+                  <div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:8px;">Use existing terminal</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                      {this.allTerminals.filter((t: any) => !t.device_id).map((t: any) => (
+                        <button
+                          style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--color-bg-elevated);border:1px solid var(--color-bg-border);border-radius:8px;cursor:pointer;width:100%;text-align:left;"
+                          onclick={() => this.bindTerminal(t.terminal_id, t.enabled_modes, t.default_mode)}
+                          disabled={this.registeringTerminal}
+                        >
+                          <div>
+                            <div style="font-weight:600;font-size:14px;color:var(--color-text-primary);">{t.name}</div>
+                            <div style="font-size:12px;color:var(--color-text-muted);">{t.terminal_id}</div>
+                          </div>
+                          <span style="font-size:12px;color:var(--color-accent);">Use on this device →</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Register new terminal */}
+                <div>
+                  <div style="font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:8px;">Register new terminal</div>
+                  <input
+                    type="text"
+                    placeholder="Terminal name (e.g. Main Counter)"
+                    value={this.registerTerminalName}
+                    style="width:100%;padding:10px 12px;border:1px solid var(--color-bg-border);border-radius:8px;background:var(--color-bg-elevated);color:var(--color-text-primary);font-size:14px;margin-bottom:8px;box-sizing:border-box;"
+                    oninput={(e: any) => { this.registerTerminalName = e.target.value; this.scheduleUpdate?.(); }}
+                  />
+                  <button
+                    class="pos-state-btn"
+                    onclick={() => this.registerTerminal()}
+                    disabled={this.registeringTerminal || !this.registerTerminalName.trim()}
+                  >
+                    {this.registeringTerminal ? 'Registering…' : 'Register Terminal'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style="padding:16px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:8px;font-size:13px;color:var(--color-text-secondary);">
+                Contact your admin to assign this device to a terminal.
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     if (!this.terminalId || this.loading) return <div class="pos-loading-state"><div class="pos-loading-ring"></div>Loading POS...</div>;
 
     if (!this.session) {

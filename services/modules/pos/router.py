@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from gbil.math import Order, Cash, Money
@@ -101,13 +102,144 @@ async def list_terminals(
     configs = result.scalars().all()
     return [
         {
+            "id": c.id,
             "terminal_id": c.terminal_id,
             "name": c.name,
+            "device_id": c.device_id,
             "enabled_modes": c.enabled_modes,
             "default_mode": c.default_mode,
         }
         for c in configs
     ]
+
+
+class CreateTerminalBody(BaseModel):
+    terminal_id: str
+    name: str
+    device_id: str
+    enabled_modes: List[str] = ["instant"]
+    default_mode: str = "instant"
+
+
+@router.post("/terminals")
+async def create_terminal(
+    body: CreateTerminalBody,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+    current_user: dict = Depends(get_current_user),
+):
+    # Check terminal limit for tenant tier
+    tenant_result = await session.execute(select(Tenant).where(Tenant.id == tenant_id))
+    tenant = tenant_result.scalar_one_or_none()
+    tier = tenant.tier if tenant else "free"
+
+    _TIER_TERMINAL_LIMITS = {"free": 1, "pro": 5, "enterprise": -1}
+    limit = _TIER_TERMINAL_LIMITS.get(tier, 1)
+
+    existing_count_result = await session.execute(
+        select(TerminalConfig).where(TerminalConfig.tenant_id == tenant_id)
+    )
+    existing_count = len(existing_count_result.scalars().all())
+
+    if limit != -1 and existing_count >= limit:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Terminal limit reached for your {tier} plan. Upgrade to add more terminals."
+        )
+
+    # Ensure terminal_id is unique for this tenant
+    dup = await session.execute(
+        select(TerminalConfig).where(
+            TerminalConfig.tenant_id == tenant_id,
+            TerminalConfig.terminal_id == body.terminal_id,
+        )
+    )
+    if dup.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Terminal ID already in use")
+
+    new_tc = TerminalConfig(
+        tenant_id=tenant_id,
+        terminal_id=body.terminal_id,
+        name=body.name,
+        device_id=body.device_id,
+        enabled_modes=body.enabled_modes,
+        default_mode=body.default_mode,
+        config={},
+    )
+    session.add(new_tc)
+    await session.commit()
+
+    return {
+        "id": new_tc.id,
+        "terminal_id": new_tc.terminal_id,
+        "name": new_tc.name,
+        "device_id": new_tc.device_id,
+        "enabled_modes": new_tc.enabled_modes,
+        "default_mode": new_tc.default_mode,
+    }
+
+
+@router.patch("/terminals/{terminal_id}/bind")
+async def bind_terminal_to_device(
+    terminal_id: str,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+    current_user: dict = Depends(get_current_user),
+):
+    """Bind a terminal to the current request's device_id (passed in header or body)."""
+    from fastapi import Request
+    result = await session.execute(
+        select(TerminalConfig).where(
+            TerminalConfig.tenant_id == tenant_id,
+            TerminalConfig.terminal_id == terminal_id,
+        )
+    )
+    tc = result.scalar_one_or_none()
+    if not tc:
+        raise HTTPException(status_code=404, detail="Terminal not found")
+    return {
+        "id": tc.id,
+        "terminal_id": tc.terminal_id,
+        "name": tc.name,
+        "device_id": tc.device_id,
+        "enabled_modes": tc.enabled_modes,
+        "default_mode": tc.default_mode,
+    }
+
+
+class BindDeviceBody(BaseModel):
+    device_id: str
+
+
+@router.patch("/terminals/{terminal_id}/bind-device")
+async def bind_terminal_device(
+    terminal_id: str,
+    body: BindDeviceBody,
+    session: AsyncSession = Depends(get_session),
+    tenant_id: str = Depends(get_current_tenant),
+    current_user: dict = Depends(get_current_user),
+):
+    result = await session.execute(
+        select(TerminalConfig).where(
+            TerminalConfig.tenant_id == tenant_id,
+            TerminalConfig.terminal_id == terminal_id,
+        )
+    )
+    tc = result.scalar_one_or_none()
+    if not tc:
+        raise HTTPException(status_code=404, detail="Terminal not found")
+
+    tc.device_id = body.device_id
+    await session.commit()
+
+    return {
+        "id": tc.id,
+        "terminal_id": tc.terminal_id,
+        "name": tc.name,
+        "device_id": tc.device_id,
+        "enabled_modes": tc.enabled_modes,
+        "default_mode": tc.default_mode,
+    }
 
 
 @router.get("/sessions/current/{register_id}", response_model=Optional[schemas.SessionResponse])
@@ -272,7 +404,7 @@ async def create_sale(
                 select(CashSession).where(CashSession.id == data.session_id)
             )
             cash_session = session_result.scalar_one_or_none()
-            terminal_id = cash_session.register_id if cash_session else "REG-001"
+            terminal_id = cash_session.register_id if cash_session else data.session_id or "UNKNOWN"
 
             # Map Alpine sale to Fiscal contract
             fiscal_sale = build_fiscal_sale(

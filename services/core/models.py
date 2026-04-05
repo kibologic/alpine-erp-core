@@ -750,6 +750,7 @@ class TerminalConfig(Base):
     )
     terminal_id: Mapped[str] = mapped_column(String(100), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False, default="Main Terminal")
+    device_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     enabled_modes: Mapped[list] = mapped_column(JSONB, default=lambda: ["instant"])
     default_mode: Mapped[str] = mapped_column(String(50), nullable=False, default="instant")
     config: Mapped[dict] = mapped_column(JSONB, default=dict)
