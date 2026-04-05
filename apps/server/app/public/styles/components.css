@@ -370,6 +370,64 @@
 .alp-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-top: 1px solid var(--color-bg-border); flex-shrink: 0; }
 
 /* ============================================================
+   Tabs
+   ============================================================ */
+
+.alp-tab-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--color-bg-border);
+  margin-bottom: var(--space-5);
+  padding: 0 var(--space-2);
+}
+
+.alp-tab {
+  background: transparent;
+  border: none;
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-3) 0;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--duration-fast), border-color var(--duration-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.alp-tab:hover {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-bg-border);
+}
+
+.alp-tab--active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.alp-tab--active:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+.alp-tab-badge {
+  background: var(--color-bg-elevated);
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  border-radius: var(--radius-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.alp-tab--active .alp-tab-badge {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+/* ============================================================
    Table
    ============================================================ */
 
