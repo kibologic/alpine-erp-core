@@ -370,6 +370,42 @@
 .alp-modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-top: 1px solid var(--color-bg-border); flex-shrink: 0; }
 
 /* ============================================================
+   Page Header
+   ============================================================ */
+
+.alp-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-bg-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-card);
+}
+
+.alp-page-header-text {}
+
+.alp-page-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.alp-page-subtitle {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.alp-page-header-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* ============================================================
    Tabs
    ============================================================ */
 

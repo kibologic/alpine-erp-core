@@ -377,12 +377,12 @@ component UsersPage {
 
         {this.activeTab === 'members' ? (
           <div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:var(--radius-lg);margin-bottom:16px;box-shadow:var(--shadow-card);">
-              <div>
-                <h3 style="margin:0;font-size:16px;font-weight:600;color:var(--color-text-primary);">Organization Members</h3>
-                <p style="margin:4px 0 0;font-size:13px;color:var(--color-text-muted);">Manage users, assign roles, and handle workspace access.</p>
+            <div class="alp-page-header">
+              <div class="alp-page-header-text">
+                <h3 class="alp-page-title">Organization Members</h3>
+                <p class="alp-page-subtitle">Manage users, assign roles, and handle workspace access.</p>
               </div>
-              <div style="display:flex;gap:12px;">
+              <div class="alp-page-header-actions">
                 {window.__skltn?.can('users.manage') && (
                   <button
                     class="alp-btn alp-btn--secondary"

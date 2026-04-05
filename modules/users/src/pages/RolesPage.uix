@@ -224,8 +224,8 @@ component RolesPage {
           return (
             <div style="display:flex;gap:6px;" onclick={(e: Event) => e.stopPropagation()}>
               <button
-                class="aui-btn aui-btn--icon"
-                style="width:30px;height:30px;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:6px;color:var(--color-text-muted);font-size:14px;"
+                class="alp-btn alp-btn--ghost"
+                style="width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;"
                 title="Edit role"
                 onclick={() => {
                   const full = this.roles.find((r: any) => r.id === row._id);
@@ -233,11 +233,11 @@ component RolesPage {
                 }}
               >✎</button>
               <button
-                class="aui-btn aui-btn--icon"
-                style="width:30px;height:30px;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:6px;color:var(--color-text-muted);font-size:14px;"
+                class="alp-btn alp-btn--ghost"
+                style="width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;color:var(--color-danger);"
                 title="Delete role"
-                onmouseover={(e: any) => { e.target.style.color = '#EF4444'; e.target.style.borderColor = '#FCA5A5'; }}
-                onmouseout={(e: any) => { e.target.style.color = 'var(--color-text-muted)'; e.target.style.borderColor = 'var(--color-border)'; }}
+                onmouseover={(e: any) => { e.target.style.background = 'var(--color-danger-bg)'; }}
+                onmouseout={(e: any) => { e.target.style.background = 'transparent'; }}
                 onclick={() => this.deleteRole(row._id)}
               >🗑</button>
             </div>
@@ -265,12 +265,15 @@ component RolesPage {
           ]}
         />
 
-        <div class="alp-toolbar">
-          <div class="alp-toolbar-left" />
-          <div class="alp-toolbar-right">
+        <div class="alp-page-header">
+          <div class="alp-page-header-text">
+            <h3 class="alp-page-title">Organization Roles</h3>
+            <p class="alp-page-subtitle">Create roles to define custom permission sets for your team.</p>
+          </div>
+          <div class="alp-page-header-actions">
             {canManageRoles ? (
               <button
-                class="aui-btn aui-btn--primary"
+                class="alp-btn alp-btn--primary"
                 onclick={() => this.openCreateModal()}
               >+ Create Role</button>
             ) : null}
@@ -376,13 +379,11 @@ component RolesPage {
               {/* Modal footer */}
               <div style="padding:20px 28px;border-top:1px solid var(--color-bg-border);display:flex;justify-content:flex-end;gap:12px;flex-shrink:0;background:var(--color-bg-base);border-bottom-left-radius:16px;border-bottom-right-radius:16px;">
                 <button
-                  class="aui-btn aui-btn--outline"
-                  style="border-radius:8px;padding:10px 20px;font-weight:600;"
+                  class="alp-btn alp-btn--secondary"
                   onclick={() => this.closeModal()}
                 >Cancel</button>
                 <button
-                  class="aui-btn aui-btn--primary"
-                  style="border-radius:8px;padding:10px 24px;font-weight:600;min-width:120px;"
+                  class="alp-btn alp-btn--primary"
                   disabled={this.saving}
                   onclick={() => this.saveRole()}
                 >{this.saving ? 'Saving...' : (this.editingRole ? 'Update Role' : 'Create Role')}</button>
@@ -401,13 +402,11 @@ component RolesPage {
               </p>
               <div style="display:flex;justify-content:flex-end;gap:12px;">
                 <button
-                  class="aui-btn aui-btn--outline"
-                  style="border-radius:8px;padding:10px 20px;font-weight:600;"
+                  class="alp-btn alp-btn--secondary"
                   onclick={() => { this.showDeleteConfirm = false; this.deletingRoleId = null; this.scheduleUpdate?.(); }}
                 >Cancel</button>
                 <button
-                  class="aui-btn"
-                  style="background:#EF4444;color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:600;"
+                  class="alp-btn alp-btn--danger"
                   onclick={() => this.confirmDeleteRole()}
                 >Delete Role</button>
               </div>
