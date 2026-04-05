@@ -891,3 +891,26 @@ class KitchenOrderLine(Base):
     tenant: Mapped["Tenant"] = relationship()
     kitchen_order: Mapped["KitchenOrder"] = relationship(back_populates="lines")
     product: Mapped["Product"] = relationship()
+
+
+class Media(Base):
+    __tablename__ = "media"
+
+    id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    uploaded_by: Mapped[str] = mapped_column(String, nullable=False)
+    filename: Mapped[str] = mapped_column(String, nullable=False)
+    url: Mapped[str] = mapped_column(String, nullable=False)
+    size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+    mime_type: Mapped[str] = mapped_column(String, nullable=False)
+    entity: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    entity_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    tenant: Mapped["Tenant"] = relationship()

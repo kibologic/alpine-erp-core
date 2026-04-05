@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import DeclarativeBase, ORMExecuteState
+from sqlalchemy.orm import DeclarativeBase, ORMExecuteState, Session
 from core.tenant import get_current_tenant
 
 logger = logging.getLogger(__name__)
@@ -38,32 +38,46 @@ class Base(DeclarativeBase):
     pass
 
 
-@event.listens_for(AsyncSession, "do_orm_execute")
+@event.listens_for(Session, "do_orm_execute")
 def _do_orm_execute(state: ORMExecuteState):
     """
     Automatically adds a `tenant_id` filter to any query targeting a model
     that has a `tenant_id` column, provided a tenant context is active.
     """
     tenant_id = get_current_tenant()
-    
-    # If no tenant is set in the context (global/system tasks), skip filtering.
-    # In production, almost all web requests will have a tenant set.
-    if not tenant_id:
-        return
+    tenant_id = get_current_tenant()
 
     if state.is_select:
-        # Only filter if the model has a tenant_id attribute
+        # If no tenant is set, global/system tasks are allowed to READ all tenants
+        if not tenant_id:
+            return
+            
         for mapper in state.all_mappers:
             if hasattr(mapper.class_, "tenant_id"):
                 state.statement = state.statement.where(mapper.class_.tenant_id == tenant_id)
 
     elif state.is_update or state.is_delete:
-        # For UPDATE/DELETE, we must also enforce the tenant boundary.
-        # We can detect the model by inspecting the statement's table(s).
-        # However, for simplicity and safety, we check the bind mapper if available.
-        mapper = state.bind_mapper
-        if mapper and hasattr(mapper.class_, "tenant_id"):
-            state.statement = state.statement.where(mapper.class_.tenant_id == tenant_id)
+        # Prevent any mutations across organizations without an active tenant ID
+        # We loop through all mappers related to this query
+        for mapper in getattr(state, "all_mappers", []):
+            if hasattr(mapper.class_, "tenant_id"):
+                if not tenant_id:
+                    raise RuntimeError(
+                        f"FATAL: Attempted a cross-org UPDATE/DELETE on {mapper.class_.__name__} "
+                        "without an active tenant context. Action blocked by security guard."
+                    )
+                state.statement = state.statement.where(mapper.class_.tenant_id == tenant_id)
+        
+        # Fallback check in case all_mappers is empty but we have an explicit statement table
+        if not getattr(state, "all_mappers", []):
+            table = getattr(state.statement, 'table', None)
+            if table is not None and 'tenant_id' in table.columns:
+                if not tenant_id:
+                    raise RuntimeError(
+                        f"FATAL: Attempted a cross-org UPDATE/DELETE on table '{table.name}' "
+                        "without an active tenant context. Action blocked by security guard."
+                    )
+                state.statement = state.statement.where(table.c.tenant_id == tenant_id)
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:

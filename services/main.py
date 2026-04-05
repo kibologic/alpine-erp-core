@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI, WebSocket, Query
+from fastapi import FastAPI, WebSocket, Query, Depends, HTTPException, WebSocketDisconnect
 from core.auth import verify_internal_token
 from core.exceptions import register_handlers
-from core.db import engine
+from core.db import engine, get_session
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.auth_deps import _resolve_token, _check_tenant
 from core.module_registry import register_module, load_all_modules, get_registered_modules
 from core.config import get_config
 from gbil.logger import configure as configure_logger, get_logger
@@ -61,17 +63,27 @@ async def health() -> dict[str, str]:
 async def websocket_endpoint(
     websocket: WebSocket,
     tenant_id: str,
-    token: str = Query(...)
+    token: str = Query(...),
+    session: AsyncSession = Depends(get_session)
 ):
     if not token:
-        await websocket.close(code=4001)
+        await websocket.close(code=4001, reason="Missing token")
         return
+        
+    try:
+        user = await _resolve_token(token, session)
+        await _check_tenant(user, tenant_id, session)
+    except HTTPException as e:
+        await websocket.close(code=4003, reason=str(e.detail))
+        return
+
     await manager.connect(tenant_id, websocket)
     try:
         while True:
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(tenant_id, websocket)
+
 
 
 @app.get("/api/v1/modules")
