@@ -10,13 +10,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@kibologic/core": "link:../../packages/core",
-    "@kibologic/shell": "latest",
-    "@kibologic/notifications": "latest",
-    "@kibologic/navigation": "latest",
-    "@kibologic/workspace": "latest",
-    "@kibologic/contracts": "latest",
-    "@kibologic/core": "latest",
+    "@kibologic/core": "workspace:*",
     "@kibologic/swite": "latest",
     "reflect-metadata": "^0.2.2"
   },

@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
 import { FormGroup, StatStrip, TextField, SelectField } from '@kibologic/ui';
-import { api } from '@kibologic/core/src/services/api.ui';
+import { api } from '@kibologic/core';
 
 const TIER_LIMITS: any = {
   free:       { terminals: 1,  users: 3,   products: 300 },

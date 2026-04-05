@@ -490,3 +490,9 @@ INFO:     127.0.0.1:45248 - "GET /api/v1/inventory/valuation HTTP/1.1" 200 OK
 INFO:     127.0.0.1:45246 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
 INFO:     127.0.0.1:45260 - "GET /api/v1/inventory/valuation HTTP/1.1" 200 OK
 INFO:     127.0.0.1:45272 - "GET /api/v1/dataimport/manifests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47988 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47970 - "GET /api/v1/atoms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47954 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47984 - "GET /api/v1/tenant/invites HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:47966 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48000 - "GET /api/v1/roles HTTP/1.1" 200 OK

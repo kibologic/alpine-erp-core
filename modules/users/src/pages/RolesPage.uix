@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
 import { DataTable, StatStrip, Modal } from '@kibologic/ui';
-import { api } from '@kibologic/core/src/services/api.ui';
+import { api } from '@kibologic/core';
 
 const MODULE_GROUPS = [
   {

@@ -14,18 +14,13 @@
   },
   "pnpm": {
     "overrides": {
-      "@kibologic/core": "latest",
       "@kibologic/compiler": "latest",
       "@kibologic/plugin-file-router": "latest",
       "@kibologic/swite": "latest",
       "@kibologic/plugin-web-storage": "latest",
-      "@kibologic/security": "latest",
       "@kibologic/router": "latest",
       "@kibologic/utils": "latest",
-      "@kibologic/event-bus": "latest",
-      "@kibologic/contracts": "latest",
       "@kibologic/connectivity": "latest",
-      "@kibologic/i18n": "latest",
       "@kibologic/shell": "latest"
     }
   }
