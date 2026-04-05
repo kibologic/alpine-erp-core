@@ -1,6 +1,7 @@
 import { SwissApp } from '@kibologic/core';
 import { Shell } from '@kibologic/shell/host/src/Shell.uix';
 import { boot } from '@kibologic/shell/host/src/boot.ui';
+import { can, canAny, canAll } from '@kibologic/shell/host/src/permissions.ui';
 import { register } from './register.ui';
 import { LoginPage } from './auth/LoginPage.uix';
 import { SignupPage } from './auth/SignupPage.uix';
@@ -104,6 +105,13 @@ async function main() {
   }
 
   await boot();
+  // Wire permissions helpers onto __skltn so any component can call
+  // window.__skltn.can('some.atom') and get a real boolean back.
+  if (window.__skltn) {
+    window.__skltn.can = can;
+    window.__skltn.canAny = canAny;
+    window.__skltn.canAll = canAll;
+  }
   await register();
   SwissApp.mount(Shell, container);
 }
