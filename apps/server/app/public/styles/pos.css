@@ -961,30 +961,28 @@ textarea.erp-settings-input {
 }
 
 .pos-cart-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 80px 70px 24px;
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--color-bg-border);
-  min-width: 0;
 }
 
 .pos-cart-item-name {
-  flex: 1;
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  min-width: 0;
 }
 
 .pos-cart-qty {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  flex-shrink: 0;
 }
 
 .pos-cart-qty-btn {
@@ -1021,8 +1019,6 @@ textarea.erp-settings-input {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text-primary);
-  flex-shrink: 0;
-  min-width: 70px;
   text-align: right;
 }
 
@@ -1032,9 +1028,9 @@ textarea.erp-settings-input {
   color: var(--color-text-muted);
   cursor: pointer;
   font-size: 16px;
-  padding: 0 2px;
+  padding: 0;
+  margin-left: auto;
   line-height: 1;
-  flex-shrink: 0;
   transition: color 0.15s;
 }
 
