@@ -11,7 +11,7 @@
   },
   "main": "./src/index.ui",
   "dependencies": {
-    "@kibologic/core": "workspace:*",
-    "@kibologic/ui": "workspace:*"
+    "@kibologic/core": "latest",
+    "@kibologic/ui": "latest"
   }
 }

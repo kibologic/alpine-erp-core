@@ -28,8 +28,8 @@ importers:
   apps/server:
     dependencies:
       '@kibologic/core':
-        specifier: workspace:*
-        version: link:../../packages/core
+        specifier: latest
+        version: 0.1.1
       '@kibologic/swite':
         specifier: latest
         version: 0.2.11(vite@5.4.21)
@@ -46,19 +46,19 @@ importers:
   modules/dataimport:
     dependencies:
       '@kibologic/core':
-        specifier: workspace:*
-        version: link:../../packages/core
+        specifier: latest
+        version: 0.1.1
       '@kibologic/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
+        specifier: latest
+        version: 0.1.1
 
   modules/inventory: {}
 
   modules/pos:
     dependencies:
       '@kibologic/core':
-        specifier: workspace:*
-        version: link:../../packages/core
+        specifier: latest
+        version: 0.1.1
 
   modules/settings: {}
 
@@ -643,6 +643,9 @@ packages:
   '@kibologic/swite@0.2.11':
     resolution: {integrity: sha512-KHcrL10qCuWqIEjvi+RA6gsoAuPL88gtrBRgHB4iSR65mVTB9k9v7Udek0QwiJTU5ntv4ypZnQam7jf+SXumVw==, tarball: https://npm.pkg.github.com/download/@kibologic/swite/0.2.11/17e972665bed2f5a5d51b118c5c0e60c4e36c763}
     hasBin: true
+
+  '@kibologic/ui@0.1.1':
+    resolution: {integrity: sha512-eG4SlUlPC7GhQCoex1fU6tkjV/2jp2Am2n7BZr7n6tZiwNXJjPj/t8j/B0Tj19j6u3pb8D1vDYf5M1rKsEEvYg==, tarball: https://npm.pkg.github.com/download/@kibologic/ui/0.1.1/15740a45c1f78eb682272938987c325548a29b7c}
 
   '@rollup/rollup-android-arm-eabi@4.60.1':
     resolution: {integrity: sha512-d6FinEBLdIiK+1uACUttJKfgZREXrF0Qc2SmLII7W2AD8FfiZ9Wjd+rD/iRuf5s5dWrr1GgwXCvPqOuDquOowA==}
@@ -1742,6 +1745,8 @@ snapshots:
       - supports-color
       - utf-8-validate
       - vite
+
+  '@kibologic/ui@0.1.1': {}
 
   '@rollup/rollup-android-arm-eabi@4.60.1':
     optional: true
