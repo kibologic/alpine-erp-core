@@ -1,6 +1,13 @@
 {
-  "name": "@alpine/module-users",
+  "name": "@kibologic/module-users",
   "version": "0.1.1",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kibologic/alpine-erp-core.git"
+  },
   "main": "./src/index.ui"
 }

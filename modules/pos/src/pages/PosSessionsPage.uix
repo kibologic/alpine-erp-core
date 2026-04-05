@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { PosService, formatDate } from '@alpine/core';
-import { DataTable, PageHeader, StatStrip, StatusBadge } from '@alpine/ui';
+import { PosService, formatDate } from '@kibologic/core';
+import { DataTable, PageHeader, StatStrip, StatusBadge } from '@kibologic/ui';
 
 const columns = [
   { key: 'register_id', label: 'Register', width: '120px' },

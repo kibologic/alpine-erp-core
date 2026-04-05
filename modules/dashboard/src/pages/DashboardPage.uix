@@ -1,5 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { BarChart, DataTable, LineChart, PageHeader } from '@alpine/ui';
+import { BarChart, DataTable, LineChart, PageHeader } from '@kibologic/ui';
 
 const MOCK_SALES_DATA = {
   categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],

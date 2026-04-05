@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { InventoryService, formatDate } from '@alpine/core';
-import { DataTable, PageHeader, StatStrip } from '@alpine/ui';
+import { InventoryService, formatDate } from '@kibologic/core';
+import { DataTable, PageHeader, StatStrip } from '@kibologic/ui';
 
 
 const columns = [

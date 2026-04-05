@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { InventoryService } from '@alpine/core';
-import { CurrencyField, DataImport, DataTable, FormGroup, Modal, PageHeader, SelectField, StatStrip, TextField } from '@alpine/ui';
+import { InventoryService } from '@kibologic/core';
+import { CurrencyField, DataImport, DataTable, FormGroup, Modal, PageHeader, SelectField, StatStrip, TextField } from '@kibologic/ui';
 
 const columns = [
   { key: 'sku', label: 'SKU', sortable: false, width: '120px' },

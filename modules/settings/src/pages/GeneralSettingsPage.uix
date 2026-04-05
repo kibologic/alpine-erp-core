@@ -1,5 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { FormGroup, PageHeader, Section, SelectField, TextField } from '@alpine/ui';
+import { FormGroup, PageHeader, Section, SelectField, TextField } from '@kibologic/ui';
 
 component GeneralSettingsPage {
   props = {};

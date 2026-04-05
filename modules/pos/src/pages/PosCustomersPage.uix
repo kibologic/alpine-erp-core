@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { PosService } from '@alpine/core';
-import { DataTable, FormGroup, Modal, PageHeader, StatStrip, TextField } from '@alpine/ui';
+import { PosService } from '@kibologic/core';
+import { DataTable, FormGroup, Modal, PageHeader, StatStrip, TextField } from '@kibologic/ui';
 
 const columns = [
   { key: 'name', label: 'Name', sortable: true },

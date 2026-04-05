@@ -1,9 +1,16 @@
 {
-  "name": "@alpine/module-pos",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@kibologic/module-pos",
+  "version": "0.1.1",
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kibologic/alpine-erp-core.git"
+  },
   "main": "./src/index.ui",
   "dependencies": {
-    "@alpine/core": "workspace:*"
+    "@kibologic/core": "workspace:*"
   }
 }

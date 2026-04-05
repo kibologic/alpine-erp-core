@@ -1,7 +1,7 @@
 import { SwissComponent } from '@kibologic/core';
-import { DataTable, FormGroup, Modal, SelectField, StatStrip, StatusBadge, TextField } from '@alpine/ui';
-import { api } from '@alpine/core/src/services/api.ui';
-import { formatDate } from '@alpine/core';
+import { DataTable, FormGroup, Modal, SelectField, StatStrip, StatusBadge, TextField } from '@kibologic/ui';
+import { api } from '@kibologic/core/src/services/api.ui';
+import { formatDate } from '@kibologic/core';
 
 component UsersPage {
   props = {};

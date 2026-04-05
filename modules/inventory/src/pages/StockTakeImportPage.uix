@@ -1,5 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { DataImport, PageHeader } from '@alpine/ui';
+import { DataImport, PageHeader } from '@kibologic/ui';
 
 component StockTakeImportPage {
   props = {};

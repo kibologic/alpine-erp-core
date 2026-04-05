@@ -1,5 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { PosService, InventoryService, getDeviceId, t, formatCurrency } from '@alpine/core';
+import { PosService, InventoryService, getDeviceId, t, formatCurrency } from '@kibologic/core';
 
 const TAX_RATE = 0.16;
 

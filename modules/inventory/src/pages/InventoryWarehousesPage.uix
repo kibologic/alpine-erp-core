@@ -1,5 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { formatNumber } from '@alpine/core';
+import { formatNumber } from '@kibologic/core';
 
 const WAREHOUSES = [
   { id: 'WH-01', name: 'Main Warehouse',    location: 'Lilongwe, Malawi',   capacity: 5000, used: 3200, manager: 'Kofi Asante' },

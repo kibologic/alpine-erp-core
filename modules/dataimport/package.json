@@ -1,11 +1,17 @@
 {
-  "name": "@alpine/module-dataimport",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@kibologic/module-dataimport",
+  "version": "0.1.1",
+  "private": false,
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kibologic/alpine-erp-core.git"
+  },
   "main": "./src/index.ui",
   "dependencies": {
     "@kibologic/core": "latest",
-    "@alpine/core": "workspace:*",
-    "@alpine/ui": "workspace:*"
+    "@kibologic/ui": "workspace:*"
   }
 }

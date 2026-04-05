@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { InventoryService, formatCurrency } from '@alpine/core';
-import { DataTable, PageHeader, StatStrip, StatusBadge } from '@alpine/ui';
+import { InventoryService, formatCurrency } from '@kibologic/core';
+import { DataTable, PageHeader, StatStrip, StatusBadge } from '@kibologic/ui';
 
 const columns = [
   { key: 'sku', label: 'SKU', width: '120px' },

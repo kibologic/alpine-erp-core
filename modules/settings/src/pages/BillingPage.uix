@@ -1,5 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { PageHeader, Section } from '@alpine/ui';
+import { PageHeader, Section } from '@kibologic/ui';
 
 component BillingPage {
   props = {};

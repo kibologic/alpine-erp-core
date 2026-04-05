@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { api } from '@alpine/core/src/services/api.ui';
-import { StatStrip, Modal } from '@alpine/ui';
+import { api } from '@kibologic/core/src/services/api.ui';
+import { StatStrip, Modal } from '@kibologic/ui';
 
 component DataImportPage {
   props = {};

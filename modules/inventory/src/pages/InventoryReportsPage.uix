@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { InventoryService, formatCurrency } from '@alpine/core';
-import { DataTable, StatStrip } from '@alpine/ui';
+import { InventoryService, formatCurrency } from '@kibologic/core';
+import { DataTable, StatStrip } from '@kibologic/ui';
 
 const VALUATION_COLUMNS = [
   { key: 'category', label: 'Category', sortable: true },

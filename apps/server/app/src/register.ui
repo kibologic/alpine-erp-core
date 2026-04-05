@@ -1,10 +1,10 @@
-import { bootstrap, getModules, getLicense } from '@alpine/core';
+import { bootstrap, getModules, getLicense } from '@kibologic/core';
 
-import '@alpine/module-dashboard';
-import '@alpine/module-users';
-import '@alpine/module-settings';
-import '@alpine/module-pos';
-import '@alpine/module-inventory';
+import '@kibologic/module-dashboard';
+import '@kibologic/module-users';
+import '@kibologic/module-settings';
+import '@kibologic/module-pos';
+import '@kibologic/module-inventory';
 import '../../../../modules/dataimport/src/index.ui';
 
 // Dashboard

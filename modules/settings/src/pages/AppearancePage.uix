@@ -1,5 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { FormGroup, PageHeader, Section } from '@alpine/ui';
+import { FormGroup, PageHeader, Section } from '@kibologic/ui';
 
 component AppearancePage {
   props = {};

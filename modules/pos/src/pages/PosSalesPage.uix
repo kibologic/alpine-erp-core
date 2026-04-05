@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { PosService, formatCurrency, formatDate } from '@alpine/core';
-import { DataTable, Modal, PageHeader, StatStrip, StatusBadge } from '@alpine/ui';
+import { PosService, formatCurrency, formatDate } from '@kibologic/core';
+import { DataTable, Modal, PageHeader, StatStrip, StatusBadge } from '@kibologic/ui';
 
 const columns = [
   { key: 'id', label: 'Sale #', width: '120px' },

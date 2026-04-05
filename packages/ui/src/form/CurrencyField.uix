@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
 import { TextField } from './TextField.uix';
-import { formatCurrency, getCurrencySymbol, formatNumber } from '@alpine/core';
+import { formatCurrency, getCurrencySymbol, formatNumber } from '@kibologic/core';
 
 component CurrencyField {
   props = {

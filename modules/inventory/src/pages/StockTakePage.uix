@@ -1,6 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { InventoryService, formatCurrency } from '@alpine/core';
-import { Modal, PageHeader, SelectField, TextField } from '@alpine/ui';
+import { InventoryService, formatCurrency } from '@kibologic/core';
+import { Modal, PageHeader, SelectField, TextField } from '@kibologic/ui';
 
 component StockTakePage {
   props = {};

@@ -1,4 +1,4 @@
-import { registerModule } from '@alpine/core'
+import { registerModule } from '@kibologic/core'
 
 registerModule({
   id: 'users',
