@@ -799,18 +799,19 @@ textarea.erp-settings-input {
 
 .pos-category-filters {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
+  padding: 8px 0;
 }
 
 .pos-category-pill {
-  padding: 5px 14px;
-  border-radius: 20px;
-  border: 1px solid var(--color-bg-border);
-  background: transparent;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-bg-border);
+  background: var(--color-bg-surface);
   color: var(--color-text-secondary);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
@@ -841,14 +842,15 @@ textarea.erp-settings-input {
 
 .pos-product-card {
   background: var(--color-bg-surface);
-  border: 1px solid var(--color-bg-border);
-  border-radius: 10px;
-  padding: 14px;
+  border: 1.5px solid var(--color-bg-border);
+  border-radius: 8px;
+  padding: 18px 16px;
+  min-height: 64px;
   cursor: pointer;
   transition: all 0.15s;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   user-select: none;
 }
 
@@ -876,10 +878,10 @@ textarea.erp-settings-input {
 }
 
 .pos-product-price {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--color-text-primary);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .pos-product-stock {
@@ -887,9 +889,9 @@ textarea.erp-settings-input {
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  font-weight: 500;
-  padding: 2px 8px;
-  border-radius: 10px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
   width: fit-content;
 }
 
@@ -934,7 +936,7 @@ textarea.erp-settings-input {
 .pos-cart-badge {
   background: var(--color-text-primary);
   color: var(--color-bg-base);
-  border-radius: 10px;
+  border-radius: 6px;
   padding: 2px 8px;
   font-size: 11px;
   font-weight: 700;
@@ -962,15 +964,15 @@ textarea.erp-settings-input {
 .pos-cart-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 12px;
+  padding: 16px 16px;
   border-bottom: 1px solid var(--color-bg-border);
   min-width: 0;
 }
 
 .pos-cart-item-name {
   flex: 1;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--color-text-primary);
   overflow: hidden;
@@ -982,19 +984,19 @@ textarea.erp-settings-input {
 .pos-cart-qty {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .pos-cart-qty-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
   border: 1px solid var(--color-bg-border);
   background: var(--color-bg-elevated);
   color: var(--color-text-primary);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1009,19 +1011,19 @@ textarea.erp-settings-input {
 }
 
 .pos-cart-qty-val {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-text-primary);
-  min-width: 20px;
+  min-width: 24px;
   text-align: center;
 }
 
 .pos-cart-item-total {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--color-text-primary);
   flex-shrink: 0;
-  min-width: 70px;
+  min-width: 80px;
   text-align: right;
 }
 
@@ -1030,8 +1032,8 @@ textarea.erp-settings-input {
   border: none;
   color: var(--color-text-muted);
   cursor: pointer;
-  font-size: 16px;
-  padding: 0 2px;
+  font-size: 24px;
+  padding: 8px;
   line-height: 1;
   flex-shrink: 0;
   transition: color 0.15s;
@@ -1058,12 +1060,12 @@ textarea.erp-settings-input {
 }
 
 .pos-totals-row--total {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--color-text-primary);
-  padding-top: 8px;
-  border-top: 1px solid var(--color-bg-border);
-  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1.5px solid var(--color-bg-border);
+  margin-top: 8px;
 }
 
 /* ── Payment Methods ─────────────────────────────── */
@@ -1076,12 +1078,13 @@ textarea.erp-settings-input {
 
 .pos-pay-method {
   flex: 1;
-  padding: 8px;
+  padding: 12px;
+  min-height: 48px;
   border-radius: 8px;
   border: 1px solid var(--color-bg-border);
   background: var(--color-bg-elevated);
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
@@ -1101,13 +1104,14 @@ textarea.erp-settings-input {
 
 /* ── Charge Button ───────────────────────────────── */
 .pos-charge-btn {
-  margin: 0 16px 12px;
-  padding: 14px;
-  border-radius: 10px;
+  margin: 0 16px 16px;
+  padding: 16px;
+  min-height: 56px;
+  border-radius: 8px;
   border: none;
   background: var(--color-text-primary);
   color: var(--color-bg-base);
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   cursor: pointer;
   width: calc(100% - 32px);
@@ -1168,7 +1172,7 @@ textarea.erp-settings-input {
 .pos-state-card {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-bg-border);
-  border-radius: 14px;
+  border-radius: 8px;
   padding: 40px;
   width: 360px;
   display: flex;
@@ -1219,16 +1223,17 @@ textarea.erp-settings-input {
 }
 
 .pos-state-btn {
-  padding: 12px;
+  padding: 16px 20px;
+  min-height: 52px;
   border-radius: 8px;
   border: none;
   background: var(--color-text-primary);
   color: var(--color-bg-base);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.15s;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 .pos-state-btn:hover:not(:disabled) {
@@ -1255,7 +1260,7 @@ textarea.erp-settings-input {
 .pos-success-card {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-bg-border);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 40px;
   text-align: center;
   display: flex;

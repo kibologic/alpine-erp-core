@@ -730,7 +730,7 @@ component PosTerminalPage {
                 </span>
                 <button
                   onclick={() => { this.showNewTabModal = true; this.scheduleUpdate?.(); }}
-                  style="padding:6px 14px;border-radius:6px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:12px;font-weight:600;cursor:pointer;">
+                  style="padding:14px 20px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:600;cursor:pointer;min-height:52px;">
                   + New Tab
                 </button>
               </div>
@@ -744,10 +744,10 @@ component PosTerminalPage {
                 {this.tabs.map((tab: any) => (
                   <div
                     onclick={() => this.selectTab(tab)}
-                    style={'padding:12px 14px;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;border:2px solid ' + (this.activeTab?.id === tab.id ? 'var(--color-text-primary)' : 'var(--color-bg-border)') + ';background:' + (this.activeTab?.id === tab.id ? 'var(--color-bg-elevated)' : 'transparent') + ';'}>
+                    style={'padding:16px 20px;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;border:2px solid ' + (this.activeTab?.id === tab.id ? 'var(--color-text-primary)' : 'var(--color-bg-border)') + ';background:' + (this.activeTab?.id === tab.id ? 'var(--color-bg-elevated)' : 'transparent') + ';'}>
                     <div style="display:flex;justify-content:space-between;align-items:center;">
-                      <span style="font-size:13px;font-weight:600;color:var(--color-text-primary);">{tab.name}</span>
-                      <span style="font-size:12px;font-weight:700;color:var(--color-text-primary);">MWK {(tab.total || 0).toLocaleString()}</span>
+                      <span style="font-size:16px;font-weight:600;color:var(--color-text-primary);">{tab.name}</span>
+                      <span style="font-size:16px;font-weight:700;color:var(--color-text-primary);">MWK {(tab.total || 0).toLocaleString()}</span>
                     </div>
                     <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">{(tab.lines || []).length} items</div>
                   </div>
@@ -780,7 +780,7 @@ component PosTerminalPage {
                     </div>
                     <button
                       onclick={() => { this.checkoutState = 'checkout'; this.showCheckoutModal = true; this.scheduleUpdate?.(); }}
-                      style="width:100%;padding:12px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:13px;font-weight:700;cursor:pointer;">
+                      style="width:100%;padding:16px;border-radius:8px;min-height:52px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:700;cursor:pointer;">
                       Close Tab — MWK {(this.activeTab.total || 0).toLocaleString()}
                     </button>
                   </div>
@@ -835,7 +835,7 @@ component PosTerminalPage {
                 class="pos-checkout-btn"
                 onclick={this.openCheckout.bind(this)}
                 disabled={this.cartItems.length === 0}
-                style={`margin:0 16px 12px;padding:14px;border-radius:10px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:700;cursor:pointer;width:calc(100% - 32px);transition:all 0.15s;opacity:${this.cartItems.length === 0 ? 0.4 : 1};`}>
+                style={`margin:0 16px 12px;padding:16px;min-height:52px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:16px;font-weight:700;cursor:pointer;width:calc(100% - 32px);transition:all 0.15s;opacity:${this.cartItems.length === 0 ? 0.4 : 1};`}>
                 Checkout — MWK {this.computedTotal.toLocaleString()}
               </button>
             </div>
@@ -863,7 +863,7 @@ component PosTerminalPage {
         {/* Checkout Modal */}
         {this.showCheckoutModal && (
           <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px);">
-            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:780px;max-width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:8px;width:780px;max-width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
 
               {/* ── CHECKOUT STATE ── */}
               {this.checkoutState === 'checkout' && (
@@ -899,7 +899,7 @@ component PosTerminalPage {
                           onclick={() => {
                             this.selectedPaymentMethod = method.id;
                           }}
-                          style={`display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;cursor:pointer;
+                          style={`display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:48px;border-radius:8px;cursor:pointer;
                             border:2px solid ${this.selectedPaymentMethod === method.id ? 'var(--color-text-primary)' : 'var(--color-bg-border)'};
                             background:${this.selectedPaymentMethod === method.id ? 'var(--color-bg-elevated)' : 'transparent'};
                             transition:all 0.15s;`}>
@@ -989,7 +989,7 @@ component PosTerminalPage {
                     <button
                       onclick={this.processPayment.bind(this)}
                       disabled={this.processing}
-                      style={`width:100%;padding:16px;border-radius:10px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:16px;font-weight:700;cursor:pointer;opacity:${this.processing ? 0.6 : 1};transition:all 0.15s;letter-spacing:0.3px;`}>
+                      style={`width:100%;padding:16px;min-height:56px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:18px;font-weight:700;cursor:pointer;opacity:${this.processing ? 0.6 : 1};transition:all 0.15s;letter-spacing:0.3px;`}>
                       {this.processing ? 'Processing...' : `Charge ${this.formatMWK(this.activeMode === 'tabbed' ? (this.activeTab?.total || 0) : this.computedTotal)}`}
                     </button>
                   </div>
@@ -1024,7 +1024,7 @@ component PosTerminalPage {
                   </div>
 
                   {/* Receipt items */}
-                  <div style="width:100%;max-width:400px;background:var(--color-bg-elevated);border-radius:10px;padding:16px;margin-bottom:24px;">
+                  <div style="width:100%;max-width:400px;background:var(--color-bg-elevated);border-radius:8px;padding:16px;margin-bottom:24px;">
                     {this.receiptItems.map((item: any) => (
                       <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--color-bg-border);font-size:13px;">
                         <span style="color:var(--color-text-secondary);">
@@ -1047,7 +1047,7 @@ component PosTerminalPage {
                       margin-bottom:16px;
                       background:var(--color-bg-elevated);
                       border:1px solid var(--color-bg-border);
-                      border-radius:10px;padding:16px;
+                      border-radius:8px;padding:16px;
                       text-align:center;">
                       <div style="font-size:10px;font-weight:600;
                         color:var(--color-text-muted);
@@ -1075,7 +1075,7 @@ component PosTerminalPage {
                       background:color-mix(in srgb,
                         var(--color-warning) 10%, transparent);
                       border:1px solid var(--color-warning);
-                      border-radius:10px;padding:12px 16px;
+                      border-radius:8px;padding:12px 16px;
                       text-align:center;">
                       <div style="font-size:12px;
                         color:var(--color-warning);">
@@ -1088,12 +1088,12 @@ component PosTerminalPage {
                   <div style="display:flex;gap:12px;width:100%;max-width:400px;">
                     <button
                       onclick={this.triggerPrint.bind(this)}
-                      style="flex:1;padding:12px;border-radius:8px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-primary);font-size:13px;font-weight:600;cursor:pointer;">
+                      style="flex:1;min-height:48px;padding:12px;border-radius:8px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-primary);font-size:15px;font-weight:600;cursor:pointer;">
                       🖨 Print Receipt
                     </button>
                     <button
                       onclick={this.startNewTransaction.bind(this)}
-                      style="flex:1;padding:12px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:13px;font-weight:600;cursor:pointer;">
+                      style="flex:1;min-height:48px;padding:12px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:600;cursor:pointer;">
                       New Transaction
                     </button>
                   </div>
@@ -1136,7 +1136,7 @@ component PosTerminalPage {
         {/* New Tab Modal */}
         {this.showNewTabModal && (
           <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;">
-            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:12px;padding:32px;width:360px;">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:8px;padding:32px;width:360px;">
               <div style="font-size:16px;font-weight:700;color:var(--color-text-primary);margin-bottom:16px;">New Tab</div>
               <input
                 type="text"
@@ -1147,12 +1147,12 @@ component PosTerminalPage {
               <div style="display:flex;gap:8px;">
                 <button
                   onclick={() => this.createTab()}
-                  style="flex:1;padding:10px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:13px;font-weight:600;cursor:pointer;">
+                  style="flex:1;min-height:48px;padding:12px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:600;cursor:pointer;">
                   Open Tab
                 </button>
                 <button
                   onclick={() => { this.showNewTabModal = false; this.scheduleUpdate?.(); }}
-                  style="padding:10px 16px;border-radius:8px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-primary);font-size:13px;cursor:pointer;">
+                  style="min-height:48px;padding:12px 16px;border-radius:8px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-primary);font-size:15px;cursor:pointer;">
                   Cancel
                 </button>
               </div>
@@ -1162,7 +1162,7 @@ component PosTerminalPage {
 
         {this.showUpgradeModal && (
           <div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10002;backdrop-filter:blur(8px);">
-            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:24px;width:480px;padding:40px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:8px;width:480px;padding:40px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.4);">
               <div style="font-size:48px;margin-bottom:24px;">🚀</div>
               <h2 style="font-size:24px;font-weight:800;color:var(--color-text-primary);margin-bottom:12px;">Premium Feature</h2>
               <p style="font-size:15px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:32px;">
@@ -1172,12 +1172,12 @@ component PosTerminalPage {
               <div style="display:flex;flex-direction:column;gap:12px;">
                 <button 
                   onclick={() => window.open('https://kibologic.com/pricing', '_blank')}
-                  style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;">
+                  style="width:100%;min-height:48px;padding:14px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;">
                   View Pricing & Plans
                 </button>
                 <button 
                   onclick={() => this.showUpgradeModal = false}
-                  style="width:100%;padding:14px;border-radius:12px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-muted);font-size:14px;font-weight:500;cursor:pointer;">
+                  style="width:100%;min-height:48px;padding:14px;border-radius:8px;border:1px solid var(--color-bg-border);background:transparent;color:var(--color-text-muted);font-size:15px;font-weight:500;cursor:pointer;">
                   Maybe Later
                 </button>
               </div>
