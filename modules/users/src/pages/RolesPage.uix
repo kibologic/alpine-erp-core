@@ -1,4 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
+import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
+import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
 import { api } from '@alpine/core/src/services/api.ui';
 
 const MODULE_GROUPS = [
@@ -165,113 +167,130 @@ component RolesPage {
   }
 
   render() {
-    if (this.loading) {
-      return (
-        <div style="display:flex;align-items:center;justify-content:center;padding:4rem;color:var(--color-text-muted);">
-          Loading roles...
-        </div>
-      );
-    }
-
     const canManageRoles = this.canDo('users.manage_roles');
     const customRoles = this.roles.filter((r: any) => !r.is_system);
+    const systemRoles = this.roles.filter((r: any) => r.is_system);
     const atomCount = Object.keys(this.allAtoms).length;
 
+    const columns = [
+      {
+        key: 'name',
+        label: 'Role Name',
+        render: (val: string, row: any) => (
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-weight:600;color:var(--color-text);">{val}</span>
+            {row.is_system ? (
+              <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:rgba(99,102,241,0.1);color:#6366F1;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;">System</span>
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        key: 'member_count',
+        label: 'Members',
+        width: '100px',
+        render: (val: number) => (
+          <span style="font-variant-numeric:tabular-nums;">{val ?? 0}</span>
+        ),
+      },
+      {
+        key: 'atoms',
+        label: 'Atoms',
+        width: '120px',
+        render: (val: string[]) => (
+          <span style="font-variant-numeric:tabular-nums;">{(val || []).length}</span>
+        ),
+      },
+      {
+        key: 'created_at',
+        label: 'Created',
+        width: '160px',
+        render: (val: string) => val ? new Date(val).toLocaleDateString() : '—',
+      },
+      {
+        key: '_actions',
+        label: 'Actions',
+        width: '80px',
+        render: (_: any, row: any) => {
+          if (row.is_system) {
+            return (
+              <span
+                title="System roles cannot be modified"
+                style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;color:var(--color-text-muted);cursor:default;"
+              >🔒</span>
+            );
+          }
+          if (!canManageRoles) return null;
+          return (
+            <div style="display:flex;gap:6px;" onclick={(e: Event) => e.stopPropagation()}>
+              <button
+                class="aui-btn aui-btn--icon"
+                style="width:30px;height:30px;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:6px;color:var(--color-text-muted);font-size:14px;"
+                title="Edit role"
+                onclick={() => {
+                  const full = this.roles.find((r: any) => r.id === row._id);
+                  if (full) this.openEditModal(full);
+                }}
+              >✎</button>
+              <button
+                class="aui-btn aui-btn--icon"
+                style="width:30px;height:30px;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:6px;color:var(--color-text-muted);font-size:14px;"
+                title="Delete role"
+                onmouseover={(e: any) => { e.target.style.color = '#EF4444'; e.target.style.borderColor = '#FCA5A5'; }}
+                onmouseout={(e: any) => { e.target.style.color = 'var(--color-text-muted)'; e.target.style.borderColor = 'var(--color-border)'; }}
+                onclick={() => this.deleteRole(row._id)}
+              >🗑</button>
+            </div>
+          );
+        },
+      },
+    ];
+
+    const rows = this.roles.map((r: any) => ({
+      _id: r.id,
+      name: r.name,
+      is_system: r.is_system,
+      member_count: r.member_count ?? 0,
+      atoms: r.atoms || [],
+      created_at: r.created_at || null,
+    }));
+
     return (
-      <div class="alp-page" style="padding: 24px; max-width: 1200px; margin: 0 auto;">
-        {/* Stats Strip */}
-        <div style="display:flex;gap:16px;margin-bottom:24px;">
-          <div style="flex:1;padding:20px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:12px;box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;font-weight:600;">Total Roles</div>
-            <div style="font-size:28px;font-weight:700;color:var(--color-text-primary);">{this.roles.length}</div>
-          </div>
-          <div style="flex:1;padding:20px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:12px;box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;font-weight:600;">Custom Roles</div>
-            <div style="font-size:28px;font-weight:700;color:var(--color-text-primary);">{customRoles.length}</div>
-          </div>
-          <div style="flex:1;padding:20px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:12px;box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-            <div style="font-size:11px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;font-weight:600;">Permission Atoms</div>
-            <div style="font-size:28px;font-weight:700;color:var(--color-text-primary);">{atomCount}</div>
+      <div class="alp-page">
+        <StatStrip
+          stats={[
+            { label: 'Total Roles', value: String(this.roles.length) },
+            { label: 'System Roles', value: String(systemRoles.length), deltaType: 'neutral' },
+            { label: 'Permission Atoms', value: String(atomCount), deltaType: 'neutral' },
+          ]}
+        />
+
+        <div class="alp-toolbar">
+          <div class="alp-toolbar-left" />
+          <div class="alp-toolbar-right">
+            {canManageRoles ? (
+              <button
+                class="aui-btn aui-btn--primary"
+                onclick={() => this.openCreateModal()}
+              >+ Create Role</button>
+            ) : null}
           </div>
         </div>
 
-        {/* Toolbar */}
-        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;align-items:center;">
-          {canManageRoles && (
-            <button
-              class="aui-btn aui-btn--primary"
-              style="border-radius:8px;padding:8px 16px;font-weight:500;"
-              onclick={() => this.openCreateModal()}
-            >+ Create Role</button>
-          )}
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:12px;">
-          {this.roles.length === 0 ? null : (
-            this.roles.map((role: any) => {
-              const visibleAtoms = (role.atoms || []).slice(0, 5);
-              const extraCount = (role.atoms || []).length - 5;
-              const isSystem = !!role.is_system;
-
-              return (
-                <div 
-                  class="alp-role-card"
-                  style={`padding:16px 24px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-left:4px solid ${isSystem ? '#6366F1' : 'var(--color-text-muted)'};border-radius:10px;display:flex;align-items:center;gap:20px;transition:all 0.2s ease;`}
-                >
-                  <div style="flex:1;min-width:0;">
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                      <span style="font-size:15px;font-weight:700;color:var(--color-text-primary);">{role.name}</span>
-                      {isSystem && (
-                        <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:rgba(99,102,241,0.1);color:#6366F1;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;">System</span>
-                      )}
-                      <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:var(--color-bg-base);border:1px solid var(--color-bg-border);color:var(--color-text-muted);font-weight:500;">{(role.atoms || []).length} atoms</span>
-                    </div>
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                      {visibleAtoms.map((atom: string) => (
-                        <span style="font-size:10px;padding:3px 8px;border-radius:6px;background:var(--color-bg-base);border:1px solid var(--color-bg-border);color:var(--color-text-secondary);font-family:var(--font-mono,monospace);font-weight:500;">{atom}</span>
-                      ))}
-                      {extraCount > 0 && (
-                        <span style="font-size:10px;padding:3px 8px;border-radius:6px;background:transparent;color:var(--color-text-muted);font-style:italic;">+{extraCount} more</span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {!isSystem && canManageRoles && (
-                    <div style="display:flex;gap:8px;flex-shrink:0;">
-                      <button
-                        class="aui-btn aui-btn--icon"
-                        style="width:34px;height:34px;background:var(--color-bg-base);border:1px solid var(--color-bg-border);border-radius:8px;color:var(--color-text-muted);"
-                        onclick={() => this.openEditModal(role)}
-                        title="Edit role"
-                      >✎</button>
-                      <button
-                        class="aui-btn aui-btn--icon"
-                        style="width:34px;height:34px;background:var(--color-bg-base);border:1px solid var(--color-bg-border);border-radius:8px;color:var(--color-text-muted);"
-                        onmouseover={(e: any) => { e.target.style.color = '#EF4444'; e.target.style.borderColor = '#FCA5A5'; }}
-                        onmouseout={(e: any) => { e.target.style.color = 'var(--color-text-muted)'; e.target.style.borderColor = 'var(--color-bg-border)'; }}
-                        onclick={() => this.deleteRole(role.id)}
-                        title="Delete role"
-                      >🗑</button>
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
-        
-        {this.roles.length === 0 && (
-          <div style="text-align:center;padding:4rem 2rem;color:var(--color-text-muted);background:var(--color-bg-surface);border:1px dashed var(--color-bg-border);border-radius:12px;margin-top:20px;">
-            <div style="font-size:48px;margin-bottom:16px;opacity:0.3;">🛡️</div>
-            <div style="font-size:16px;font-weight:600;color:var(--color-text-primary);margin-bottom:4px;">No Roles Created</div>
-            <div style="font-size:13px;">Create custom roles to manage user permissions.</div>
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          rows={rows}
+          loading={this.loading}
+          searchable={true}
+          filename="roles"
+          emptyTitle="No custom roles created yet"
+          emptyDescription="Create roles to define custom permission sets for your team."
+        />
 
         {/* Create / Edit Modal */}
         {this.showModal ? (
           <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;">
-            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:100%;max-width:640px;height:90vh;display:flex;flex-direction:column;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:100%;max-width:640px;height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04);">
               {/* Modal header */}
               <div style="padding:24px 28px;border-bottom:1px solid var(--color-bg-border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
                 <span style="font-size:18px;font-weight:700;color:var(--color-text-primary);">
@@ -306,7 +325,7 @@ component RolesPage {
                   <span style="font-size:12px;font-weight:700;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.04em;">Permissions</span>
                   <span style="font-size:11px;color:var(--color-text-muted);">{this.selectedAtoms.length} selected</span>
                 </div>
-                
+
                 <div style="display:flex;flex-direction:column;gap:24px;">
                   {MODULE_GROUPS.map((group: any) => {
                     const allSelected = group.atoms.every((a: string) => this.selectedAtoms.includes(a));
@@ -375,7 +394,7 @@ component RolesPage {
         {/* Delete Confirmation Modal */}
         {this.showDeleteConfirm ? (
           <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1001;display:flex;align-items:center;justify-content:center;padding:24px;">
-            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:100%;max-width:400px;padding:28px;box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+            <div style="background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:16px;width:100%;max-width:400px;padding:28px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
               <h3 style="margin:0 0 12px;font-size:18px;font-weight:700;color:var(--color-text-primary);">Delete Role</h3>
               <p style="margin:0 0 24px;font-size:14px;color:var(--color-text-secondary);line-height:1.5;">
                 Are you sure you want to delete this role? Users assigned to it will become unassigned.
@@ -384,7 +403,7 @@ component RolesPage {
                 <button
                   class="aui-btn aui-btn--outline"
                   style="border-radius:8px;padding:10px 20px;font-weight:600;"
-                  onclick={() => { this.showDeleteConfirm = false; this.deletingRoleId = null; }}
+                  onclick={() => { this.showDeleteConfirm = false; this.deletingRoleId = null; this.scheduleUpdate?.(); }}
                 >Cancel</button>
                 <button
                   class="aui-btn"

@@ -197,11 +197,17 @@ async def list_roles(
             select(RoleAtom).where(RoleAtom.role_id == role.id)
         )
         atoms = [a.atom for a in atoms_result.scalars().all()]
+        count_result = await session.execute(
+            select(func.count(User.id)).where(User.custom_role_id == role.id)
+        )
+        member_count = count_result.scalar() or 0
         out.append({
             "id": str(role.id),
             "name": role.name,
             "is_system": role.is_system,
             "atoms": atoms,
+            "member_count": member_count,
+            "created_at": role.created_at.isoformat() if role.created_at else None,
         })
     return out
 
