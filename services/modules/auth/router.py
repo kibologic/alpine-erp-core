@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
 from core.models import AuthToken, CustomRole, JoinRequest, OrgInvite, PasswordResetToken, RoleAtom, Tenant, User, UserTenant
+from core.auth_deps import get_user_atoms, _STANDARD_ROLE_ATOMS
 
 _JWT_SECRET = os.getenv("JWT_SECRET", os.getenv("JWT_SECRET"))
 _JWT_ALGORITHM = "HS256"
@@ -34,51 +35,6 @@ async def _issue_token(session: AsyncSession, user_id: str) -> tuple[str, dateti
     session.add(AuthToken(user_id=user_id, token=token, expires_at=expires_at))
     await session.commit()
     return token, expires_at
-
-
-_STANDARD_ROLE_ATOMS = {
-    "admin": [
-        "pos.sell", "pos.refund", "pos.open_session", "pos.close_session",
-        "pos.view_sales", "pos.view_sessions", "pos.manage_customers",
-        "inventory.view", "inventory.adjust", "inventory.manage",
-        "inventory.export", "inventory.stock_take", "inventory.view_movements",
-        "users.view", "users.manage", "users.manage_roles",
-        "settings.view", "settings.manage",
-        "reports.view", "org.manage", "pos.manage_terminals",
-    ],
-    "manager": [
-        "pos.sell", "pos.refund", "pos.open_session", "pos.close_session",
-        "pos.view_sales", "pos.view_sessions",
-        "inventory.view", "inventory.adjust",
-        "users.view", "settings.view",
-    ],
-    "cashier": ["pos.sell", "pos.open_session", "inventory.view"],
-}
-
-
-async def get_user_atoms(session: AsyncSession, user_id: str) -> list[str]:
-    # First try custom role atoms
-    result = await session.execute(
-        select(RoleAtom)
-        .join(CustomRole, RoleAtom.role_id == CustomRole.id)
-        .join(User, User.custom_role_id == CustomRole.id)
-        .where(User.id == user_id)
-    )
-    atoms = [a.atom for a in result.scalars().all()]
-    if atoms:
-        return atoms
-
-    # Fall back to standard role atoms from user_tenants membership
-    ut_result = await session.execute(
-        select(UserTenant).where(UserTenant.user_id == user_id)
-    )
-    memberships = ut_result.scalars().all()
-    for membership in memberships:
-        role = membership.role
-        if role in _STANDARD_ROLE_ATOMS:
-            return _STANDARD_ROLE_ATOMS[role]
-
-    return []
 
 
 async def _get_tenants(session: AsyncSession, user_id: str) -> list[dict]:
@@ -535,7 +491,7 @@ async def signup(
         user_tenant = UserTenant(
             user_id=user.id,
             tenant_id=tenant.id,
-            role=su_role.id,
+            role="admin",
         )
         session.add(user_tenant)
         await session.flush()
