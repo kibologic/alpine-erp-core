@@ -730,7 +730,7 @@ component PosTerminalPage {
                 </span>
                 <button
                   onclick={() => { this.showNewTabModal = true; this.scheduleUpdate?.(); }}
-                  style="padding:14px 20px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:600;cursor:pointer;min-height:52px;">
+                  style="padding:8px 14px;border-radius:6px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:13px;font-weight:600;cursor:pointer;min-height:36px;">
                   + New Tab
                 </button>
               </div>
