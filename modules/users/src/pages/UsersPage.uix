@@ -377,23 +377,26 @@ component UsersPage {
 
         {this.activeTab === 'members' ? (
           <div>
-            <div class="alp-toolbar">
-              <div class="alp-toolbar-left" />
-              <div class="alp-toolbar-right" style="display:flex;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:var(--radius-lg);margin-bottom:16px;box-shadow:var(--shadow-card);">
+              <div>
+                <h3 style="margin:0;font-size:16px;font-weight:600;color:var(--color-text-primary);">Organization Members</h3>
+                <p style="margin:4px 0 0;font-size:13px;color:var(--color-text-muted);">Manage users, assign roles, and handle workspace access.</p>
+              </div>
+              <div style="display:flex;gap:12px;">
                 {window.__skltn?.can('users.manage') && (
                   <button
-                    class="aui-btn aui-btn--outline"
+                    class="alp-btn alp-btn--secondary"
                     onclick={() => { this.showFindUserModal = true; this.scheduleUpdate?.(); }}
                   >
-                    Find User
+                    🔍 Find User
                   </button>
                 )}
                 {window.__skltn?.can('users.manage') && (
                   <button
-                    class="aui-btn aui-btn--primary"
+                    class="alp-btn alp-btn--primary"
                     onclick={() => { this.showEmailInviteModal = true; this.scheduleUpdate?.(); }}
                   >
-                    + Invite by Email
+                    + Invite via Email
                   </button>
                 )}
               </div>
@@ -663,7 +666,7 @@ component UsersPage {
                           <div style="font-size:12px;color:var(--color-text-muted);">{u.email}</div>
                         </div>
                         <button
-                          class="aui-btn aui-btn--ghost"
+                          class="alp-btn alp-btn--ghost"
                           style="font-size:12px;padding:4px 8px;"
                           onclick={() => this.inviteExistingUser(u.id)}
                         >Invite</button>
@@ -684,7 +687,7 @@ component UsersPage {
             renderFooter={() => (
               <div style="display:flex;justify-content:flex-end;">
                 <button
-                  class="aui-btn aui-btn--outline"
+                  class="alp-btn alp-btn--secondary"
                   onclick={() => { this.showFindUserModal = false; this.userSearchQuery = ''; this.userSearchResults = []; this.scheduleUpdate?.(); }}
                 >Close</button>
               </div>
@@ -701,8 +704,8 @@ component UsersPage {
                 Are you sure you want to suspend <strong>{this.selectedUser?.full_name || this.selectedUser?.email}</strong>? They will be unable to log in until reinstated.
               </p>
               <div style="display:flex;justify-content:flex-end;gap:12px;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showSuspendConfirm = false; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn" style="background:var(--color-warning);color:black;border:none;" onclick={() => this.suspendMember()}>Confirm Suspend</button>
+                <button class="alp-btn alp-btn--secondary" onclick={() => { this.showSuspendConfirm = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="alp-btn alp-btn--danger" onclick={() => this.suspendMember()}>Confirm Suspend</button>
               </div>
             </div>
           </div>
@@ -717,8 +720,8 @@ component UsersPage {
                 Are you sure you want to remove <strong>{this.selectedUser?.full_name || this.selectedUser?.email}</strong> from this organisation?
               </p>
               <div style="display:flex;justify-content:flex-end;gap:12px;">
-                <button class="aui-btn aui-btn--outline" onclick={() => { this.showRemoveConfirm = false; this.scheduleUpdate?.(); }}>Cancel</button>
-                <button class="aui-btn aui-btn--danger" onclick={() => this.removeFromOrg()}>Confirm Remove</button>
+                <button class="alp-btn alp-btn--secondary" onclick={() => { this.showRemoveConfirm = false; this.scheduleUpdate?.(); }}>Cancel</button>
+                <button class="alp-btn alp-btn--danger" onclick={() => this.removeFromOrg()}>Confirm Remove</button>
               </div>
             </div>
           </div>
@@ -762,11 +765,11 @@ component UsersPage {
             renderFooter={() => (
               <div style="display:flex;justify-content:flex-end;gap:1rem;">
                 <button
-                  class="aui-btn aui-btn--outline"
+                  class="alp-btn alp-btn--secondary"
                   onclick={() => { this.showEmailInviteModal = false; this.scheduleUpdate?.(); }}
                 >Cancel</button>
                 <button
-                  class="aui-btn aui-btn--primary"
+                  class="alp-btn alp-btn--primary"
                   disabled={this.saving}
                   onclick={() => { this.inviteByEmail(); }}
                 >{this.saving ? 'Sending…' : 'Send Invite'}</button>
