@@ -744,10 +744,10 @@ component PosTerminalPage {
                 {this.tabs.map((tab: any) => (
                   <div
                     onclick={() => this.selectTab(tab)}
-                    style={'padding:16px 20px;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;border:2px solid ' + (this.activeTab?.id === tab.id ? 'var(--color-text-primary)' : 'var(--color-bg-border)') + ';background:' + (this.activeTab?.id === tab.id ? 'var(--color-bg-elevated)' : 'transparent') + ';'}>
+                    style={'padding:10px 14px;border-radius:6px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;border:2px solid ' + (this.activeTab?.id === tab.id ? 'var(--color-text-primary)' : 'var(--color-bg-border)') + ';background:' + (this.activeTab?.id === tab.id ? 'var(--color-bg-elevated)' : 'transparent') + ';'}>
                     <div style="display:flex;justify-content:space-between;align-items:center;">
-                      <span style="font-size:16px;font-weight:600;color:var(--color-text-primary);">{tab.name}</span>
-                      <span style="font-size:16px;font-weight:700;color:var(--color-text-primary);">MWK {(tab.total || 0).toLocaleString()}</span>
+                      <span style="font-size:12px;font-weight:500;color:var(--color-text-primary);">{tab.name}</span>
+                      <span style="font-size:12px;font-weight:600;color:var(--color-text-primary);">MWK {(tab.total || 0).toLocaleString()}</span>
                     </div>
                     <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">{(tab.lines || []).length} items</div>
                   </div>
