@@ -1,0 +1,51 @@
+import { SwissComponent } from '@kibologic/core';
+
+/**
+ * Primitive Input
+ * Odoo-Style: Foundation for all field widgets.
+ */
+component Input {
+    props = {
+        value: String,
+        placeholder: String,
+        type: String,
+        disabled: Boolean,
+        error: Boolean,
+        onchange: Function,
+        oninput: Function,
+        onfocus: Function,
+        onblur: Function,
+        onkeydown: Function,
+        class: String,
+        style: String,
+        name: String,
+        autocomplete: String
+    };
+
+    render() {
+        const type = this.props.type || 'text';
+        const { value, placeholder, disabled, error, class: className, style, name, autocomplete } = this.props;
+        
+        const baseClass = 'aui-input-primitive';
+        const errorClass = error ? 'aui-input--error' : '';
+        const customClass = className || '';
+
+        return (
+            <input
+                type={type}
+                class={`${baseClass} ${errorClass} ${customClass}`}
+                value={value}
+                placeholder={placeholder}
+                disabled={disabled}
+                onchange={(e) => this.props.onchange && this.props.onchange((e.target as HTMLInputElement).value)}
+                oninput={(e) => this.props.oninput && this.props.oninput((e.target as HTMLInputElement).value)}
+                onfocus={() => this.props.onfocus && this.props.onfocus()}
+                onblur={() => this.props.onblur && this.props.onblur()}
+                onkeydown={(e) => this.props.onkeydown && this.props.onkeydown(e)}
+                style={style}
+                name={name}
+                autocomplete={autocomplete}
+            />
+        );
+    }
+}

@@ -1,0 +1,31 @@
+import { SwissComponent } from '@kibologic/core';
+
+component Section {
+  props = {
+    title: String,
+    description: String,
+    renderBody: Function as () => any,
+    renderFooter: Function as () => any,
+  };
+
+  render() {
+    return (
+      <div class="alp-section" style="background: var(--color-bg-surface); border: 1px solid var(--color-bg-border); border-radius: var(--radius-lg); overflow: hidden;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--color-bg-border);">
+          <h4 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-text-primary);">{this.props.title}</h4>
+          {this.props.description && (
+            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; color: var(--color-text-muted);">{this.props.description}</p>
+          )}
+        </div>
+        <div style="padding: 1.5rem;">
+          {this.props.renderBody && this.props.renderBody()}
+        </div>
+        {this.props.renderFooter && (
+          <div style="padding: 1rem 1.5rem; background: var(--color-bg-subtle); border-top: 1px solid var(--color-bg-border);">
+            {this.props.renderFooter()}
+          </div>
+        )}
+      </div>
+    );
+  }
+}

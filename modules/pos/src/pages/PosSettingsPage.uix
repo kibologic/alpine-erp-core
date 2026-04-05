@@ -1,9 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { Tabs } from '@alpine/ui/src/layout/Tabs.uix';
-import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
-import { TextField } from '@alpine/ui/src/form/TextField.uix';
-import { SelectField } from '@alpine/ui/src/form/SelectField.uix';
+import { FormGroup, PageHeader, SelectField, Tabs, TextField } from '@alpine/ui';
 
 // Note: Tabs.uix is imported but not yet created. Standard practice is to build stubs first.
 

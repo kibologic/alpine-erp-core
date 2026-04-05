@@ -1,9 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { PosService } from '@alpine/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
+import { PosService, formatDate } from '@alpine/core';
+import { DataTable, PageHeader, StatStrip, StatusBadge } from '@alpine/ui';
 
 const columns = [
   { key: 'register_id', label: 'Register', width: '120px' },
@@ -52,13 +49,13 @@ component PosSessionsPage {
       if (col.key === 'closed_at') {
         return {
           ...col,
-          render: (val: string) => val ? new Date(val).toLocaleString() : <em style="color: var(--color-text-success)">Active</em>
+          render: (val: string) => val ? formatDate(val) : <em style="color: var(--color-text-success)">Active</em>
         };
       }
       if (col.key === 'opened_at') {
         return {
           ...col,
-          render: (val: string) => val ? new Date(val).toLocaleString() : ''
+          render: (val: string) => val ? formatDate(val) : ''
         };
       }
       return col;
@@ -84,10 +81,10 @@ component PosSessionsPage {
         </div>
 
         <DataTable
+          id="pos-sessions-history"
           columns={updatedColumns}
           rows={this.sessions}
           loading={this.loading}
-          searchable={true}
           exportable={true}
           filename="pos_sessions"
           emptyTitle="No sessions found"

@@ -1,0 +1,55 @@
+import { SwissComponent } from '@kibologic/core';
+
+/**
+ * Primitive Button
+ * Odoo-Style: Pure UI block with variant handling and state.
+ */
+component Button {
+    props = {
+        label: String,
+        variant: String,
+        size: String,
+        disabled: Boolean,
+        loading: Boolean,
+        icon: String,
+        iconPosition: String,
+        onclick: Function,
+        type: String,
+        class: String,
+        style: String
+    };
+
+    render() {
+        const variant = this.props.variant || 'primary';
+        const size = this.props.size || 'md';
+        const iconPosition = this.props.iconPosition || 'left';
+        const type = this.props.type || 'button';
+        const { label, disabled, loading, icon, onclick, style } = this.props;
+        
+        const baseClass = 'aui-btn-primitive';
+        const variantClass = `aui-btn--${variant || 'primary'}`;
+        const sizeClass = `aui-btn--${size || 'md'}`;
+        const loadingClass = loading ? 'aui-btn--loading' : '';
+        const customClass = this.props.class || '';
+
+        return (
+            <button
+                type={type}
+                class={`${baseClass} ${variantClass} ${sizeClass} ${loadingClass} ${customClass}`}
+                disabled={disabled || loading}
+                onclick={(e) => onclick && onclick(e)}
+                style={style}
+            >
+                {loading ? (
+                    <span class="aui-btn-loader"></span>
+                ) : (
+                    <>
+                        {icon && iconPosition === 'left' && <span class="aui-btn-icon left" innerHTML={icon}></span>}
+                        {label && <span class="aui-btn-label">{label}</span>}
+                        {icon && iconPosition === 'right' && <span class="aui-btn-icon right" innerHTML={icon}></span>}
+                    </>
+                )}
+            </button>
+        );
+    }
+}

@@ -1,4 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
+import { formatNumber } from '@alpine/core';
 
 const WAREHOUSES = [
   { id: 'WH-01', name: 'Main Warehouse',    location: 'Lilongwe, Malawi',   capacity: 5000, used: 3200, manager: 'Kofi Asante' },
@@ -36,7 +37,7 @@ component InventoryWarehousesPage {
                   </div>
                   <div class="inv-warehouse-row">
                     <span class="inv-muted">Capacity</span>
-                    <span class="inv-mono">{w.used.toLocaleString()} / {w.capacity.toLocaleString()} units</span>
+                    <span class="inv-mono">{formatNumber(w.used)} / {formatNumber(w.capacity)} units</span>
                   </div>
                   <div class="inv-capacity-bar">
                     <div class="inv-capacity-fill" style={`width: ${pct}%`} />

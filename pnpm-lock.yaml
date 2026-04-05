@@ -66,6 +66,18 @@ importers:
 
   modules/dashboard: {}
 
+  modules/dataimport:
+    dependencies:
+      '@alpine/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@alpine/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@kibologic/core':
+        specifier: latest
+        version: 0.1.4
+
   modules/inventory: {}
 
   modules/pos:

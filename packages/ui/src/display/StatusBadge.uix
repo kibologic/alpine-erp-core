@@ -3,23 +3,15 @@ import { SwissComponent } from '@kibologic/core';
 component StatusBadge {
   props = {
     label: String,
-    type: String,
+    type: String, // success, warning, danger, info, neutral
   };
 
   render() {
     const type = this.props.type || 'neutral';
-    const variantMap: Record<string, string> = {
-      success: 'success',
-      warning: 'warning',
-      danger: 'error',
-      error: 'error',
-      info: 'info',
-      neutral: 'neutral',
-    };
-    const variant = variantMap[type] || 'neutral';
+    
+    // Sleek, minimal variant mapping directly to design tokens
     return (
-      <span class={`alp-badge alp-badge--${variant} alp-badge--sm`}>
-        <span class={`alp-badge-dot alp-badge-dot--${variant}`} aria-hidden="true"></span>
+      <span class={`alp-badge alp-badge--${type}`}>
         {this.props.label}
       </span>
     );

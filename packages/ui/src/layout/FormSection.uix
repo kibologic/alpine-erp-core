@@ -1,0 +1,33 @@
+import { SwissComponent } from '@kibologic/core';
+
+/**
+ * FormSection Component
+ * Odoo-Style: A grouped section of fields with a title and optional description.
+ */
+component FormSection {
+    props = {
+        title: String,
+        description: String,
+        columns: Number,
+        class: String
+    };
+
+    render() {
+        const columns = this.props.columns !== undefined ? this.props.columns : 1;
+        const { title, description, class: className } = this.props;
+
+        return (
+            <div class={`aui-form-section ${className || ''}`}>
+                {(title || description) && (
+                    <div class="aui-form-section-header">
+                        {title && <h3 class="aui-form-section-title">{title}</h3>}
+                        {description && <p class="aui-form-section-desc">{description}</p>}
+                    </div>
+                )}
+                <div class="aui-form-section-body" style={`grid-template-columns: repeat(${columns}, 1fr)`}>
+                    {this.children}
+                </div>
+            </div>
+        );
+    }
+}

@@ -1,11 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { InventoryService } from '@alpine/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
-import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
-import { TextField } from '@alpine/ui/src/form/TextField.uix';
+import { InventoryService, formatCurrency } from '@alpine/core';
+import { DataTable, FormGroup, Modal, PageHeader, StatStrip, TextField } from '@alpine/ui';
 
 const columns = [
   { key: 'name', label: 'Category Name', sortable: true },
@@ -15,7 +10,7 @@ const columns = [
     key: 'total_value', 
     label: 'Total Value', 
     width: '180px',
-    render: (val: number) => `MWK ${ (parseFloat(String(val)) || 0).toLocaleString() }`
+    render: (val: number) => formatCurrency(parseFloat(String(val)) || 0)
   }
 ];
 
@@ -91,10 +86,10 @@ component InventoryCategoriesPage {
         </div>
 
         <DataTable 
+          id="inventory-catalogue-categories"
           columns={columns}
           rows={this.categories}
           loading={this.loading}
-          searchable={true}
           filename="categories_list"
           emptyTitle="No categories found"
           emptyDescription={this.loading ? 'Organizing catalogue...' : 'Create categories to group your products for better reporting.'}

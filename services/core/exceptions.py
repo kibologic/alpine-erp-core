@@ -18,6 +18,8 @@ def register_handlers(app: FastAPI) -> None:
         request: Request,
         exc: SQLAlchemyError,
     ) -> JSONResponse:
+        import traceback
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
             content={"detail": "Database error"},
@@ -28,6 +30,8 @@ def register_handlers(app: FastAPI) -> None:
         request: Request,
         exc: Exception,
     ) -> JSONResponse:
+        import traceback
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
             content={"detail": "Internal server error"},

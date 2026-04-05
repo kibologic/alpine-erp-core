@@ -746,46 +746,97 @@ textarea.erp-settings-input {
 }
 
 .pos-products-header {
-  padding: 12px 16px;
   border-bottom: 1px solid var(--color-bg-border);
   background: var(--color-bg-surface);
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
-.pos-fullscreen-controls {
+.pos-header-top {
   display: flex;
-  justify-content: flex-end;
-  gap: 6px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-bg-border);
 }
 
-.pos-fs-btn {
-  background: transparent;
-  border: 1px solid var(--color-bg-border);
-  color: var(--color-text-secondary);
-  border-radius: 6px;
-  padding: 4px 8px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.15s;
-}
-
-.pos-fs-btn:hover {
+.pos-control-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
   background: var(--color-bg-elevated);
+  padding: 4px;
+  border: 1.5px solid var(--color-bg-border);
+  border-radius: 10px;
+}
+
+.pos-mode-switcher {
+  display: flex;
+  gap: 2px;
+}
+
+.pos-mode-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  white-space: nowrap;
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.pos-mode-btn--active {
+  background: var(--color-text-primary);
+  color: var(--color-bg-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.pos-utility-group {
+  display: flex;
+  gap: 4px;
+  padding-left: 10px;
+  border-left: 1px solid var(--color-bg-border);
+}
+
+.pos-util-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all var(--duration-fast);
+}
+
+.pos-util-btn:hover {
+  background: var(--color-bg-surface);
   color: var(--color-text-primary);
+}
+
+.pos-search-area {
+  flex: 1;
+  min-width: 0;
 }
 
 .pos-product-search {
   width: 100%;
-  padding: 9px 14px;
+  padding: 10px 16px;
   background: var(--color-bg-elevated);
-  border: 1px solid var(--color-bg-border);
+  border: 1.5px solid var(--color-bg-border);
   border-radius: 8px;
   color: var(--color-text-primary);
   font-size: 14px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-fast);
   box-sizing: border-box;
 }
 
@@ -799,18 +850,18 @@ textarea.erp-settings-input {
 
 .pos-category-filters {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
-  padding: 6px 0;
+  padding: 10px 16px;
 }
 
 .pos-category-pill {
-  padding: 6px 10px;
+  padding: 7px 11px;
   border-radius: 6px;
   border: 1.5px solid var(--color-bg-border);
   background: var(--color-bg-surface);
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -962,15 +1013,15 @@ textarea.erp-settings-input {
 
 .pos-cart-item {
   display: grid;
-  grid-template-columns: 1fr 80px 70px 24px;
+  grid-template-columns: 1fr 80px 85px 24px;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: var(--space-2);
+  padding: 8px 16px;
   border-bottom: 1px solid var(--color-bg-border);
 }
 
 .pos-cart-item-name {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--color-text-primary);
   overflow: hidden;
@@ -1008,7 +1059,7 @@ textarea.erp-settings-input {
 }
 
 .pos-cart-qty-val {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--color-text-primary);
   min-width: 20px;
@@ -1016,10 +1067,11 @@ textarea.erp-settings-input {
 }
 
 .pos-cart-item-total {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--color-text-primary);
   text-align: right;
+  white-space: nowrap;
 }
 
 .pos-cart-item-remove {
@@ -1045,6 +1097,27 @@ textarea.erp-settings-input {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* ── Tabs ────────────────────────────────────────── */
+.pos-tab-item {
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 2px solid var(--color-bg-border);
+  background: transparent;
+}
+
+.pos-tab-item:hover {
+  background: var(--color-bg-elevated);
+}
+
+.pos-tab-item--active {
+  border-color: var(--color-text-primary) !important;
+  background: var(--color-bg-elevated) !important;
+  box-shadow: var(--shadow-sm);
 }
 
 .pos-totals-row {

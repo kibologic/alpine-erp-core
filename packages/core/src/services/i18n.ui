@@ -1,0 +1,62 @@
+export function getI18n() {
+  if (typeof window === 'undefined') return null;
+  return window.__skltn?.registry?.get('i18n');
+}
+
+export function getL10n() {
+  if (typeof window === 'undefined') return null;
+  return window.__skltn?.registry?.get('l10n');
+}
+
+export function t(key: string, params?: Record<string, string | number>): string {
+  const i18n = getI18n();
+  if (!i18n) return key; // Fallback during extreme early boot or SSR
+
+  const val = i18n.t(key, params);
+  return val;
+}
+
+export function formatCurrency(value: number, currencyCode?: string): string {
+  const l10n = getL10n();
+  const currency = currencyCode || l10n?.getCurrency();
+  if (!l10n) return String(value); // Raw fallback if no engine
+  return l10n.formatCurrency(value, currency);
+}
+
+export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
+  const l10n = getL10n();
+  if (!l10n) return new Date(date).toLocaleString(); 
+  return l10n.formatDate(date, options);
+}
+
+export function formatNumber(value: number, options?: Intl.NumberFormatOptions): string {
+  const l10n = getL10n();
+  if (!l10n) return value.toLocaleString();
+  return l10n.formatNumber(value, options);
+}
+
+export function getCurrencySymbol(currencyCode?: string): string {
+  const l10n = getL10n();
+  const locale = l10n?.getLocale() || 'en-US';
+  const currency = currencyCode || l10n?.getCurrency();
+  
+  if (!currency) return ''; // No currency specified or found
+
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      currencyDisplay: 'symbol'
+    }).format(0).replace(/[0-9.,]/g, '').trim();
+  } catch (e) {
+    return currency;
+  }
+}
+
+export function loadModuleTranslations(locale: string, baseKey: string, dictionary: Record<string, any>) {
+  const i18n = getI18n();
+  if (i18n) {
+    // Nested injection onto the main tree under the base module key (e.g. 'pos')
+    i18n.loadBundle(locale, { [baseKey]: dictionary });
+  }
+}

@@ -69,6 +69,8 @@ class Tenant(Base):
     fiscal_config: Mapped[Optional[dict]] = mapped_column(
         JSONB, nullable=True, default=dict
     )
+    default_locale: Mapped[Optional[str]] = mapped_column(String(10), nullable=True, default="en-US")
+    default_currency: Mapped[Optional[str]] = mapped_column(String(10), nullable=True, default="MWK")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc)
 
     users: Mapped[list["User"]] = relationship(

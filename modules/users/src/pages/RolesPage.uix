@@ -1,6 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+import { DataTable, StatStrip, Modal } from '@alpine/ui';
 import { api } from '@alpine/core/src/services/api.ui';
 
 const MODULE_GROUPS = [
@@ -10,7 +9,7 @@ const MODULE_GROUPS = [
   },
   {
     id: 'inventory', name: 'Inventory',
-    atoms: ['inventory.view','inventory.adjust','inventory.manage','inventory.export','inventory.stock_take','inventory.view_movements'],
+    atoms: ['inventory.view','inventory.adjust','inventory.manage','inventory.export','inventory.import','inventory.stock_take','inventory.view_movements'],
   },
   {
     id: 'users', name: 'Users & Roles',
@@ -40,6 +39,9 @@ component RolesPage {
   state { let showDeleteConfirm: boolean = false; }
   state { let deletingRoleId: string | null = null; }
   state { let notifications: any = null; }
+  state { let activeMenuId: string | null = null; }
+  state { let tableColumns: any[] = []; }
+  state { let tableRows: any[] = []; }
 
   async mounted() {
     this.notifications = window.__skltn?.registry?.get('notifications');
@@ -56,8 +58,124 @@ component RolesPage {
       this.notifications?.error('Failed to load roles');
     } finally {
       this.loading = false;
+      this.refreshTable();
       this.scheduleUpdate?.();
     }
+  }
+
+  refreshTable() {
+    const canManageRoles = this.canDo('users.manage_roles');
+    
+    // 1. Build stable columns
+    this.tableColumns = [
+      {
+        key: 'name',
+        label: 'Role Name',
+        render: (val: string, row: any) => (
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-weight:600;color:var(--color-text);">{val}</span>
+            {row.is_system ? (
+              <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:rgba(99,102,241,0.1);color:#6366F1;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;">System</span>
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        key: 'member_count',
+        label: 'Members',
+        width: '100px',
+        render: (val: number) => (
+          <span style="font-variant-numeric:tabular-nums;">{val ?? 0}</span>
+        ),
+      },
+      {
+        key: 'atoms',
+        label: 'Atoms',
+        width: '120px',
+        render: (val: string[]) => (
+          <span style="font-variant-numeric:tabular-nums;">{(val || []).length}</span>
+        ),
+      },
+      {
+        key: 'created_at',
+        label: 'Created',
+        width: '160px',
+        render: (val: string) => val ? new Date(val).toLocaleDateString() : '—',
+      },
+      {
+        key: '_actions',
+        label: 'Actions',
+        width: '60px',
+        align: 'center',
+        render: (_: any, row: any) => {
+          if (!canManageRoles) return null;
+          // Note: we use this.activeMenuId directly here; Swiss will track it
+          const isOpen = this.activeMenuId === row._id;
+          
+          return (
+            <div 
+              style="position:relative;display:flex;justify-content:center;"
+              onclick={(e: Event) => e.stopPropagation()}
+            >
+              <button
+                class="alp-btn alp-btn--ghost"
+                style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:18px;line-height:1;"
+                onclick={() => { 
+                  this.activeMenuId = isOpen ? null : row._id; 
+                  this.scheduleUpdate?.(); 
+                }}
+              >⋮</button>
+
+              {isOpen ? (
+                <>
+                  <div 
+                    style="position:fixed;inset:0;z-index:90;" 
+                    onclick={() => { this.activeMenuId = null; this.scheduleUpdate?.(); }}
+                  />
+                  <div style="position:absolute;top:100%;right:0;width:140px;background:var(--color-bg-surface);border:1px solid var(--color-bg-border);border-radius:10px;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);z-index:100;overflow:hidden;margin-top:4px;padding:4px;">
+                    <button
+                      class="alp-btn alp-btn--ghost"
+                      style="width:100%;justify-content:flex-start;padding:8px 12px;font-size:13px;font-weight:500;gap:8px;"
+                      onclick={() => {
+                        this.activeMenuId = null;
+                        const full = this.roles.find((r: any) => r.id === row._id);
+                        if (full) this.openEditModal(full);
+                      }}
+                    >
+                      <span style="font-size:14px;">✎</span>
+                      <span>{row.is_system ? 'Edit Permissions' : 'Edit Role'}</span>
+                    </button>
+                    {!row.is_system ? (
+                      <button
+                        class="alp-btn alp-btn--ghost"
+                        style="width:100%;justify-content:flex-start;padding:8px 12px;font-size:13px;font-weight:500;gap:8px;color:var(--color-danger);"
+                        onclick={() => {
+                          this.activeMenuId = null;
+                          this.deleteRole(row._id);
+                        }}
+                      >
+                        <span style="font-size:14px;">🗑</span>
+                        <span>Delete Role</span>
+                      </button>
+                    ) : null}
+                  </div>
+                </>
+              ) : null}
+            </div>
+          );
+        },
+      },
+    ];
+
+    // 2. Build stable rows
+    this.tableRows = this.roles.map((r: any) => ({
+      _id: r.id,
+      name: r.name,
+      is_system: r.is_system,
+      member_count: r.member_count ?? 0,
+      atoms: r.atoms || [],
+      created_at: r.created_at || null,
+    }));
   }
 
   openCreateModal() {
@@ -127,6 +245,7 @@ component RolesPage {
       }
       const res = await api.get('/roles');
       this.roles = Array.isArray(res) ? res : (res.data || []);
+      this.refreshTable();
       this.closeModal();
     } catch (e) {
       this.notifications?.error('Failed to save role');
@@ -160,6 +279,7 @@ component RolesPage {
       this.notifications?.success('Role deleted');
       this.showDeleteConfirm = false;
       this.deletingRoleId = null;
+      this.refreshTable();
       this.scheduleUpdate?.();
     } catch (e) {
       this.notifications?.error('Cannot delete this role');
@@ -168,92 +288,8 @@ component RolesPage {
 
   render() {
     const canManageRoles = this.canDo('users.manage_roles');
-    const customRoles = this.roles.filter((r: any) => !r.is_system);
     const systemRoles = this.roles.filter((r: any) => r.is_system);
     const atomCount = Object.keys(this.allAtoms).length;
-
-    const columns = [
-      {
-        key: 'name',
-        label: 'Role Name',
-        render: (val: string, row: any) => (
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-weight:600;color:var(--color-text);">{val}</span>
-            {row.is_system ? (
-              <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:rgba(99,102,241,0.1);color:#6366F1;font-weight:600;text-transform:uppercase;letter-spacing:0.02em;">System</span>
-            ) : null}
-          </div>
-        ),
-      },
-      {
-        key: 'member_count',
-        label: 'Members',
-        width: '100px',
-        render: (val: number) => (
-          <span style="font-variant-numeric:tabular-nums;">{val ?? 0}</span>
-        ),
-      },
-      {
-        key: 'atoms',
-        label: 'Atoms',
-        width: '120px',
-        render: (val: string[]) => (
-          <span style="font-variant-numeric:tabular-nums;">{(val || []).length}</span>
-        ),
-      },
-      {
-        key: 'created_at',
-        label: 'Created',
-        width: '160px',
-        render: (val: string) => val ? new Date(val).toLocaleDateString() : '—',
-      },
-      {
-        key: '_actions',
-        label: 'Actions',
-        width: '80px',
-        render: (_: any, row: any) => {
-          if (row.is_system) {
-            return (
-              <span
-                title="System roles cannot be modified"
-                style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;color:var(--color-text-muted);cursor:default;"
-              >🔒</span>
-            );
-          }
-          if (!canManageRoles) return null;
-          return (
-            <div style="display:flex;gap:6px;" onclick={(e: Event) => e.stopPropagation()}>
-              <button
-                class="alp-btn alp-btn--ghost"
-                style="width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;"
-                title="Edit role"
-                onclick={() => {
-                  const full = this.roles.find((r: any) => r.id === row._id);
-                  if (full) this.openEditModal(full);
-                }}
-              >✎</button>
-              <button
-                class="alp-btn alp-btn--ghost"
-                style="width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;color:var(--color-danger);"
-                title="Delete role"
-                onmouseover={(e: any) => { e.target.style.background = 'var(--color-danger-bg)'; }}
-                onmouseout={(e: any) => { e.target.style.background = 'transparent'; }}
-                onclick={() => this.deleteRole(row._id)}
-              >🗑</button>
-            </div>
-          );
-        },
-      },
-    ];
-
-    const rows = this.roles.map((r: any) => ({
-      _id: r.id,
-      name: r.name,
-      is_system: r.is_system,
-      member_count: r.member_count ?? 0,
-      atoms: r.atoms || [],
-      created_at: r.created_at || null,
-    }));
 
     return (
       <div class="alp-page">
@@ -281,10 +317,10 @@ component RolesPage {
         </div>
 
         <DataTable
-          columns={columns}
-          rows={rows}
+          id="users-roles"
+          columns={this.tableColumns}
+          rows={this.tableRows}
           loading={this.loading}
-          searchable={true}
           filename="roles"
           emptyTitle="No custom roles created yet"
           emptyDescription="Create roles to define custom permission sets for your team."
@@ -314,13 +350,15 @@ component RolesPage {
                   <input
                     type="text"
                     value={this.newRoleName}
+                    disabled={this.editingRole?.is_system}
                     oninput={(e: any) => { this.newRoleName = e.target.value; this.scheduleUpdate?.(); }}
                     placeholder="e.g. Senior Cashier"
                     autofocus
-                    style="width:100%;padding:12px 16px;border-radius:10px;border:2px solid var(--color-bg-border);background:var(--color-bg-base);color:var(--color-text-primary);font-size:15px;box-sizing:border-box;transition:all 0.2s;"
-                    onfocus={(e: any) => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.boxShadow = '0 0 0 4px rgba(99,102,241,0.1)'; }}
-                    onblur={(e: any) => { e.target.style.borderColor = 'var(--color-bg-border)'; e.target.style.boxShadow = 'none'; }}
+                    style={`width:100%;padding:12px 16px;border-radius:10px;border:2px solid var(--color-bg-border);background:${this.editingRole?.is_system ? 'var(--color-bg-border)' : 'var(--color-bg-base)'};color:var(--color-text-primary);font-size:15px;box-sizing:border-box;transition:all 0.2s;`}
                   />
+                  {this.editingRole?.is_system ? (
+                    <div style="font-size:11px;color:var(--color-text-muted);margin-top:6px;">System role names cannot be changed.</div>
+                   ) : null}
                 </div>
 
                 {/* Atom picker grouped by module */}

@@ -1,0 +1,27 @@
+import { SwissComponent } from '@kibologic/core';
+
+component Tabs {
+  props = {
+    tabs: Array as () => Array<{ id: string; label: string }>,
+    active: String,
+    onchange: Function as (id: string) => void
+  };
+
+  render() {
+    const tabs = Array.isArray(this.props.tabs) ? this.props.tabs : [];
+    
+    return (
+      <div class="aui-tabs">
+        {tabs.map(tab => (
+          <button 
+            type="button"
+            class={`aui-tab ${this.props.active === tab.id ? 'aui-tab--active' : ''}`}
+            onclick={() => this.props.onchange?.(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+}

@@ -1,0 +1,35 @@
+import { SwissComponent } from '@kibologic/core';
+
+/**
+ * Primitive Badge
+ * Odoo-Style: Simple reusable semantic indicator.
+ */
+component Badge {
+    props = {
+        label: String,
+        variant: String,
+        dot: Boolean,
+        onclick: Function,
+        class: String
+    };
+
+    render() {
+        const variant = this.props.variant || 'neutral';
+        const { label, dot, onclick, class: className } = this.props;
+        
+        const baseClass = 'aui-badge-primitive';
+        const variantClass = `aui-badge--${variant || 'neutral'}`;
+        const clickableClass = onclick ? 'aui-badge--clickable' : '';
+        const customClass = className || '';
+
+        return (
+            <span 
+                class={`${baseClass} ${variantClass} ${clickableClass} ${customClass}`}
+                onclick={(e) => onclick && onclick(e)}
+            >
+                {dot && <span class="aui-badge-dot"></span>}
+                <span class="aui-badge-label">{label}</span>
+            </span>
+        );
+    }
+}

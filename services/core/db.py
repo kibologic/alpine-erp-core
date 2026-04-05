@@ -3,6 +3,7 @@ import os
 from typing import AsyncGenerator
 
 from sqlalchemy import event, select, delete, update
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -10,6 +11,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import DeclarativeBase, ORMExecuteState, Session
+import sqlalchemy.exc
 from core.tenant import get_current_tenant
 
 logger = logging.getLogger(__name__)
@@ -33,6 +35,20 @@ else:
         "Database operations will fail until it is configured."
     )
 
+if engine:
+    @event.listens_for(engine.sync_engine, "before_cursor_execute")
+    def _paranoid_raw_sql_guard(conn, cursor, statement, parameters, context, executemany):
+        if os.getenv("PARANOID_TENANT_MODE") == "true":
+            stmt_lower = statement.lower()
+            sensitive_tables = ["sales", "media", "payments", "role_atoms", "kitchen_orders", "tab_lines"]
+            
+            # If the query hits a sensitive table, it MUST have a tenant constraint or be an alembic migration
+            if any(f" {t}" in stmt_lower for t in sensitive_tables) or any(f"\"{t}\"" in stmt_lower for t in sensitive_tables):
+                if "tenant_id" not in stmt_lower and "alembic_version" not in stmt_lower:
+                    # Allow explicitly tagged super_user options
+                    if context and getattr(context, "execution_options", {}).get("super_user"):
+                        return
+                    raise sqlalchemy.exc.InvalidRequestError(f"PARANOID MODE TRIGGERED 🚨: Un-scoped raw SQL detected hitting sensitive table! Statement: {statement}")
 
 class Base(DeclarativeBase):
     pass
@@ -45,7 +61,9 @@ def _do_orm_execute(state: ORMExecuteState):
     that has a `tenant_id` column, provided a tenant context is active.
     """
     tenant_id = get_current_tenant()
-    tenant_id = get_current_tenant()
+
+    if state.execution_options.get("super_user"):
+        return
 
     if state.is_select:
         # If no tenant is set, global/system tasks are allowed to READ all tenants
@@ -62,6 +80,7 @@ def _do_orm_execute(state: ORMExecuteState):
         for mapper in getattr(state, "all_mappers", []):
             if hasattr(mapper.class_, "tenant_id"):
                 if not tenant_id:
+                    print(f"DEBUG: Guard blocked update on {mapper.class_.__name__} because tenant_id was None")
                     raise RuntimeError(
                         f"FATAL: Attempted a cross-org UPDATE/DELETE on {mapper.class_.__name__} "
                         "without an active tenant context. Action blocked by security guard."

@@ -5,6 +5,7 @@ import '@alpine/module-users';
 import '@alpine/module-settings';
 import '@alpine/module-pos';
 import '@alpine/module-inventory';
+import '../../../../modules/dataimport/src/index.ui';
 
 // Dashboard
 import { DashboardPage } from '../../../../modules/dashboard/src/pages/DashboardPage.uix';
@@ -37,6 +38,9 @@ import { InventoryCategoriesPage } from '../../../../modules/inventory/src/pages
 import { SuppliersPage } from '../../../../modules/inventory/src/pages/SuppliersPage.uix';
 import { InventoryReportsPage } from '../../../../modules/inventory/src/pages/InventoryReportsPage.uix';
 import { InventorySettingsPage } from '../../../../modules/inventory/src/pages/InventorySettingsPage.uix';
+
+// Data Import / Export
+import { DataImportPage } from '../../../../modules/dataimport/src/pages/DataImportPage.uix';
 
 const PAGE_MAP = {
   'dashboard': {
@@ -71,6 +75,9 @@ const PAGE_MAP = {
     'suppliers':      SuppliersPage,
     'reports':        InventoryReportsPage,
     'settings':       InventorySettingsPage,
+  },
+  'dataimport': {
+    'hub': DataImportPage,
   },
 };
 

@@ -1,0 +1,81 @@
+import { SwissComponent } from '@kibologic/core';
+import { TextField } from './TextField.uix';
+import { formatCurrency, getCurrencySymbol, formatNumber } from '@alpine/core';
+
+component CurrencyField {
+  props = {
+    label: String,
+    value: Number,
+    placeholder: String,
+    required: Boolean,
+    error: String,
+    disabled: Boolean,
+    onchange: Function as (value: number | null) => void,
+  };
+
+  state { let displayValue: string = ''; }
+  state { let isFocused: boolean = false; }
+
+  mount {
+    const raw = typeof this.props.value === 'number' ? this.props.value : null;
+    this.displayValue = raw !== null && !isNaN(raw) ? this.formatCurrency(raw) : '';
+  }
+
+  formatCurrency(val: number): string {
+    return formatNumber(val, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+  }
+
+  parseCurrency(val: string): number | null {
+    if (!val) return null;
+    const clean = val.replace(/,/g, '').trim();
+    const num = parseFloat(clean);
+    return isNaN(num) ? null : num;
+  }
+
+  handleChange(val: string) {
+    // While typing — store raw string, notify parent
+    this.displayValue = val;
+    this.scheduleUpdate?.();
+    const num = this.parseCurrency(val);
+    if (this.props.onchange) this.props.onchange(num);
+  }
+
+  handleFocus() {
+    this.isFocused = true;
+    // Strip formatting on focus so user can type raw numbers
+    const num = this.parseCurrency(this.displayValue);
+    if (num !== null) {
+      this.displayValue = String(num);
+    }
+    this.scheduleUpdate?.();
+  }
+
+  handleBlur() {
+    this.isFocused = false;
+    // Re-format on blur
+    const num = this.parseCurrency(this.displayValue);
+    this.displayValue = num !== null ? this.formatCurrency(num) : '';
+    this.scheduleUpdate?.();
+  }
+
+  render() {
+    return (
+      <TextField
+        label={this.props.label}
+        value={this.displayValue}
+        placeholder={this.props.placeholder || '0.00'}
+        type="text"
+        required={!!this.props.required}
+        error={this.props.error}
+        disabled={!!this.props.disabled}
+        prefix={getCurrencySymbol()}
+        onchange={(val: string) => this.handleChange(val)}
+        onfocus={() => this.handleFocus()}
+        onblur={() => this.handleBlur()}
+      />
+    );
+  }
+}

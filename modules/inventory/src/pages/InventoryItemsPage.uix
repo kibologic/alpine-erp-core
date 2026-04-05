@@ -1,14 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
 import { InventoryService } from '@alpine/core';
-import { 
-  StatStrip, 
-  DataTable, 
-  TextField, 
-  SelectField, 
-  StatusBadge, 
-  Modal, 
-  FormGroup 
-} from '@alpine/ui';
+import { DataTable, FormGroup, Modal, SelectField, StatStrip, StatusBadge, TextField } from '@alpine/ui';
 
 const columns = [
   { key: 'name', label: 'Name', sortable: true },
@@ -223,10 +215,10 @@ component InventoryItemsPage {
         </div>
 
         <DataTable 
+          id="inventory-items"
           columns={updatedColumns}
           rows={this.filteredProducts}
           loading={this.loading}
-          searchable={true}
           exportable={true}
           filename="inventory_items"
           emptyTitle="No products found"
@@ -247,10 +239,10 @@ component InventoryItemsPage {
                 <FormGroup label="SKU" required={true}>
                   <TextField value={this.newProduct.sku} onchange={(v: string) => { this.newProduct.sku = v; this.scheduleUpdate?.(); }} />
                 </FormGroup>
-                <FormGroup label="Price (MWK)">
+                <FormGroup label="Price">
                   <TextField type="number" value={this.newProduct.price} onchange={(v: string) => { this.newProduct.price = v; this.scheduleUpdate?.(); }} />
                 </FormGroup>
-                <FormGroup label="Cost (MWK)">
+                <FormGroup label="Cost">
                   <TextField type="number" value={this.newProduct.cost} onchange={(v: string) => { this.newProduct.cost = v; this.scheduleUpdate?.(); }} />
                 </FormGroup>
                 <FormGroup label="Category">
@@ -293,10 +285,10 @@ component InventoryItemsPage {
                 <FormGroup label="SKU" required={true}>
                   <TextField value={this.editProduct.sku} onchange={(v: string) => { this.editProduct.sku = v; this.scheduleUpdate?.(); }} />
                 </FormGroup>
-                <FormGroup label="Price (MWK)">
+                <FormGroup label="Price">
                   <TextField type="number" value={this.editProduct.price} onchange={(v: string) => { this.editProduct.price = v; this.scheduleUpdate?.(); }} />
                 </FormGroup>
-                <FormGroup label="Cost (MWK)">
+                <FormGroup label="Cost">
                   <TextField type="number" value={this.editProduct.cost} onchange={(v: string) => { this.editProduct.cost = v; this.scheduleUpdate?.(); }} />
                 </FormGroup>
                 <FormGroup label="Category">

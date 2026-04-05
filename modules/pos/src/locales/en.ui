@@ -1,0 +1,29 @@
+export const enPOS = {
+  "terminal": {
+    "title": "Point of Sale",
+    "searchPlaceholder": "Scan barcode or search products...",
+    "subtotal": "Subtotal",
+    "tax": "Tax (16%)",
+    "total": "Total",
+    "checkout": "Checkout — {{total}}",
+    "change": "Change",
+    "amountTendered": "Amount Tendered",
+    "paymentMethod": "Payment Method",
+    "confirmCheckout": "Confirm Checkout",
+    "closingTab": "Close Tab — {{total}}"
+  },
+  "sessions": {
+    "title": "POS Sessions",
+    "active": "Active",
+    "closed": "Closed",
+    "openFloat": "Opening Float",
+    "closeAmount": "Closing Amount"
+  },
+  "sales": {
+    "title": "Sales History",
+    "receipt": "Receipt",
+    "totalRevenue": "Total Revenue",
+    "avgSale": "Avg Sale",
+    "refund": "Refund"
+  }
+};

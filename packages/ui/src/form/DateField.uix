@@ -1,0 +1,33 @@
+import { SwissComponent } from '@kibologic/core';
+import { TextField } from './TextField.uix';
+
+component DateField {
+  props = {
+    label: String,
+    value: String, // expects YYYY-MM-DD (HTML date input native format)
+    placeholder: String,
+    required: Boolean,
+    error: String,
+    disabled: Boolean,
+    onchange: Function as (value: string) => void,
+  };
+
+  handleChange(val: string) {
+    if (this.props.onchange) this.props.onchange(val);
+  }
+
+  render() {
+    return (
+      <TextField
+        label={this.props.label}
+        value={this.props.value || ''}
+        placeholder={this.props.placeholder || ''}
+        type="date"
+        required={!!this.props.required}
+        error={this.props.error}
+        disabled={!!this.props.disabled}
+        onchange={(val: string) => this.handleChange(val)}
+      />
+    );
+  }
+}

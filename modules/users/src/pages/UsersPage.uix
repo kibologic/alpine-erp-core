@@ -1,12 +1,7 @@
 import { SwissComponent } from '@kibologic/core';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
-import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
-import { TextField } from '@alpine/ui/src/form/TextField.uix';
-import { SelectField } from '@alpine/ui/src/form/SelectField.uix';
-import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
+import { DataTable, FormGroup, Modal, SelectField, StatStrip, StatusBadge, TextField } from '@alpine/ui';
 import { api } from '@alpine/core/src/services/api.ui';
+import { formatDate } from '@alpine/core';
 
 component UsersPage {
   props = {};
@@ -335,7 +330,7 @@ component UsersPage {
       role_name: u.role_name,
       role_id: u.role_id,
       account_status: u.account_status,
-      last_login: u.last_login ? new Date(u.last_login).toLocaleString() : 'Never',
+      last_login: u.last_login ? formatDate(u.last_login) : 'Never',
     }));
 
     return (
@@ -403,10 +398,10 @@ component UsersPage {
             </div>
 
             <DataTable
+              id="users-list"
               columns={columns}
               rows={rows}
               loading={this.loading}
-              searchable={true}
               filename="users"
               emptyTitle="No users yet"
               emptyDescription="Invite your first team member."
@@ -437,7 +432,7 @@ component UsersPage {
                         <div style="font-size:0.85rem;color:var(--color-text-muted);">{r.user.email}</div>
                       ) : null}
                       <div style="font-size:0.8rem;color:var(--color-text-muted);margin-top:2px;">
-                        Requested {r.requested_at ? new Date(r.requested_at).toLocaleDateString() : '—'}
+                        Requested {r.requested_at ? formatDate(r.requested_at) : '—'}
                       </div>
                     </div>
                     {window.__skltn?.can('users.manage') && (
@@ -503,7 +498,7 @@ component UsersPage {
                           {invite.role_name}
                         </span>
                         <span style="font-size:0.8rem;color:var(--color-text-muted);">
-                          Sent {new Date(invite.created_at).toLocaleDateString()}
+                          Sent {formatDate(invite.created_at)}
                         </span>
                         {invite.user_exists && (
                           <span style="font-size:0.7rem;color:#22C55E;font-weight:500;">
@@ -570,13 +565,13 @@ component UsersPage {
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="font-size:0.8125rem;color:var(--color-text-muted);">Last Login</span>
                     <span style="font-size:0.8125rem;color:var(--color-text-primary);">{
-                      this.selectedUser.last_login ? new Date(this.selectedUser.last_login).toLocaleDateString() : 'Never'
+                      this.selectedUser.last_login ? formatDate(this.selectedUser.last_login) : 'Never'
                     }</span>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="font-size:0.8125rem;color:var(--color-text-muted);">Member Since</span>
                     <span style="font-size:0.8125rem;color:var(--color-text-primary);">{
-                      this.selectedUser.created_at ? new Date(this.selectedUser.created_at).toLocaleDateString() : '—'
+                      this.selectedUser.created_at ? formatDate(this.selectedUser.created_at) : '—'
                     }</span>
                   </div>
                 </div>

@@ -1,0 +1,41 @@
+import { SwissComponent } from '@kibologic/core';
+import { Badge } from '../primitives/Badge.uix';
+
+/**
+ * RecordHeader Component
+ * Odoo-Style: Sticky header for record workspaces with status and breadcrumbs.
+ */
+component RecordHeader {
+    props = {
+        title: String,
+        subtitle: String,
+        status: String,
+        statusVariant: String,
+        onBack: Function
+    };
+
+    render() {
+        const statusVariant = this.props.statusVariant || 'neutral';
+        const { title, subtitle, status, onBack } = this.props;
+        const backIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`;
+
+        return (
+            <div class="aui-record-header">
+                <div class="aui-record-header-left">
+                    {onBack && (
+                        <div class="aui-record-back" onclick={() => onBack()}>
+                            <span innerHTML={backIcon}></span>
+                        </div>
+                    )}
+                    <div class="aui-record-title-wrap">
+                        <div class="aui-record-title">{title}</div>
+                        {subtitle && <div class="aui-record-subtitle">{subtitle}</div>}
+                    </div>
+                </div>
+                <div class="aui-record-header-right">
+                    {status && <Badge label={status} variant={statusVariant} />}
+                </div>
+            </div>
+        );
+    }
+}

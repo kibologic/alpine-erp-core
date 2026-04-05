@@ -1,0 +1,39 @@
+import { SwissComponent } from '@kibologic/core';
+import { Button } from './Button.uix';
+
+/**
+ * Primitive IconButton
+ * Optimized for toolbars and compact actions.
+ */
+component IconButton {
+    props = {
+        icon: String,
+        variant: String,
+        size: String,
+        disabled: Boolean,
+        loading: Boolean,
+        onclick: Function,
+        title: String,
+        class: String
+    };
+
+    render() {
+        const variant = this.props.variant || 'ghost';
+        const size = this.props.size || 'md';
+        const { icon, disabled, loading, onclick, title, class: className } = this.props;
+
+        return (
+            <Button
+                icon={icon}
+                variant={variant}
+                size={size}
+                disabled={disabled}
+                loading={loading}
+                onclick={onclick}
+                title={title}
+                class={`aui-icon-btn-primitive ${className || ''}`}
+                label=""
+            />
+        );
+    }
+}

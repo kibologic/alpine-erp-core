@@ -1,10 +1,10 @@
 import { SwissComponent } from '@kibologic/core';
-import { PosService, InventoryService, getDeviceId } from '@alpine/core';
+import { PosService, InventoryService, getDeviceId, t, formatCurrency } from '@alpine/core';
 
 const TAX_RATE = 0.16;
 
 function fmt(n: number): string {
-  return `MWK ${(n || 0).toLocaleString()}`;
+  return formatCurrency(n);
 }
 
 component PosTerminalPage {
@@ -84,6 +84,17 @@ component PosTerminalPage {
 
     // refreshData uses this.terminalId — load after terminal ID is known
     await this.refreshData();
+
+    // RESTORE PERSISTENT CART
+    const savedCart = localStorage.getItem(`alpine-cart-${this.terminalId}`);
+    if (savedCart) {
+      try {
+        this.cartItems = JSON.parse(savedCart);
+      } catch (e) {
+        console.error('Failed to parse saved cart');
+      }
+    }
+
     if (this.enabledModes.includes('tabbed') && this.session?.id) {
       await this.loadTabs();
     }
@@ -212,6 +223,12 @@ component PosTerminalPage {
     } else {
       this.cartItems = [...this.cartItems, { product, qty: 1, lineTotal: product.price }];
     }
+    this.persistCart();
+  }
+
+  persistCart() {
+    if (!this.terminalId) return;
+    localStorage.setItem(`alpine-cart-${this.terminalId}`, JSON.stringify(this.cartItems));
   }
 
   changeQty(productId: string, delta: number) {
@@ -222,10 +239,12 @@ component PosTerminalPage {
       }
       return i;
     }).filter(i => i.qty > 0);
+    this.persistCart();
   }
 
   removeFromCart(productId: string) {
     this.cartItems = this.cartItems.filter((i) => i.product.id !== productId);
+    this.persistCart();
   }
 
   get computedSubtotal() {
@@ -248,11 +267,8 @@ component PosTerminalPage {
     return Math.max(0, this.amountTendered - this.computedTotal);
   }
 
-  formatMWK(amount: number) {
-    return 'MWK ' + (amount || 0).toLocaleString('en-MW', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+  format(amount: number) {
+    return formatCurrency(amount);
   }
 
   openCheckout() {
@@ -285,8 +301,8 @@ component PosTerminalPage {
         this.amountTendered > 0 &&
         this.amountTendered < this.computedTotal) {
       this.notifications?.error(
-        `Amount tendered ${this.formatMWK(this.amountTendered)} ` +
-        `is less than total ${this.formatMWK(this.computedTotal)}`
+        `Amount tendered ${this.format(this.amountTendered)} ` +
+        `is less than total ${this.format(this.computedTotal)}`
       );
       return;
     }
@@ -337,6 +353,7 @@ component PosTerminalPage {
 
       // Clear cart
       this.cartItems = [];
+      this.persistCart();
 
     } catch (e: any) {
       console.error('Payment error:', e);
@@ -397,6 +414,7 @@ component PosTerminalPage {
 
   startNewTransaction() {
     this.cartItems = [];
+    this.persistCart();
     this.receiptItems = [];
     this.lastSale = null;
     this.fiscalData = null;
@@ -487,11 +505,11 @@ component PosTerminalPage {
       this.tabs = this.tabs.filter((t: any) => t.id !== this.activeTab.id);
       this.activeTab = null;
       this.showCheckoutModal = false;
-      this.scheduleUpdate?.();
-      this.notifications?.success('Tab closed — Change: MWK ' + (closed.change || 0).toLocaleString());
+      this.notifications?.success(t('pos.terminal.closingTab', { total: formatCurrency(closed.change || 0) }));
     } catch (e) {
       this.notifications?.error('Failed to close tab');
     }
+    this.scheduleUpdate?.();
   }
 
   async removeTabLine(tabId: string, lineId: string) {
@@ -636,7 +654,7 @@ component PosTerminalPage {
             {window.__skltn?.can('pos.open_session') ? (
               <div>
                 <div class="pos-float-row">
-                  <label class="pos-float-label">Opening Float (MWK)</label>
+                  <label class="pos-float-label">Opening Float</label>
                   <input type="number" class="pos-float-input" value={this.openingFloat} oninput={(e: any) => this.openingFloat = Number(e.target.value)} />
                 </div>
                 <button class="pos-state-btn" onclick={() => this.openSession()} disabled={this.processing}>
@@ -660,38 +678,42 @@ component PosTerminalPage {
         {/* Left Panel — Products */}
         <div class="pos-products">
           <div class="pos-products-header">
-            {/* Unified header: [mode pills] [search] [utility buttons] */}
-            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--color-bg-border);background:var(--color-bg-surface);">
-              {/* Mode pills — always show both modes */}
-              <div style="display:flex;gap:2px;padding:2px;border-radius:7px;background:var(--color-bg-elevated);border:1px solid var(--color-bg-border);flex-shrink:0;">
-                {(['instant', 'tabbed'] as string[]).map((mode: string) => (
-                  <button
-                    onclick={() => this.switchMode(mode)}
-                    style={'padding:4px 12px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.12s;white-space:nowrap;background:' + (this.activeMode === mode ? 'var(--color-text-primary)' : 'transparent') + ';color:' + (this.activeMode === mode ? 'var(--color-bg-base)' : 'var(--color-text-secondary)') + ';'}>
-                    {mode === 'instant' ? '⚡ Quick Sale' : '📋 Tabs'}
+            <div class="pos-header-top">
+              {/* Consolidated Control Bar: [Switcher + Utility] */}
+              <div class="pos-control-bar">
+                <div class="pos-mode-switcher">
+                  {(['instant', 'tabbed'] as string[]).map((mode: string) => (
+                    <button
+                      class={`pos-mode-btn ${this.activeMode === mode ? 'pos-mode-btn--active' : ''}`}
+                      onclick={() => this.switchMode(mode)}
+                    >
+                      {mode === 'instant' ? '⚡ Quick' : '📋 Tabs'}
+                    </button>
+                  ))}
+                </div>
+                <div class="pos-utility-group">
+                  <button class="pos-util-btn" onclick={() => this.toggleAppFullscreen()} title="Full App">
+                    {this.appFullscreen ? '✕' : '⛶'}
                   </button>
-                ))}
+                  <button class="pos-util-btn" onclick={() => this.toggleBrowserFullscreen()} title="Browser FS">
+                    {this.browserFullscreen ? '⤡' : '⤢'}
+                  </button>
+                </div>
               </div>
-              {/* Search — center, grows to fill */}
-              <input
-                type="text"
-                class="pos-product-search"
-                placeholder="🔍 Search products..."
-                value={this.search}
-                oninput={(e: any) => this.search = e.target.value}
-                style="flex:1;min-width:0;"
-              />
-              {/* Utility buttons — right cluster */}
-              <div style="display:flex;gap:4px;flex-shrink:0;">
-                <button class="pos-fs-btn" onclick={() => this.toggleAppFullscreen()}>
-                  {this.appFullscreen ? '✕ Focus' : '⛶ Focus'}
-                </button>
-                <button class="pos-fs-btn" onclick={() => this.toggleBrowserFullscreen()}>
-                  {this.browserFullscreen ? '⤡' : '⤢'}
-                </button>
+
+              {/* Enhanced Search Filter (Wide Split) */}
+              <div class="pos-search-area">
+                <input
+                  type="text"
+                  class="pos-product-search"
+                  placeholder="🔍 Search products..."
+                  value={this.search}
+                  oninput={(e: any) => this.search = e.target.value}
+                />
               </div>
             </div>
-            {/* Category pills row — derived from loaded products */}
+
+            {/* Category pills row */}
             <div class="pos-category-filters">
               {this.categories.map(cat => (
                 <button
@@ -743,11 +765,13 @@ component PosTerminalPage {
                 )}
                 {this.tabs.map((tab: any) => (
                   <div
+                    key={`tab-${tab.id}`}
                     onclick={() => this.selectTab(tab)}
-                    style={'padding:10px 14px;border-radius:6px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;border:2px solid ' + (this.activeTab?.id === tab.id ? 'var(--color-text-primary)' : 'var(--color-bg-border)') + ';background:' + (this.activeTab?.id === tab.id ? 'var(--color-bg-elevated)' : 'transparent') + ';'}>
+                    class={`pos-tab-item ${this.activeTab?.id === tab.id ? 'pos-tab-item--active' : ''}`}
+                  >
                     <div style="display:flex;justify-content:space-between;align-items:center;">
                       <span style="font-size:12px;font-weight:500;color:var(--color-text-primary);">{tab.name}</span>
-                      <span style="font-size:12px;font-weight:600;color:var(--color-text-primary);">MWK {(tab.total || 0).toLocaleString()}</span>
+                      <span style="font-size:12px;font-weight:600;color:var(--color-text-primary);">{formatCurrency(tab.total || 0)}</span>
                     </div>
                     <div style="font-size:11px;color:var(--color-text-muted);margin-top:2px;">{(tab.lines || []).length} items</div>
                   </div>
@@ -764,7 +788,7 @@ component PosTerminalPage {
                     {(this.activeTab.lines || []).map((line: any) => (
                       <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid var(--color-bg-border);gap:8px;">
                         <span style="color:var(--color-text-secondary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{line.name} x{line.quantity}</span>
-                        <span style="color:var(--color-text-primary);font-weight:500;flex-shrink:0;">MWK {(line.line_total || 0).toLocaleString()}</span>
+                        <span style="color:var(--color-text-primary);font-weight:500;flex-shrink:0;">{formatCurrency(line.line_total || 0)}</span>
                         <button
                           onclick={(e: any) => { e.stopPropagation(); this.removeTabLine(this.activeTab.id, line.id); }}
                           style="flex-shrink:0;background:transparent;border:none;color:var(--color-text-muted);font-size:14px;cursor:pointer;padding:0 2px;line-height:1;opacity:0.7;">
@@ -775,13 +799,13 @@ component PosTerminalPage {
                   </div>
                   <div style="padding:12px 16px;">
                     <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--color-text-primary);margin-bottom:10px;">
-                      <span>Total</span>
-                      <span>MWK {(this.activeTab.total || 0).toLocaleString()}</span>
+                      <span>{t('pos.terminal.total')}</span>
+                      <span>{formatCurrency(this.activeTab.total || 0)}</span>
                     </div>
                     <button
                       onclick={() => { this.checkoutState = 'checkout'; this.showCheckoutModal = true; this.scheduleUpdate?.(); }}
                       style="width:100%;padding:16px;border-radius:8px;min-height:52px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:15px;font-weight:700;cursor:pointer;">
-                      Close Tab — MWK {(this.activeTab.total || 0).toLocaleString()}
+                      {t('pos.terminal.closingTab', { total: formatCurrency(this.activeTab.total || 0) })}
                     </button>
                   </div>
                 </div>
@@ -802,15 +826,15 @@ component PosTerminalPage {
                   </div>
                 ) : (
                   this.cartItems.map(item => (
-                    <div class="pos-cart-item">
+                    <div key={`cart-item-${item.product.id}`} class="pos-cart-item">
                       <span class="pos-cart-item-name">{item.product.name}</span>
                       <div class="pos-cart-qty">
-                        <button class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, -1)}>−</button>
+                        <button class="pos-cart-qty-btn" onclick={(e: any) => { e.stopPropagation(); this.changeQty(item.product.id, -1); }}>−</button>
                         <span class="pos-cart-qty-val">{item.qty}</span>
-                        <button class="pos-cart-qty-btn" onclick={() => this.changeQty(item.product.id, 1)}>+</button>
+                        <button class="pos-cart-qty-btn" onclick={(e: any) => { e.stopPropagation(); this.changeQty(item.product.id, 1); }}>+</button>
                       </div>
                       <span class="pos-cart-item-total">{fmt(item.lineTotal)}</span>
-                      <button class="pos-cart-item-remove" onclick={() => this.removeFromCart(item.product.id)}>×</button>
+                      <button class="pos-cart-item-remove" onclick={(e: any) => { e.stopPropagation(); this.removeFromCart(item.product.id); }}>×</button>
                     </div>
                   ))
                 )}
@@ -836,7 +860,7 @@ component PosTerminalPage {
                 onclick={this.openCheckout.bind(this)}
                 disabled={this.cartItems.length === 0}
                 style={`margin:0 16px 12px;padding:16px;min-height:52px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:16px;font-weight:700;cursor:pointer;width:calc(100% - 32px);transition:all 0.15s;opacity:${this.cartItems.length === 0 ? 0.4 : 1};`}>
-                Checkout — MWK {this.computedTotal.toLocaleString()}
+                {t('pos.terminal.checkout', { total: formatCurrency(this.computedTotal) })}
               </button>
             </div>
           )}
@@ -930,7 +954,7 @@ component PosTerminalPage {
                             <div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--color-bg-elevated);border-radius:8px;">
                               <span style="font-size:13px;color:var(--color-text-muted);">Change Due</span>
                               <span style="font-size:13px;font-weight:700;color:var(--color-success);">
-                                {this.formatMWK(Math.max(0, this.amountTendered - (this.activeMode === 'tabbed' ? (this.activeTab?.total || 0) : this.computedTotal)))}
+                                {this.format(Math.max(0, this.amountTendered - (this.activeMode === 'tabbed' ? (this.activeTab?.total || 0) : this.computedTotal)))}
                               </span>
                             </div>
                           )}
@@ -956,11 +980,11 @@ component PosTerminalPage {
                                 {item.name || item.product?.name}
                               </div>
                               <div style="font-size:11px;color:var(--color-text-muted);">
-                                x{item.quantity || item.qty || 1} × {this.formatMWK(item.unit_price || item.price || item.product?.price)}
+                                x{item.quantity || item.qty || 1} × {this.format(item.unit_price || item.price || item.product?.price)}
                               </div>
                             </div>
                             <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-left:16px;flex-shrink:0;">
-                              {this.formatMWK(item.line_total || (item.price || item.product?.price) * (item.qty || item.quantity || 1))}
+                              {this.format(item.line_total || (item.price || item.product?.price) * (item.qty || item.quantity || 1))}
                             </div>
                           </div>
                         ))}
@@ -970,15 +994,15 @@ component PosTerminalPage {
                       <div style="border-top:1px solid var(--color-bg-border);padding-top:12px;display:flex;flex-direction:column;gap:6px;">
                         <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);">
                           <span>Subtotal</span>
-                          <span>{this.formatMWK(this.activeMode === 'tabbed' ? (this.activeTab?.subtotal || 0) : this.computedSubtotal)}</span>
+                          <span>{this.format(this.activeMode === 'tabbed' ? (this.activeTab?.subtotal || 0) : this.computedSubtotal)}</span>
                         </div>
                         <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-secondary);">
                           <span>Tax</span>
-                          <span>{this.formatMWK(this.activeMode === 'tabbed' ? (this.activeTab?.tax || 0) : this.computedTax)}</span>
+                          <span>{this.format(this.activeMode === 'tabbed' ? (this.activeTab?.tax || 0) : this.computedTax)}</span>
                         </div>
                         <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:var(--color-text-primary);padding-top:8px;border-top:1px solid var(--color-bg-border);margin-top:4px;">
                           <span>Total</span>
-                          <span>{this.formatMWK(this.activeMode === 'tabbed' ? (this.activeTab?.total || 0) : this.computedTotal)}</span>
+                          <span>{this.format(this.activeMode === 'tabbed' ? (this.activeTab?.total || 0) : this.computedTotal)}</span>
                         </div>
                       </div>
                     </div>
@@ -990,7 +1014,7 @@ component PosTerminalPage {
                       onclick={this.processPayment.bind(this)}
                       disabled={this.processing}
                       style={`width:100%;padding:16px;min-height:56px;border-radius:8px;border:none;background:var(--color-text-primary);color:var(--color-bg-base);font-size:18px;font-weight:700;cursor:pointer;opacity:${this.processing ? 0.6 : 1};transition:all 0.15s;letter-spacing:0.3px;`}>
-                      {this.processing ? 'Processing...' : `Charge ${this.formatMWK(this.activeMode === 'tabbed' ? (this.activeTab?.total || 0) : this.computedTotal)}`}
+                      {this.processing ? 'Processing...' : `Charge ${this.format(this.activeMode === 'tabbed' ? (this.activeTab?.total || 0) : this.computedTotal)}`}
                     </button>
                   </div>
                 </div>
@@ -1015,12 +1039,12 @@ component PosTerminalPage {
 
                   {this.selectedPaymentMethod === 'cash' && this.amountTendered > this.computedTotal && (
                     <div style="font-size:13px;color:var(--color-success);margin-bottom:8px;">
-                      Change: {this.formatMWK(this.computedChange)}
+                      Change: {this.format(this.computedChange)}
                     </div>
                   )}
 
                   <div style="font-size:32px;font-weight:800;color:var(--color-text-primary);margin-bottom:24px;">
-                    {this.formatMWK(this.lastSale?.total || this.computedTotal)}
+                    {this.format(this.lastSale?.total || this.computedTotal)}
                   </div>
 
                   {/* Receipt items */}
@@ -1031,14 +1055,14 @@ component PosTerminalPage {
                           {item.name || item.product_name || item.product?.name} x {item.quantity || item.qty}
                         </span>
                         <span style="color:var(--color-text-primary);font-weight:500;">
-                          {this.formatMWK(item.line_total || (item.price || item.product?.price) * (item.quantity || item.qty))}
+                          {this.format(item.line_total || (item.price || item.product?.price) * (item.quantity || item.qty))}
                         </span>
                       </div>
                     ))}
 
                     <div style="display:flex;justify-content:space-between;padding-top:10px;margin-top:4px;font-size:14px;font-weight:700;color:var(--color-text-primary);">
                       <span>Total</span>
-                      <span>{this.formatMWK(this.lastSale?.total || this.computedTotal)}</span>
+                      <span>{this.format(this.lastSale?.total || this.computedTotal)}</span>
                     </div>
                   </div>
 
@@ -1113,7 +1137,7 @@ component PosTerminalPage {
               </p>
               
               <div class="pos-float-row" style="margin-bottom: 24px; text-align: left;">
-                <label class="pos-float-label">Closing Balance (MWK)</label>
+                <label class="pos-float-label">Closing Balance</label>
                 <input 
                   type="number" 
                   class="pos-float-input" 

@@ -1,7 +1,7 @@
 import { SwissComponent } from '@kibologic/core';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+import { DataTable, StatStrip } from '@alpine/ui';
 import { api } from '@alpine/core/src/services/api.ui';
+import { formatDate } from '@alpine/core';
 
 component AuditLogPage {
   props = {};
@@ -59,7 +59,7 @@ component AuditLogPage {
 
     const rows = this.logs.map((l: any) => ({
       _user_id: l.user_id,
-      timestamp: l.timestamp ? new Date(l.timestamp).toLocaleString() : '—',
+      timestamp: l.timestamp ? formatDate(l.timestamp) : '—',
       user: l.user_id || '—',
       action: l.action || '—',
       entity: l.entity || '—',
@@ -85,10 +85,10 @@ component AuditLogPage {
         </div>
 
         <DataTable
+          id="users-audit-log"
           columns={columns}
           rows={rows}
           loading={this.loading}
-          searchable={true}
           exportable={true}
           filename="audit_log"
           emptyTitle="No activity recorded"

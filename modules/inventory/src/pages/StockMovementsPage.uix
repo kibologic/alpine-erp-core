@@ -1,8 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { InventoryService } from '@alpine/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+import { InventoryService, formatDate } from '@alpine/core';
+import { DataTable, PageHeader, StatStrip } from '@alpine/ui';
 
 
 const columns = [
@@ -48,7 +46,7 @@ component StockMovementsPage {
 
     const displayRows = this.movements.map(m => ({
         ...m,
-        created_at: m.created_at ? new Date(m.created_at).toLocaleString() : 'N/A',
+        created_at: m.created_at ? formatDate(m.created_at) : 'N/A',
         reference: m.reference_id ? `${m.reference_type || 'REF'}: ${m.reference_id}` : '-'
     }));
 
@@ -70,15 +68,14 @@ component StockMovementsPage {
           </div>
           <div class="alp-page-header-actions">
             <button class="alp-btn alp-btn--secondary" onclick={() => this.mounted()}>Refresh</button>
-            <button class="alp-btn alp-btn--secondary">Export History</button>
           </div>
         </div>
 
         <DataTable 
+          id="inventory-stock-movements"
           columns={columns}
           rows={displayRows}
           loading={this.loading}
-          searchable={true}
           exportable={true}
           filename="stock_movements_history"
           emptyTitle="No movements recorded"

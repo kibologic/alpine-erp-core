@@ -1,14 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
 import { InventoryService } from '@alpine/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { DataImport } from '@alpine/ui/src/data/DataImport.uix';
-import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
-import { TextField } from '@alpine/ui/src/form/TextField.uix';
-import { CurrencyField } from '@alpine/ui/src/form/CurrencyField.uix';
-import { SelectField } from '@alpine/ui/src/form/SelectField.uix';
-import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
+import { CurrencyField, DataImport, DataTable, FormGroup, Modal, PageHeader, SelectField, StatStrip, TextField } from '@alpine/ui';
 
 const columns = [
   { key: 'sku', label: 'SKU', sortable: false, width: '120px' },
@@ -88,10 +80,10 @@ component PosProductsPage {
         </div>
 
         <DataTable
+          id="pos-products-list"
           columns={columns}
           rows={displayRows}
           loading={this.loading}
-          searchable={true}
           selectable={true}
           exportable={true}
           filename="products"

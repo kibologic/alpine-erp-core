@@ -1,10 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
-import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
-import { TextField } from '@alpine/ui/src/form/TextField.uix';
+import { DataTable, FormGroup, Modal, PageHeader, StatStrip, TextField } from '@alpine/ui';
 
 const columns = [
   { key: 'name', label: 'Category Name', sortable: true },
@@ -29,15 +24,12 @@ component CategoriesPage {
           ]}
         />
 
-        <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:12px; gap:8px;">
-          <button class="aui-btn aui-btn--outline">Export</button>
-        </div>
 
         <DataTable 
+          id="inventory-categories"
           columns={columns}
           rows={this.categories}
           loading={false}
-          searchable={true}
           filename="categories"
           emptyTitle="No categories yet"
           emptyDescription="Organize your products with categories"

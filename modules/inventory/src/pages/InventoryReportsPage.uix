@@ -1,13 +1,12 @@
 import { SwissComponent } from '@kibologic/core';
-import { InventoryService } from '@alpine/core';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
+import { InventoryService, formatCurrency } from '@alpine/core';
+import { DataTable, StatStrip } from '@alpine/ui';
 
 const VALUATION_COLUMNS = [
   { key: 'category', label: 'Category', sortable: true },
   { key: 'item_count', label: 'Items', width: '100px' },
   { key: 'total_quantity', label: 'Total Qty', width: '120px' },
-  { key: 'total_value', label: 'Total Value (MWK)', width: '200px', render: (val: number) => `MWK ${val.toLocaleString()}` }
+  { key: 'total_value', label: 'Total Value', width: '200px', render: (val: number) => formatCurrency(val || 0) }
 ];
 
 component InventoryReportsPage {
@@ -40,7 +39,7 @@ component InventoryReportsPage {
       <div class="alp-page">
         <StatStrip 
           stats={[
-            { label: "Inventory Asset Value", value: `MWK ${this.totalValue.toLocaleString()}`, delta: "Real-time", deltaType: "positive" },
+            { label: "Inventory Asset Value", value: formatCurrency(this.totalValue || 0), delta: "Real-time", deltaType: "positive" },
             { label: "Unique Products", value: String(this.totalItems) },
             { label: "Categories Tracked", value: String(this.valuation.length) }
           ]}
@@ -58,10 +57,10 @@ component InventoryReportsPage {
         </div>
 
         <DataTable 
+          id="inventory-valuation-report"
           columns={VALUATION_COLUMNS}
           rows={this.valuation}
           loading={this.loading}
-          searchable={false}
           exportable={true}
           filename="stock_valuation_report"
           emptyTitle="No valuation data"

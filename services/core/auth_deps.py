@@ -13,7 +13,7 @@ _STANDARD_ROLE_ATOMS: dict[str, list[str]] = {
         "pos.sell", "pos.refund", "pos.open_session", "pos.close_session",
         "pos.view_sales", "pos.view_sessions", "pos.manage_customers",
         "inventory.view", "inventory.adjust", "inventory.manage",
-        "inventory.export", "inventory.stock_take", "inventory.view_movements",
+        "inventory.export", "inventory.import", "inventory.stock_take", "inventory.view_movements",
         "users.view", "users.manage", "users.manage_roles",
         "settings.view", "settings.manage",
         "reports.view", "org.manage", "pos.manage_terminals",

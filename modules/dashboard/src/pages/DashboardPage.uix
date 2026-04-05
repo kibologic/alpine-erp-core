@@ -1,8 +1,5 @@
 import { SwissComponent } from '@kibologic/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { BarChart } from '@alpine/ui/src/data/BarChart.uix';
-import { LineChart } from '@alpine/ui/src/data/LineChart.uix';
+import { BarChart, DataTable, LineChart, PageHeader } from '@alpine/ui';
 
 const MOCK_SALES_DATA = {
   categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -70,6 +67,7 @@ component DashboardPage {
           <div class="dash-card">
             <div class="dash-card-title">Recent Transactions</div>
             <DataTable 
+              id="dash-recent-sales"
               columns={[
                 { key: 'id', label: 'Sale #' },
                 { key: 'customer', label: 'Customer' },

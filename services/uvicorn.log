@@ -1,37 +1,468 @@
+nohup: ignoring input
 INFO:     Will watch for changes in these directories: ['/home/swsdotsh/office/departments/engineering/projects/active/kibologic/alpine-erp-core/services']
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [23075] using WatchFiles
-INFO:     Started server process [23077]
+INFO:     Started reloader process [24770] using WatchFiles
+INFO:     Started server process [24772]
 INFO:     Waiting for application startup.
-[2m2026-04-05T01:50:58.194738Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+[2m2026-04-05T12:22:08.965050Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
 INFO:     Application startup complete.
-INFO:     127.0.0.1:35278 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:32842 - "GET /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:35304 - "GET /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:37910 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:37922 - "GET /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:44660 - "POST /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:55704 - "POST /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:40180 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:40182 - "GET /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:53862 - "POST /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:53868 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53880 - "GET /api/v1/roles HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53888 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53902 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53920 - "GET /api/v1/atoms HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53908 - "GET /api/v1/roles HTTP/1.1" 200 OK
-INFO:     127.0.0.1:57338 - "GET /api/v1/tenant/a26dc317-a9ad-4687-95c4-f7a7a01e276c/config HTTP/1.1" 200 OK
-INFO:     127.0.0.1:57344 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58590 - "GET /api/v1/audit-log HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58594 - "GET /api/v1/users HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58612 - "GET /api/v1/atoms HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58608 - "GET /api/v1/roles HTTP/1.1" 200 OK
-INFO:     127.0.0.1:36988 - "GET /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:39260 - "POST /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:40654 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:34544 - "GET /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:34556 - "POST /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:36532 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:36540 - "GET /api/v1/pos/terminals HTTP/1.1" 500 Internal Server Error
-INFO:     127.0.0.1:38530 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36084 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36092 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36096 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36104 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36118 - "GET /api/v1/pos/tabs?session_id=cf994925-a7e1-441e-a07e-b09ca825d548 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42964 - "GET /api/v1/pos/tabs?session_id=cf994925-a7e1-441e-a07e-b09ca825d548 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42968 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42972 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48046 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48052 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48054 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48056 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48072 - "GET /api/v1/atoms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48088 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48104 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48116 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48130 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48128 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58092 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58108 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58110 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58114 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56894 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56902 - "GET /api/v1/pos/sales?page=1&page_size=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56930 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56916 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56946 - "GET /api/v1/pos/tabs?session_id=cf994925-a7e1-441e-a07e-b09ca825d548 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52430 - "GET /api/v1/pos/sales?page=1&page_size=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58418 - "GET /api/v1/pos/sales?page=1&page_size=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58424 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58452 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58436 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58446 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58454 - "GET /api/v1/pos/sales?page=1&page_size=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58468 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58476 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58492 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58498 - "GET /api/v1/pos/tabs?session_id=cf994925-a7e1-441e-a07e-b09ca825d548 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58512 - "GET /api/v1/inventory/customers HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43712 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43720 - "GET /api/v1/pos/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43722 - "GET /api/v1/pos/sales?page=1&page_size=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43738 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43744 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43746 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43754 - "GET /api/v1/pos/tabs?session_id=cf994925-a7e1-441e-a07e-b09ca825d548 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45112 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45118 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45130 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45146 - "GET /api/v1/pos/tabs?session_id=cf994925-a7e1-441e-a07e-b09ca825d548 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58388 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58402 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58406 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58420 - "GET /api/v1/pos/tabs?session_id=cf994925-a7e1-441e-a07e-b09ca825d548 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36912 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36884 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36908 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36896 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36926 - "GET /api/v1/tenant/00000000-0000-0000-0000-000000000001/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36942 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52980 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52992 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53000 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53010 - "GET /api/v1/pos/tabs?session_id=cf994925-a7e1-441e-a07e-b09ca825d548 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60624 - "POST /api/v1/pos/sessions/close/cf994925-a7e1-441e-a07e-b09ca825d548 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54204 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54208 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54212 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54220 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54232 - "GET /api/v1/tenant/00000000-0000-0000-0000-000000000001/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54236 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44796 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44804 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44812 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59290 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59296 - "GET /api/v1/tenant/00000000-0000-0000-0000-000000000001/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59286 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59282 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59272 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59300 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59312 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59314 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59320 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59330 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49404 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49402 - "GET /api/v1/tenant/00000000-0000-0000-0000-000000000001/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49434 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49420 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49450 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49442 - "GET /api/v1/roles HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'core/models.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T13:03:59.817014Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [24772]
+INFO:     Started server process [34285]
+INFO:     Waiting for application startup.
+[2m2026-04-05T13:04:03.944167Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'modules/tenant/router.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T13:04:20.775735Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [34285]
+INFO:     Started server process [34337]
+INFO:     Waiting for application startup.
+[2m2026-04-05T13:04:23.945855Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+INFO:     127.0.0.1:59192 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59196 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59218 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59204 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56494 - "GET /api/v1/inventory/movements HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56506 - "GET /api/v1/inventory/movements HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'migrate_locales.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T13:05:02.901074Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [34337]
+INFO:     Started server process [34581]
+INFO:     Waiting for application startup.
+[2m2026-04-05T13:05:08.160991Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'check_db.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T13:09:20.120514Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [34581]
+INFO:     Started server process [35805]
+INFO:     Waiting for application startup.
+[2m2026-04-05T13:09:24.179259Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+INFO:     127.0.0.1:51578 - "GET /api/v1/inventory/movements HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51588 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51590 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51606 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50870 - "POST /api/v1/pos/sessions/open HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43110 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43098 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43156 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43142 - "GET /api/v1/tenant/00000000-0000-0000-0000-000000000001/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43128 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43122 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43348 - "PATCH /api/v1/tenant/00000000-0000-0000-0000-000000000001 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43350 - "GET /api/v1/tenant/00000000-0000-0000-0000-000000000001/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56578 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56584 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56594 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56598 - "GET /api/v1/pos/tabs?session_id=51d832bc-6b46-404a-ae4f-59516e4d135a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "GET /api/v1/pos/terminals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56612 - "GET /api/v1/pos/sessions/current/T-MNLCFJRO HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56614 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56624 - "GET /api/v1/pos/tabs?session_id=51d832bc-6b46-404a-ae4f-59516e4d135a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54484 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54478 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55816 - "GET /api/v1/inventory/movements HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55824 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55834 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51024 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51036 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51046 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51052 - "GET /api/v1/inventory/valuation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49576 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49594 - "GET /api/v1/tenant/00000000-0000-0000-0000-000000000001/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49588 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49614 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49616 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49608 - "GET /api/v1/roles HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'core/limits.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T13:14:59.802460Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35805]
+INFO:     Started server process [36737]
+INFO:     Waiting for application startup.
+[2m2026-04-05T13:15:01.728571Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+INFO:     127.0.0.1:57730 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57726 - "GET /api/v1/tenant/00000000-0000-0000-0000-000000000001/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43168 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43154 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43174 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43184 - "GET /api/v1/inventory/valuation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48184 - "GET /api/v1/inventory/valuation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55056 - "GET /api/v1/inventory/valuation HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55086 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55100 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55098 - "GET /api/v1/tenant/00000000-0000-0000-0000-000000000001/config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55072 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55058 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55088 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50092 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50108 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50122 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50128 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50152 - "GET /api/v1/atoms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50144 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50166 - "GET /api/v1/inventory/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50170 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50162 - "GET /api/v1/inventory/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50186 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46748 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47676 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59976 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34708 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34720 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'core/datapipe/__init__.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:26:41.009405Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [36737]
+INFO:     Started server process [40016]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:26:45.026171Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/introspect.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:27:13.781160Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40016]
+INFO:     Started server process [40090]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:27:19.964110Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/coerce.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:27:43.651476Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40090]
+INFO:     Started server process [40163]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:27:47.270814Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/parser.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:28:21.050206Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40163]
+INFO:     Started server process [40248]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:28:23.386994Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/validate.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:28:56.637911Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40248]
+INFO:     Started server process [40327]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:28:59.840394Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/mapper.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:29:26.985060Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40327]
+INFO:     Started server process [40400]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:29:29.540375Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/executor.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:29:53.831438Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40400]
+INFO:     Started server process [40473]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:29:57.788329Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/builder.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:30:43.280462Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40473]
+INFO:     Started server process [40571]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:30:45.714668Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/exporter.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:31:11.077422Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40571]
+INFO:     Started server process [40648]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:31:13.556541Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'modules/dataimport/manifests.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:32:03.353119Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40648]
+INFO:     Started server process [40805]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:32:06.355037Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'modules/dataimport/__init__.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:32:27.290079Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40805]
+INFO:     Started server process [40867]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:32:29.908304Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'modules/dataimport/router.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:33:15.882916Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40867]
+INFO:     Started server process [40970]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:33:18.538240Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:34:34.643070Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [40970]
+INFO:     Started server process [41124]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:34:36.855945Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/auth_deps.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:34:48.830547Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [41124]
+INFO:     Started server process [41179]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:34:50.891766Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/builder.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:39:46.355550Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [41179]
+INFO:     Started server process [42816]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:39:48.329125Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/builder.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:40:05.218532Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42816]
+INFO:     Started server process [42870]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:40:08.046429Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'core/datapipe/exporter.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:40:44.523101Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [42870]
+INFO:     Started server process [43005]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:40:47.376585Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+INFO:     127.0.0.1:41924 - "GET /api/v1/inventory/stock-levels HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41934 - "GET /api/v1/dataimport/manifests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46378 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46390 - "GET /api/v1/dataimport/manifests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48076 - "GET /api/v1/dataimport/products/template HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60870 - "GET /api/v1/dataimport/categories/template HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60882 - "GET /api/v1/dataimport/products/export HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60884 - "GET /api/v1/dataimport/products/export HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60896 - "GET /api/v1/dataimport/products/template HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:60900 - "GET /api/v1/dataimport/suppliers/template HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:45538 - "GET /api/v1/dataimport/suppliers/export HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:45548 - "GET /api/v1/dataimport/customers/template HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:45550 - "GET /api/v1/dataimport/customers/export HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:33344 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33360 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33382 - "GET /api/v1/atoms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33378 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33370 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33392 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50694 - "GET /api/v1/dataimport/manifests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37988 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37992 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38004 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38014 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38022 - "GET /api/v1/atoms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38036 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38046 - "GET /api/v1/dataimport/manifests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51262 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51300 - "GET /api/v1/atoms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51274 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51292 - "GET /api/v1/tenant/invites HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51280 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51310 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37690 - "GET /api/v1/dataimport/manifests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54374 - "POST /api/v1/dataimport/products/preview HTTP/1.1" 401 Unauthorized
+WARNING:  WatchFiles detected changes in 'modules/dataimport/router.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:48:07.683978Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [43005]
+INFO:     Started server process [45148]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:48:10.696857Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+INFO:     127.0.0.1:33928 - "GET /api/v1/dataimport/manifests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53258 - "GET /api/v1/dataimport/products/template HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53270 - "GET /api/v1/dataimport/products/export HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:53274 - "GET /api/v1/users HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53290 - "GET /api/v1/tenant/join-requests HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53304 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53314 - "GET /api/v1/tenant/invites HTTP/1.1" 403 Forbidden
+INFO:     127.0.0.1:53326 - "GET /api/v1/atoms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53336 - "GET /api/v1/roles HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'core/atoms.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:53:02.013002Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [45148]
+INFO:     Started server process [46386]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:53:04.066423Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'modules/users/router.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+[2m2026-04-05T14:53:15.707308Z[0m [[32m[1minfo     [0m] [1mshutdown                      [0m
+INFO:     Application shutdown complete.
+INFO:     Finished server process [46386]
+INFO:     Started server process [46440]
+INFO:     Waiting for application startup.
+[2m2026-04-05T14:53:20.908777Z[0m [[32m[1minfo     [0m] [1mstartup                       [0m [36menvironment[0m=[35mdevelopment[0m [36mservice[0m=[35malpine-erp-core[0m
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56370 - "GET /api/v1/atoms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56384 - "GET /api/v1/roles HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47204 - "GET /api/v1/atoms HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47218 - "GET /api/v1/roles HTTP/1.1" 200 OK

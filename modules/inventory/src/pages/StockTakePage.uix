@@ -1,9 +1,6 @@
 import { SwissComponent } from '@kibologic/core';
-import { InventoryService } from '@alpine/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
-import { TextField } from '@alpine/ui/src/form/TextField.uix';
-import { SelectField } from '@alpine/ui/src/form/SelectField.uix';
+import { InventoryService, formatCurrency } from '@alpine/core';
+import { Modal, PageHeader, SelectField, TextField } from '@alpine/ui';
 
 component StockTakePage {
   props = {};
@@ -275,7 +272,7 @@ component StockTakePage {
               <div class="st-sidebar-row" style="display: flex; justify-content: space-between;">
                 <span>Value Impact</span>
                 <strong style={stats.valueImpact < 0 ? 'color: var(--danger-color);' : (stats.valueImpact > 0 ? 'color: var(--success-color);' : '')}>
-                  MWK {new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(stats.valueImpact)}
+                  {formatCurrency(stats.valueImpact)}
                 </strong>
               </div>
             </div>
@@ -320,7 +317,7 @@ component StockTakePage {
                   </div>
                   <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
                     <span>Total Value Adjustment:</span>
-                    <strong>MWK {new Intl.NumberFormat('en-MW', { minimumFractionDigits: 2 }).format(stats.valueImpact)}</strong>
+                    <strong>{formatCurrency(stats.valueImpact)}</strong>
                   </div>
                 </div>
                 <p style="font-size: 0.875rem; color: var(--text-muted);">These adjustments will be immediately reflected in the inventory stock levels and logged in movement history.</p>

@@ -1,12 +1,10 @@
 import { SwissComponent } from '@kibologic/core';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { FormGroup } from '@alpine/ui/src/form/FormGroup.uix';
-import { TextField } from '@alpine/ui/src/form/TextField.uix';
+import { FormGroup, StatStrip, TextField, SelectField } from '@alpine/ui';
 import { api } from '@alpine/core/src/services/api.ui';
 
 const TIER_LIMITS: any = {
-  free:       { terminals: 1,  users: 3,   products: 500 },
-  pro:        { terminals: 5,  users: 25,  products: 5000 },
+  free:       { terminals: 1,  users: 3,   products: 300 },
+  pro:        { terminals: 5,  users: 15,  products: 3000 },
   enterprise: { terminals: -1, users: -1,  products: -1 },
 };
 
@@ -21,6 +19,8 @@ component OrganisationPage {
   state { let editName: string = ''; }
   state { let editIndustry: string = ''; }
   state { let editCountry: string = ''; }
+  state { let editLocale: string = ''; }
+  state { let editCurrency: string = ''; }
   state { let notifications: any = null; }
   state { let currentUserRole: string = ''; }
   state { let tenantId: string = ''; }
@@ -41,6 +41,8 @@ component OrganisationPage {
       this.editName = this.org?.name || '';
       this.editIndustry = this.org?.industry || '';
       this.editCountry = this.org?.country || '';
+      this.editLocale = this.org?.config?.locale || 'en-US';
+      this.editCurrency = this.org?.config?.currency || 'MWK';
 
       try {
         const stored = localStorage.getItem('alpine-user');
@@ -65,15 +67,28 @@ component OrganisationPage {
         name: this.editName,
         industry: this.editIndustry,
         country: this.editCountry,
+        default_locale: this.editLocale,
+        default_currency: this.editCurrency,
       });
       this.org = {
         ...this.org,
         name: this.editName,
         industry: this.editIndustry,
         country: this.editCountry,
+        config: {
+          ...this.org?.config,
+          locale: this.editLocale,
+          currency: this.editCurrency,
+        }
       };
       this.editing = false;
       this.notifications?.success('Organisation updated');
+      
+      // Trigger shell to reload tenant config so L10n updates immediately
+      try {
+        const tenantService = window.__skltn?.registry?.get('tenant');
+        if (tenantService) await tenantService.load(this.tenantId);
+      } catch (_) {}
     } catch (e) {
       this.notifications?.error('Failed to update organisation');
     } finally {
@@ -156,6 +171,14 @@ component OrganisationPage {
                       <span style="color:var(--color-text);font-size:0.875rem;">{createdDate}</span>
                     </div>
                   ) : null}
+                  <div style="display:flex;justify-content:space-between;">
+                    <span style="color:var(--color-text-muted);font-size:0.875rem;">Default Locale</span>
+                    <span style="color:var(--color-text);font-size:0.875rem;">{this.org?.config?.locale || '—'}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;">
+                    <span style="color:var(--color-text-muted);font-size:0.875rem;">Default Currency</span>
+                    <span style="color:var(--color-text);font-size:0.875rem;">{this.org?.config?.currency || '—'}</span>
+                  </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span style="color:var(--color-text-muted);font-size:0.875rem;">Org ID</span>
                     <span style="color:var(--color-text-muted);font-size:0.75rem;font-family:monospace;letter-spacing:0.02em;">{this.tenantId}</span>
@@ -193,6 +216,39 @@ component OrganisationPage {
                       />
                     )}
                   />
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <FormGroup
+                      label="Locale"
+                      renderField={() => (
+                        <SelectField
+                          options={[
+                            { value: 'en-US', label: 'English (US)' },
+                            { value: 'en-GB', label: 'English (UK)' },
+                            { value: 'en-MW', label: 'English (Malawi)' },
+                            { value: 'fr-FR', label: 'Français' },
+                          ]}
+                          value={this.editLocale}
+                          onchange={(val: string) => { this.editLocale = val; this.scheduleUpdate?.(); }}
+                        />
+                      )}
+                    />
+                    <FormGroup
+                      label="Currency"
+                      renderField={() => (
+                        <SelectField
+                          options={[
+                            { value: 'MWK', label: 'Malawian Kwacha (MWK)' },
+                            { value: 'USD', label: 'US Dollar (USD)' },
+                            { value: 'EUR', label: 'Euro (EUR)' },
+                            { value: 'GBP', label: 'British Pound (GBP)' },
+                            { value: 'ZAR', label: 'South African Rand (ZAR)' },
+                          ]}
+                          value={this.editCurrency}
+                          onchange={(val: string) => { this.editCurrency = val; this.scheduleUpdate?.(); }}
+                        />
+                      )}
+                    />
+                  </div>
                   <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:0.5rem;">
                     <button
                       class="aui-btn aui-btn--outline"

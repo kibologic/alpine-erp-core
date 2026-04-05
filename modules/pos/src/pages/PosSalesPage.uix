@@ -1,19 +1,15 @@
 import { SwissComponent } from '@kibologic/core';
-import { PosService } from '@alpine/core';
-import { PageHeader } from '@alpine/ui/src/layout/PageHeader.uix';
-import { StatStrip } from '@alpine/ui/src/layout/StatStrip.uix';
-import { DataTable } from '@alpine/ui/src/data/DataTable.uix';
-import { StatusBadge } from '@alpine/ui/src/display/StatusBadge.uix';
-import { Modal } from '@alpine/ui/src/feedback/Modal.uix';
+import { PosService, formatCurrency, formatDate } from '@alpine/core';
+import { DataTable, Modal, PageHeader, StatStrip, StatusBadge } from '@alpine/ui';
 
 const columns = [
   { key: 'id', label: 'Sale #', width: '120px' },
   { key: 'created_at', label: 'Date/Time', width: '180px' },
   { key: 'customer_name', label: 'Customer' },
-  { key: 'items_count', label: 'Items', width: '80px' },
-  { key: 'total', label: 'Total (MWK)', width: '140px' },
+  { key: 'items_count', label: 'Items', width: '80px', align: 'center' },
+  { key: 'total', label: 'Total', width: '140px', align: 'right' },
   { key: 'payment_method', label: 'Payment', width: '120px' },
-  { key: 'status', label: 'Status', width: '120px' }
+  { key: 'status', label: 'Status', width: '120px', align: 'center' }
 ];
 
 component PosSalesPage {
@@ -56,7 +52,7 @@ component PosSalesPage {
       if (col.key === 'created_at') {
         return {
           ...col,
-          render: (val: string) => val ? new Date(val).toLocaleString() : ''
+          render: (val: string) => val ? formatDate(val) : ''
         };
       }
       if (col.key === 'id') {
@@ -74,9 +70,9 @@ component PosSalesPage {
       <div class="alp-page">
         <StatStrip 
           stats={[
-            { label: "Total Revenue", value: `MWK ${totalRevenue.toLocaleString()}` },
+            { label: "Total Revenue", value: formatCurrency(totalRevenue) },
             { label: "Total Sales", value: String(this.sales.length) },
-            { label: "Avg Sale", value: `MWK ${(this.sales.length ? totalRevenue / this.sales.length : 0).toLocaleString()}` }
+            { label: "Avg Sale", value: formatCurrency(this.sales.length ? totalRevenue / this.sales.length : 0) }
           ]}
         />
 
@@ -88,11 +84,12 @@ component PosSalesPage {
         </div>
 
         <DataTable
+          id="pos-sales-history"
           columns={updatedColumns}
           rows={this.sales}
           loading={this.loading}
-          searchable={true}
           exportable={true}
+          pageSize={10}
           filename="sales_history"
           emptyTitle="No sales found"
           emptyDescription={this.loading ? 'Loading sales history...' : 'Open a POS terminal to start selling'}
@@ -113,7 +110,7 @@ component PosSalesPage {
                    </div>
                    <div>
                       <div style="font-size: 0.75rem; color: var(--color-text-muted)">Date</div>
-                      <strong>{new Date(this.selectedSale.created_at).toLocaleString()}</strong>
+                      <strong>{formatDate(this.selectedSale.created_at)}</strong>
                    </div>
                    <div>
                       <div style="font-size: 0.75rem; color: var(--color-text-muted)">Payment Method</div>
@@ -149,7 +146,7 @@ component PosSalesPage {
                       <tfoot>
                          <tr>
                             <td colspan="3" style="text-align: right; padding: 1rem 0.5rem 0 0.5rem; font-weight: bold;">Grand Total</td>
-                            <td style="text-align: right; padding: 1rem 0.5rem 0 0.5rem; font-weight: bold;">MWK {this.selectedSale.total}</td>
+                            <td style="text-align: right; padding: 1rem 0.5rem 0 0.5rem; font-weight: bold;">{formatCurrency(this.selectedSale.total)}</td>
                          </tr>
                       </tfoot>
                    </table>

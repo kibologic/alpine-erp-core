@@ -10,6 +10,7 @@ ALL_ATOMS = {
     "inventory.adjust": "Adjust stock levels",
     "inventory.manage": "Create/edit/delete products",
     "inventory.export": "Export inventory data",
+    "inventory.import": "Import inventory from Excel",
     "inventory.stock_take": "Perform stock takes",
     "inventory.view_movements": "View stock movements",
     "users.view": "View team members",

@@ -108,6 +108,7 @@ from modules.push.router import router as push_router
 from modules.media.router import router as media_router
 from modules.dashboard.router import router as dashboard_router
 from modules.pos.tabs_router import router as tabs_router
+from modules.dataimport.router import router as dataimport_router
 
 register_module(
     name="auth",
@@ -173,6 +174,11 @@ register_module(
 register_module(
     name="pos-tabs",
     router_factory=lambda app: app.include_router(tabs_router, prefix="/api/v1"),
+    tier="core",
+)
+register_module(
+    name="dataimport",
+    router_factory=lambda app: app.include_router(dataimport_router, prefix="/api/v1"),
     tier="core",
 )
 

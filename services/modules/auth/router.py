@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.db import get_session
 from core.models import AuthToken, CustomRole, JoinRequest, OrgInvite, PasswordResetToken, RoleAtom, Tenant, User, UserTenant
 from core.auth_deps import get_user_atoms, _STANDARD_ROLE_ATOMS
+from core.tenant import set_current_tenant
 
 _JWT_SECRET = os.getenv("JWT_SECRET", os.getenv("JWT_SECRET"))
 _JWT_ALGORITHM = "HS256"
@@ -115,6 +116,9 @@ async def login(
     ]
 
     token, expires_at = await _issue_token(session, user.id)
+    
+    # Establish tenant context for the user's primary organization before committing logout/login updates
+    set_current_tenant(user.tenant_id)
 
     user.last_login = datetime.utcnow()
     await session.commit()
@@ -371,6 +375,9 @@ async def mobile_login(
     membership = ut_result.scalar_one_or_none()
     if not membership:
         raise HTTPException(status_code=403, detail="User is not a member of this organisation")
+    
+    # Establish context for session sync
+    set_current_tenant(data.tenant_id)
 
     access_token = _issue_jwt(user.id, data.tenant_id, membership.role, 3600)
     refresh_token = _issue_jwt(user.id, data.tenant_id, membership.role, 86400)
@@ -674,6 +681,11 @@ async def reset_password(
         raise HTTPException(status_code=404, detail="User not found")
 
     user.password_hash = bcrypt.hashpw(data.new_password.encode(), bcrypt.gensalt()).decode()
+    
+    # Reset tokens have a tenant_id but the reset request happens unauthenticated.
+    # We establish the user's tenant context to satisfy the guard during the token/user update.
+    set_current_tenant(user.tenant_id)
+    
     reset_token.used = True
     await session.commit()
 

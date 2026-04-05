@@ -16,6 +16,8 @@ class TenantUpdateBody(BaseModel):
     name: Optional[str] = None
     industry: Optional[str] = None
     country: Optional[str] = None
+    default_locale: Optional[str] = None
+    default_currency: Optional[str] = None
 
 router = APIRouter(prefix="/tenant", tags=["tenant"])
 
@@ -57,8 +59,8 @@ async def get_tenant_config(
         "industry": tenant.industry,
         "country": tenant.country,
         "config": {
-            "currency": "USD",
-            "locale": "en",
+            "currency": tenant.default_currency or "MWK",
+            "locale": tenant.default_locale or "en-US",
             "timezone": "UTC",
         },
         "active": tenant.active,
@@ -110,6 +112,10 @@ async def update_tenant(
         tenant.industry = body.industry
     if body.country is not None:
         tenant.country = body.country
+    if body.default_locale is not None:
+        tenant.default_locale = body.default_locale
+    if body.default_currency is not None:
+        tenant.default_currency = body.default_currency
 
     await session.commit()
     await session.refresh(tenant)

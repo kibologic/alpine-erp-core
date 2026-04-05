@@ -1,0 +1,23 @@
+export const enInventory = {
+  "warehouses": {
+    "title": "Warehouses",
+    "capacity": "{{used}} / {{capacity}} units",
+    "add": "Add Warehouse"
+  },
+  "stockLevels": {
+    "title": "Stock Levels",
+    "totalValue": "Total Value",
+    "lowStock": "Low Stock Items",
+    "categories": "Categories"
+  },
+  "reports": {
+    "title": "Inventory Reporting",
+    "assetValue": "Inventory Asset Value",
+    "realTime": "Real-time"
+  },
+  "common": {
+    "cost": "Cost",
+    "price": "Price",
+    "quantity": "Quantity"
+  }
+};

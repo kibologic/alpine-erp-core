@@ -260,8 +260,18 @@ async def update_role(
     role = result.scalar_one_or_none()
     if not role:
         raise HTTPException(404, "Role not found")
-    if role.is_system:
-        raise HTTPException(403, "Cannot modify system role")
+    
+    # Self-lockout protection: if user is editing their own role, don't let them remove users.manage_roles
+    if body.atoms is not None:
+        user_res = await session.execute(select(User).where(User.id == current_user["user_id"]))
+        me = user_res.scalar_one_or_none()
+        if me and str(me.custom_role_id) == str(role_id):
+            if "users.manage_roles" not in body.atoms:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Safety Block: You cannot remove 'users.manage_roles' from your own role."
+                )
+
     if body.name:
         role.name = body.name
     if body.atoms is not None:
@@ -285,8 +295,13 @@ async def delete_role(
     role = result.scalar_one_or_none()
     if not role:
         raise HTTPException(404, "Role not found")
-    if role.is_system:
-        raise HTTPException(403, "Cannot delete system role")
+    
+    # Prevent deleting the user's own role
+    user_res = await session.execute(select(User).where(User.id == current_user["user_id"]))
+    me = user_res.scalar_one_or_none()
+    if me and str(me.custom_role_id) == str(role_id):
+        raise HTTPException(status_code=400, detail="Safety Block: You cannot delete a role you are currently using.")
+
     await session.delete(role)
     await session.commit()
     return {"ok": True}

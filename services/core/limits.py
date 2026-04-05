@@ -7,14 +7,14 @@ from core.models import Tenant, User, UserTenant, Product, CashSession
 TIER_LIMITS = {
     "free": {
         "max_users": 3,
-        "max_products": 500,
+        "max_products": 300,
         "max_terminals": 1,
         "device_locked": True,
     },
     "pro": {
-        "max_users": 50,
-        "max_products": 10000,
-        "max_terminals": 10,
+        "max_users": 15,
+        "max_products": 3000,
+        "max_terminals": 5,
         "device_locked": False,
     },
     "enterprise": {
