@@ -478,6 +478,27 @@ async def accept_invite(
     return {"message": "Invite accepted. You can now access the organisation."}
 
 
+@router.delete("/invite/{invite_id}")
+async def cancel_invite(
+    invite_id: str,
+    current_user: dict = Depends(require_atom("users.manage")),
+    session: AsyncSession = Depends(get_session),
+):
+    result = await session.execute(
+        select(OrgInvite).where(
+            OrgInvite.id == invite_id,
+            OrgInvite.tenant_id == current_user["tenant_id"],
+            OrgInvite.status == "pending",
+        )
+    )
+    invite = result.scalar_one_or_none()
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found or already used")
+    invite.status = "cancelled"
+    await session.commit()
+    return {"ok": True}
+
+
 @router.post("/invite/{invite_id}/decline")
 async def decline_invite(
     invite_id: str,
