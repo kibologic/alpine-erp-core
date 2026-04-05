@@ -11,6 +11,11 @@
   },
   "dependencies": {
     "@kibologic/core": "latest",
+    "@kibologic/shell": "latest",
+    "@kibologic/notifications": "latest",
+    "@kibologic/navigation": "latest",
+    "@kibologic/workspace": "latest",
+    "@kibologic/contracts": "latest",
     "@kibologic/swite": "latest",
     "reflect-metadata": "^0.2.2"
   },
