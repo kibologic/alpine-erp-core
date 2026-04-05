@@ -2,24 +2,109 @@ import { SwissComponent } from '@kibologic/core';
 
 component DataTable {
   props = {
-    columns: Array as () => Array<{ key: string; label: string; sortable?: boolean; width?: string; render?: (val: any, row: any) => any }>,
+    id: String,
+    columns: Array as () => Array<{ key: string; label: string; sortable?: boolean; width?: string; align?: string; resizable?: boolean; render?: (val: any, row: any) => any }>,
     rows: Array as () => Array<Record<string, any>>,
     loading: Boolean,
-    searchable: Boolean,
-    exportable: Boolean,
+    pageSize: Number as () => number,
     filename: String,
     emptyTitle: String,
     emptyDescription: String,
+    onRowClick: Function as (row: any) => void,
+    onSelectionChange: Function as (rows: any[]) => void,
   };
 
+  // --- Search & Filter State ---
   state { let query: string = ''; }
+  state { let showFilters: boolean = false; }
+  state { let columnFilters: Record<string, string> = {}; }
+  state { let filterCols: Record<string, boolean> = {}; }
+  state { let showFilterMenu: boolean = false; }
+  state { let debounceTimer: any = null; }
+
+  // --- Sort State ---
   state { let sortKey: string = ''; }
   state { let sortDir: string = 'asc'; }
 
-  handleSearch(e: Event) {
-    this.query = (e.target as HTMLInputElement).value;
-    this.scheduleUpdate?.();
+  // --- Pagination State ---
+  state { let currentPage: number = 1; }
+  state { let rowsPerPage: number = 20; }
+  state { let rowsPerPageOptions: number[] = [10, 20, 50, 100]; }
+
+  // --- Selection State ---
+  state { let selectedIds: Record<string, boolean> = {}; }
+
+  // --- Column Visibility State ---
+  state { let hiddenCols: Record<string, boolean> = {}; }
+  state { let showColumnMenu: boolean = false; }
+  state { let showActions: boolean = false; }
+
+  // --- Resize State ---
+  state { let resizingKey: string = ''; }
+  state { let resizeStartX: number = 0; }
+  state { let resizeStartW: number = 0; }
+  state { let colWidths: Record<string, string> = {}; }
+
+  mounted() {
+    this.rowsPerPage = this.props.pageSize || 20;
+    this.loadPersistedState();
+    document.addEventListener('click', (e: any) => {
+      const isInside = e.target.closest('.alp-dt-actions-wrap');
+      if (!isInside) {
+        if (this.showActions || this.showColumnMenu || this.showFilterMenu) {
+          this.showActions = false;
+          this.showColumnMenu = false;
+          this.showFilterMenu = false;
+          this.scheduleUpdate?.();
+        }
+      }
+    });
   }
+
+  // ---- Persistence ----
+
+  getStorageKey() {
+    const tid = typeof localStorage !== 'undefined' ? (localStorage.getItem('alpine-tenant-id') || '0000') : '0000';
+    return `alp-dt-v4-${tid}-${this.props.id || 'default'}`;
+  }
+
+  saveState(extraData: any) {
+    try {
+      const existing = JSON.parse(localStorage.getItem(this.getStorageKey()) || '{}');
+      localStorage.setItem(this.getStorageKey(), JSON.stringify({ ...existing, ...extraData }));
+    } catch (_) {}
+  }
+
+  loadPersistedState() {
+    try {
+      const saved = localStorage.getItem(this.getStorageKey());
+      if (!saved) return;
+      const s = JSON.parse(saved);
+      if (s.sortKey) this.sortKey = s.sortKey;
+      if (s.sortDir) this.sortDir = s.sortDir;
+      if (s.rowsPerPage) this.rowsPerPage = s.rowsPerPage;
+      if (s.hiddenCols) this.hiddenCols = s.hiddenCols;
+      if (s.colWidths) this.colWidths = s.colWidths;
+    } catch (_) {}
+  }
+
+  // ---- Search Logic ----
+
+  handleSearch(val: string) {
+    this.query = val;
+    this.currentPage = 1;
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    this.debounceTimer = setTimeout(() => this.scheduleUpdate?.(), 150);
+  }
+
+  handleColumnFilter(key: string, val: string) {
+    this.columnFilters = { ...this.columnFilters, [key]: val };
+    this.currentPage = 1;
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    this.debounceTimer = setTimeout(() => this.scheduleUpdate?.(), 150);
+  }
+
+  // ---- Sort Logic ----
 
   handleSort(key: string) {
     if (this.sortKey === key) {
@@ -28,125 +113,458 @@ component DataTable {
       this.sortKey = key;
       this.sortDir = 'asc';
     }
+    this.currentPage = 1;
+    this.saveState({ sortKey: this.sortKey, sortDir: this.sortDir });
     this.scheduleUpdate?.();
   }
 
+  // ---- Filtered + Sorted Data ----
+
+  getProcessedRows() {
+    const rows = Array.isArray(this.props.rows) ? this.props.rows : [];
+    const q = (this.query || '').toLowerCase().trim();
+
+    let data = rows.filter(row => {
+      // Global search
+      if (q && !Object.values(row).some(v => v != null && String(v).toLowerCase().includes(q))) {
+        return false;
+      }
+      // Column filters
+      const filters = this.columnFilters;
+      for (const key in filters) {
+        const fv = (filters[key] || '').toLowerCase().trim();
+        if (!fv) continue;
+        const rv = row[key];
+        if (rv == null || !String(rv).toLowerCase().includes(fv)) return false;
+      }
+      return true;
+    });
+
+    if (this.sortKey) {
+      const dir = this.sortDir === 'asc' ? 1 : -1;
+      data = data.slice().sort((a, b) => {
+        const av = a[this.sortKey] ?? '';
+        const bv = b[this.sortKey] ?? '';
+        const na = Number(av); const nb = Number(bv);
+        if (!isNaN(na) && !isNaN(nb)) return dir * (na - nb);
+        const da = Date.parse(av); const db = Date.parse(bv);
+        if (!isNaN(da) && !isNaN(db)) return dir * (da - db);
+        return dir * String(av).localeCompare(String(bv), undefined, { numeric: true });
+      });
+    }
+
+    return data;
+  }
+
+  // ---- Selection ----
+
+  isSelected(row: any) {
+    const id = row.id || row._id;
+    return id != null && !!this.selectedIds[String(id)];
+  }
+
+  toggleRow(row: any) {
+    const id = String(row.id || row._id);
+    const next = { ...this.selectedIds };
+    if (next[id]) { delete next[id]; } else { next[id] = true; }
+    this.selectedIds = next;
+    this.scheduleUpdate?.();
+  }
+
+  toggleAll(visibleRows: any[]) {
+    const allSelected = visibleRows.every(r => this.isSelected(r));
+    const next = { ...this.selectedIds };
+    if (allSelected) {
+      visibleRows.forEach(r => { const id = String(r.id || r._id); delete next[id]; });
+    } else {
+      visibleRows.forEach(r => { const id = String(r.id || r._id); next[id] = true; });
+    }
+    this.selectedIds = next;
+    this.scheduleUpdate?.();
+  }
+
+  // ---- Column Visibility ----
+
+  toggleCol(key: string) {
+    const next = { ...this.hiddenCols };
+    if (next[key]) { delete next[key]; } else { next[key] = true; }
+    this.hiddenCols = next;
+    this.saveState({ hiddenCols: next });
+    this.scheduleUpdate?.();
+  }
+
+  // ---- Column Resize ----
+
+  startResize(e: MouseEvent, key: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.resizingKey = key;
+    this.resizeStartX = e.pageX;
+    const th = (e.target as HTMLElement).closest('th') as HTMLElement;
+    this.resizeStartW = th ? th.offsetWidth : 120;
+
+    const onMove = (me: MouseEvent) => {
+      if (!this.resizingKey) return;
+      const newW = Math.max(60, this.resizeStartW + (me.pageX - this.resizeStartX));
+      this.colWidths = { ...this.colWidths, [this.resizingKey]: `${newW}px` };
+      this.scheduleUpdate?.();
+    };
+
+    const onUp = () => {
+      this.saveState({ colWidths: this.colWidths });
+      this.resizingKey = '';
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }
+
+  // ---- Export ----
+
   handleExport() {
-    const rows = this.filteredRows();
-    const cols = Array.isArray(this.props.columns) ? this.props.columns : [];
-    const header = cols.map(c => c.label).join(',');
-    const body = rows.map(row => cols.map(c => {
-      const v = row[c.key];
-      return JSON.stringify(v != null ? String(v) : '');
+    const rows = this.props.rows || [];
+    const cols = (this.props.columns || []).filter(c => !this.hiddenCols[c.key]);
+    const header = cols.map(c => `"${c.label}"`).join(',');
+    const body = rows.map(r => cols.map(c => {
+      const v = r[c.key]; return JSON.stringify(v != null ? String(v) : '');
     }).join(',')).join('\n');
     const csv = header + '\n' + body;
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = (this.props.filename || 'export') + '.csv';
-    a.click();
+    a.href = url; a.download = (this.props.filename || 'export') + '.csv'; a.click();
     URL.revokeObjectURL(url);
   }
 
-  filteredRows() {
-    const rows = Array.isArray(this.props.rows) ? this.props.rows : [];
-    const q = (this.query || '').toLowerCase().trim();
-    let result = q
-      ? rows.filter(row => Object.values(row).some(v => v != null && String(v).toLowerCase().includes(q)))
-      : rows;
-    if (this.sortKey) {
-      result = [...result].sort((a, b) => {
-        const av = a[this.sortKey] ?? '';
-        const bv = b[this.sortKey] ?? '';
-        const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
-        return this.sortDir === 'asc' ? cmp : -cmp;
-      });
-    }
-    return result;
-  }
+  // ---- Render ----
 
   render() {
-    const cols = Array.isArray(this.props.columns) ? this.props.columns : [];
-    const rows = this.filteredRows();
-    const loading = !!this.props.loading;
+    const allCols = Array.isArray(this.props.columns) ? this.props.columns : [];
+    const visCols = allCols.filter(c => !this.hiddenCols[c.key]);
+    const isLoading = !!this.props.loading;
+
+    const processed = this.getProcessedRows();
+    const totalRows = processed.length;
+    const totalPages = Math.max(1, Math.ceil(totalRows / this.rowsPerPage));
+    const safeCurrentPage = Math.min(this.currentPage, totalPages);
+    const start = (safeCurrentPage - 1) * this.rowsPerPage;
+    const pageRows = processed.slice(start, start + this.rowsPerPage);
+
+    const allOnPageSelected = pageRows.length > 0 && pageRows.every(r => this.isSelected(r));
+    const selectedCount = Object.keys(this.selectedIds).length;
+
+    const colCount = visCols.length + 1; // +1 for checkbox col
 
     return (
-      <div class="alp-datatable">
-        {(this.props.searchable || this.props.exportable) ? (
-          <div class="alp-datatable-toolbar">
-            {this.props.searchable ? (
+      <div class="alp-dt">
+
+        <div class="alp-dt-toolbar">
+          <div class="alp-dt-toolbar-left">
+            <div class="alp-dt-search-wrap">
+              <svg class="alp-dt-search-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
               <input
                 type="search"
-                class="alp-input alp-input--sm alp-datatable-search"
+                class="alp-dt-search"
                 placeholder="Search…"
-                value={this.query}
-                oninput={(e: Event) => this.handleSearch(e)}
+                value={this.query || ''}
+                oninput={(e: any) => this.handleSearch(e.target.value)}
               />
-            ) : null}
-            {this.props.exportable ? (
-              <button class="aui-btn aui-btn--outline aui-btn--sm" onclick={() => this.handleExport()}>
-                Export CSV
-              </button>
-            ) : null}
+            </div>
+            {selectedCount > 0 && (
+              <span class="alp-dt-selection-badge">{selectedCount} selected</span>
+            )}
           </div>
-        ) : null}
 
-        <div class="alp-table-wrap">
-          <table class="alp-table">
-            <thead class="alp-table-head">
-              <tr>
-                {cols.map(col => (
-                  <th
-                    class={`alp-table-th${col.sortable ? ' alp-table-th--sortable' : ''}`}
-                    style={col.width ? `width:${col.width}` : ''}
-                    onclick={col.sortable ? () => this.handleSort(col.key) : undefined}
+          <div class="alp-dt-toolbar-right">
+            <div class="alp-dt-actions-wrap" style="position:relative;">
+              <button 
+                class={`alp-dt-toolbar-btn ${this.showActions ? 'alp-dt-toolbar-btn--active' : ''}`}
+                onclick={() => { this.showActions = !this.showActions; this.scheduleUpdate?.(); }}
+              >
+                <span>Actions</span>
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
+
+              {this.showActions && (
+                <div class="alp-dt-actions-menu">
+                  <button
+                    class={`alp-dt-menu-item ${this.showFilters ? 'alp-dt-menu-item--active' : ''}`}
+                    onclick={() => { 
+                      this.showFilters = !this.showFilters; 
+                      if (!this.showFilters) { this.columnFilters = {}; this.filterCols = {}; }
+                      this.scheduleUpdate?.(); 
+                    }}
                   >
-                    {col.label}
-                    {col.sortable ? (
-                      <span class={`alp-sort-icon${this.sortKey === col.key ? ' alp-sort-icon--' + this.sortDir : ''}`}>
-                        {this.sortKey === col.key ? (this.sortDir === 'asc' ? ' ▲' : ' ▼') : ' ⇅'}
-                      </span>
-                    ) : null}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                [1,2,3,4,5].map(() => (
-                  <tr class="alp-table-row">
-                    {cols.map(() => (
-                      <td class="alp-table-td"><span class="alp-skeleton"></span></td>
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                      <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L13 10.414V15a1 1 0 01-.553.894l-4 2A1 1 0 017 17v-6.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                    </svg>
+                    <span>{this.showFilters ? 'Disable Advanced Filtering' : 'Enable Advanced Filtering'}</span>
+                  </button>
+
+                  <div class="alp-dt-menu-divider"></div>
+
+                  <button
+                    class={`alp-dt-menu-item ${this.showColumnMenu ? 'alp-dt-menu-item--open' : ''}`}
+                    onclick={() => { 
+                      this.showColumnMenu = !this.showColumnMenu; 
+                      this.showFilterMenu = false;
+                      this.scheduleUpdate?.(); 
+                    }}
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                      <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
+                    </svg>
+                    <span>Column Visibility</span>
+                    <span class="alp-dt-menu-arrow">›</span>
+                  </button>
+
+                  <button
+                    class={`alp-dt-menu-item ${this.showFilterMenu ? 'alp-dt-menu-item--open' : ''}`}
+                    disabled={!this.showFilters}
+                    onclick={() => { 
+                      this.showFilterMenu = !this.showFilterMenu; 
+                      this.showColumnMenu = false;
+                      this.scheduleUpdate?.(); 
+                    }}
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                      <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L13 10.414V15a1 1 0 01-.553.894l-4 2A1 1 0 017 17v-6.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Filter Configuration</span>
+                    <span class="alp-dt-menu-arrow">›</span>
+                  </button>
+
+                  <div class="alp-dt-menu-divider"></div>
+
+                  <button
+                    class="alp-dt-menu-item"
+                    onclick={() => { this.handleExport(); this.showActions = false; this.scheduleUpdate?.(); }}
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                      <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Export CSV</span>
+                  </button>
+                </div>
+              )}
+
+              {this.showColumnMenu && (
+                <div class="alp-col-menu" onclick={(e: any) => e.stopPropagation()}>
+                  <div class="alp-col-menu-header">
+                    <span>Column Visibility</span>
+                    <button class="alp-col-menu-close" onclick={(e: any) => { e.stopPropagation(); this.showColumnMenu = false; this.scheduleUpdate?.(); }}>×</button>
+                  </div>
+                  <div class="alp-col-menu-list">
+                    {allCols.map(col => (
+                      <label class="alp-col-menu-item" onclick={(e: any) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={!this.hiddenCols[col.key]}
+                          onchange={(e: any) => { 
+                            e.stopPropagation();
+                            this.toggleCol(col.key); 
+                            this.scheduleUpdate?.(); 
+                          }}
+                        />
+                        <span>{col.label}</span>
+                      </label>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {this.showFilterMenu && (
+                <div class="alp-col-menu" onclick={(e: any) => e.stopPropagation()}>
+                  <div class="alp-col-menu-header">
+                    <span>Select what to filter</span>
+                    <button class="alp-col-menu-close" onclick={(e: any) => { e.stopPropagation(); this.showFilterMenu = false; this.scheduleUpdate?.(); }}>×</button>
+                  </div>
+                  <div class="alp-col-menu-list">
+                    {visCols.map(col => (
+                      <label class="alp-col-menu-item" onclick={(e: any) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={this.filterCols[col.key] !== false}
+                          onchange={(e: any) => { 
+                            e.stopPropagation();
+                            const next = { ...this.filterCols };
+                            next[col.key] = this.filterCols[col.key] === false ? true : false;
+                            this.filterCols = next;
+                            this.scheduleUpdate?.(); 
+                          }}
+                        />
+                        <span>{col.label} Filter</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div class="alp-dt-table-wrap">
+          <table class="alp-dt-table">
+            <thead>
+              <tr class="alp-dt-head-row">
+                {/* Checkbox header */}
+                <th class="alp-dt-th alp-dt-th--check">
+                  <input
+                    type="checkbox"
+                    class="alp-dt-checkbox"
+                    checked={allOnPageSelected}
+                    onchange={() => this.toggleAll(pageRows)}
+                  />
+                </th>
+
+                {visCols.map(col => {
+                  const colW = this.colWidths[col.key] || col.width || '';
+                  const isSorted = this.sortKey === col.key;
+                  return (
+                    <th
+                      class={`alp-dt-th ${isSorted ? 'alp-dt-th--sorted' : ''} ${col.align ? 'alp-dt-th--' + col.align : ''}`}
+                      style={colW ? `width: ${colW}; min-width: ${colW}` : ''}
+                    >
+                      <div class="alp-dt-th-inner" onclick={() => this.handleSort(col.key)}>
+                        <span class="alp-dt-th-label">{col.label}</span>
+                        <span class={`alp-dt-sort-icon ${isSorted ? 'alp-dt-sort-icon--active' : ''}`}>
+                          {isSorted ? (this.sortDir === 'asc' ? '↑' : '↓') : '↕'}
+                        </span>
+                      </div>
+                      <div
+                        class="alp-dt-resizer"
+                        onmousedown={(e: MouseEvent) => this.startResize(e, col.key)}
+                        title="Drag to resize"
+                      ></div>
+                    </th>
+                  );
+                })}
+              </tr>
+
+              {this.showFilters && (
+                <tr class="alp-dt-filter-row">
+                  <th class="alp-dt-th alp-dt-th--check"></th>
+                  {visCols.map(col => {
+                    // Auto-detect unique values for the dropdown
+                    const rows = this.props.rows || [];
+                    const uniqueValues = Array.from(new Set(rows.map(r => r[col.key]).filter(v => v != null && v !== '')));
+                    const hasManyValues = uniqueValues.length > 20; // If too many, maybe a text input is better? But user asked for dropdown "as per the column".
+                    
+                    return (
+                      <th class="alp-dt-filter-cell">
+                        {this.filterCols[col.key] !== false && (
+                          <select
+                            class="alp-dt-filter-select"
+                            value={this.columnFilters[col.key] || ''}
+                            onchange={(e: any) => this.handleColumnFilter(col.key, e.target.value)}
+                          >
+                            <option value="">All {col.label}</option>
+                            {uniqueValues.sort().map(val => (
+                              <option value={String(val)}>{String(val)}</option>
+                            ))}
+                          </select>
+                        )}
+                      </th>
+                    );
+                  })}
+                </tr>
+              )}
+            </thead>
+
+            <tbody>
+              {isLoading ? (
+                [0,1,2,3,4,5].map(() => (
+                  <tr class="alp-dt-row">
+                    <td class="alp-dt-td alp-dt-td--check"><span class="alp-dt-skeleton alp-dt-skeleton--sm"></span></td>
+                    {visCols.map(() => <td class="alp-dt-td"><span class="alp-dt-skeleton"></span></td>)}
                   </tr>
                 ))
-              ) : rows.length === 0 ? (
+              ) : pageRows.length === 0 ? (
                 <tr>
-                  <td class="alp-table-td alp-table-empty" colspan={String(cols.length)}>
-                    <div class="alp-empty-state">
-                      <span class="alp-empty-icon">📭</span>
-                      <strong>{this.props.emptyTitle || 'No results'}</strong>
-                      {this.props.emptyDescription ? (
-                        <span>{this.props.emptyDescription}</span>
-                      ) : null}
+                  <td class="alp-dt-empty" colspan={colCount}>
+                    <div class="alp-dt-empty-inner">
+                      <div class="alp-dt-empty-icon">📂</div>
+                      <div class="alp-dt-empty-title">{this.props.emptyTitle || 'No data found'}</div>
+                      <div class="alp-dt-empty-desc">{this.props.emptyDescription || 'There are no records to display.'}</div>
                     </div>
                   </td>
                 </tr>
-              ) : (
-                rows.map(row => (
-                  <tr class="alp-table-row">
-                    {cols.map(col => (
-                      <td class="alp-table-td">
-                        {col.render ? col.render(row[col.key], row) : (row[col.key] != null ? String(row[col.key]) : '')}
+              ) : pageRows.map(row => {
+                const sel = this.isSelected(row);
+                return (
+                  <tr
+                    class={`alp-dt-row ${sel ? 'alp-dt-row--selected' : ''} ${this.props.onRowClick ? 'alp-dt-row--clickable' : ''}`}
+                    onclick={() => this.props.onRowClick && this.props.onRowClick(row)}
+                  >
+                    <td class="alp-dt-td alp-dt-td--check" onclick={(e: Event) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        class="alp-dt-checkbox"
+                        checked={sel}
+                        onchange={() => this.toggleRow(row)}
+                      />
+                    </td>
+                    {visCols.map(col => (
+                      <td class={`alp-dt-td ${col.align ? 'alp-dt-td--' + col.align : ''}`}>
+                        {col.render ? col.render(row[col.key], row) : (row[col.key] != null ? String(row[col.key]) : '—')}
                       </td>
                     ))}
                   </tr>
-                ))
-              )}
+                );
+              })}
             </tbody>
           </table>
         </div>
+
+        {totalPages > 1 && (
+          <div class="alp-dt-pagination">
+            <div class="alp-dt-pagination-left">
+              <div class="alp-dt-pagination-info">
+                {start + 1}–{Math.min(start + this.rowsPerPage, totalRows)} of {totalRows}
+              </div>
+              <div class="alp-dt-rows-per-page">
+                <span>Rows per page:</span>
+                <select 
+                  class="alp-dt-select-sm" 
+                  value={this.rowsPerPage} 
+                  onchange={(e: any) => { 
+                    this.rowsPerPage = Number(e.target.value); 
+                    this.currentPage = 1; 
+                    this.saveState({ rowsPerPage: this.rowsPerPage });
+                    this.scheduleUpdate?.(); 
+                  }}
+                >
+                  {this.rowsPerPageOptions.map(opt => <option value={opt}>{opt}</option>)}
+                </select>
+              </div>
+            </div>
+            <div class="alp-dt-pagination-controls">
+              <button class="alp-dt-page-btn" disabled={safeCurrentPage === 1} onclick={() => { this.currentPage = safeCurrentPage - 1; this.scheduleUpdate?.(); }}>←</button>
+              {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
+                let p = i + 1;
+                if (totalPages > 7 && safeCurrentPage > 4) {
+                  p = safeCurrentPage - 3 + i;
+                  if (p + (7 - i - 1) > totalPages) p = totalPages - 6 + i;
+                }
+                if (p < 1 || p > totalPages) return null;
+                return (
+                  <button
+                    class={`alp-dt-page-btn ${safeCurrentPage === p ? 'alp-dt-page-btn--active' : ''}`}
+                    onclick={() => { this.currentPage = p; this.scheduleUpdate?.(); }}
+                  >{p}</button>
+                );
+              })}
+              <button class="alp-dt-page-btn" disabled={safeCurrentPage === totalPages} onclick={() => { this.currentPage = safeCurrentPage + 1; this.scheduleUpdate?.(); }}>→</button>
+            </div>
+          </div>
+        )}
+
       </div>
     );
   }

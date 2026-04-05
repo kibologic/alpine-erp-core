@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import get_session
 from core.models import AuthToken, User, UserTenant, CustomRole, RoleAtom
+from core.tenant import set_current_tenant
 
 _STANDARD_ROLE_ATOMS: dict[str, list[str]] = {
     "admin": [
@@ -127,6 +128,8 @@ async def get_current_user(
         tenant_role = await _check_tenant(user, tenant_id, session)
         result["tenant_role"] = tenant_role
         result["tenant_id"] = tenant_id
+        # EXTREMELY IMPORTANT: Set the global tenant context variable
+        set_current_tenant(tenant_id)
 
     return result
 
@@ -151,14 +154,42 @@ async def get_current_user_optional(
     except HTTPException:
         return None
 
+async def get_current_tenant_id(
+    current_user: dict = Depends(get_current_user)
+) -> str:
+    """
+    Strict dependency that ensures a tenant_id was provided and validated.
+    Use this for all routes that interact with tenant-specific data.
+    """
+    tenant_id = current_user.get("tenant_id")
+    if not tenant_id:
+        raise HTTPException(
+            status_code=400, 
+            detail="X-Tenant-ID header is required for this endpoint"
+        )
+    
+    # Context is already set by get_current_user if tenant_id was present,
+    # but we double-check here for absolute certainty.
+    set_current_tenant(tenant_id)
+    return tenant_id
+
+
 def require_atom(atom_name: str):
     async def atom_dependency(
         current_user: dict = Depends(get_current_user),
         session: AsyncSession = Depends(get_session)
     ) -> dict:
+        # If the endpoint requires an atom, it almost certainly requires a tenant context too
+        tenant_id = current_user.get("tenant_id")
+        if not tenant_id:
+            raise HTTPException(status_code=400, detail="X-Tenant-ID header is required")
+            
         user_id = current_user["user_id"]
         atoms = await get_user_atoms(session, user_id)
         if atom_name not in atoms:
             raise HTTPException(status_code=403, detail=f"Missing permission: {atom_name}")
+        
+        # Ensure context is set
+        set_current_tenant(tenant_id)
         return current_user
     return atom_dependency

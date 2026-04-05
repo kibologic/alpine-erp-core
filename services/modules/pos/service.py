@@ -152,6 +152,7 @@ async def create_sale(
         # 3. Create Sale Lines and Stock Movements
         for line_data in data.lines:
             line = SaleLine(
+                tenant_id=tenant_id,
                 sale_id=sale.id,
                 product_id=line_data.product_id,
                 quantity=line_data.quantity,
@@ -177,6 +178,7 @@ async def create_sale(
         # 4. Create Payments
         for pay_data in data.payments:
             payment = Payment(
+                tenant_id=tenant_id,
                 sale_id=sale.id,
                 method=pay_data.method,
                 amount=pay_data.amount

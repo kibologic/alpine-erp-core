@@ -238,7 +238,7 @@ async def create_role(
     await session.flush()
     for atom in body.atoms:
         if atom in ALL_ATOMS:
-            session.add(RoleAtom(role_id=role.id, atom=atom))
+            session.add(RoleAtom(tenant_id=tenant_id, role_id=role.id, atom=atom))
     await session.commit()
     return {"id": str(role.id), "name": role.name, "is_system": role.is_system, "atoms": body.atoms}
 
@@ -268,7 +268,8 @@ async def update_role(
         await session.execute(delete(RoleAtom).where(RoleAtom.role_id == str(role_id)))
         for atom in body.atoms:
             if atom in ALL_ATOMS:
-                session.add(RoleAtom(role_id=role.id, atom=atom))
+                # Find tenant_id for the role
+                session.add(RoleAtom(tenant_id=role.tenant_id, role_id=role.id, atom=atom))
     await session.commit()
     return {"id": str(role.id), "name": role.name, "is_system": role.is_system, "atoms": body.atoms or []}
 

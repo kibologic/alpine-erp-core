@@ -159,6 +159,7 @@ async def add_tab_line(
     
     line = TabLine(
         id=str(uuid.uuid4()),
+        tenant_id=current_user["tenant_id"],
         tab_id=tab_id,
         product_id=product.id,
         name=product.name,
@@ -289,6 +290,7 @@ async def create_kitchen_order(
     for line in body.lines:
         ko_line = KitchenOrderLine(
             id=str(uuid.uuid4()),
+            tenant_id=current_user["tenant_id"],
             kitchen_order_id=kitchen_order.id,
             product_id=line.product_id,
             name=line.name,

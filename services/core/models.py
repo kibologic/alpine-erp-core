@@ -350,6 +350,11 @@ class SaleLine(Base):
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
     )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     sale_id: Mapped[str] = mapped_column(
         UUID(as_uuid=False),
         ForeignKey("sales.id", ondelete="CASCADE"),
@@ -366,6 +371,7 @@ class SaleLine(Base):
     tax: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0.0)
     line_total: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
 
+    tenant: Mapped["Tenant"] = relationship()
     sale: Mapped["Sale"] = relationship(back_populates="lines")
     product: Mapped["Product"] = relationship()
 
@@ -378,6 +384,11 @@ class Payment(Base):
         primary_key=True,
         default=lambda: str(uuid.uuid4()),
     )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     sale_id: Mapped[str] = mapped_column(
         UUID(as_uuid=False),
         ForeignKey("sales.id", ondelete="CASCADE"),
@@ -387,6 +398,7 @@ class Payment(Base):
     amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc)
 
+    tenant: Mapped["Tenant"] = relationship()
     sale: Mapped["Sale"] = relationship(back_populates="payments")
 
 
@@ -603,6 +615,11 @@ class PasswordResetToken(Base):
     id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
     )
+    tenant_id: Mapped[Optional[str]] = mapped_column(
+        UUID(as_uuid=False),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=True,
+    )
     user_id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), ForeignKey("users.id"), nullable=False
     )
@@ -610,6 +627,8 @@ class PasswordResetToken(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     used: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    tenant: Mapped[Optional["Tenant"]] = relationship()
 
 
 class JoinRequest(Base):
@@ -679,11 +698,17 @@ class RoleAtom(Base):
     id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
     )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     role_id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), ForeignKey("custom_roles.id", ondelete="CASCADE"), nullable=False
     )
     atom: Mapped[str] = mapped_column(String, nullable=False)
 
+    tenant: Mapped["Tenant"] = relationship()
     role: Mapped["CustomRole"] = relationship(back_populates="atoms")
 
 
@@ -796,6 +821,11 @@ class TabLine(Base):
     id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
     )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     tab_id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), ForeignKey("tabs.id", ondelete="CASCADE"), nullable=False
     )
@@ -809,6 +839,7 @@ class TabLine(Base):
     tax: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0.0)
     added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
+    tenant: Mapped["Tenant"] = relationship()
     tab: Mapped["Tab"] = relationship(back_populates="lines")
     product: Mapped["Product"] = relationship()
 
@@ -842,6 +873,11 @@ class KitchenOrderLine(Base):
     id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4())
     )
+    tenant_id: Mapped[str] = mapped_column(
+        UUID(as_uuid=False),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     kitchen_order_id: Mapped[str] = mapped_column(
         UUID(as_uuid=False), ForeignKey("kitchen_orders.id", ondelete="CASCADE"), nullable=False
     )
@@ -852,5 +888,6 @@ class KitchenOrderLine(Base):
     quantity: Mapped[float] = mapped_column(Numeric(12, 3), nullable=False, default=1.0)
     notes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
+    tenant: Mapped["Tenant"] = relationship()
     kitchen_order: Mapped["KitchenOrder"] = relationship(back_populates="lines")
     product: Mapped["Product"] = relationship()
